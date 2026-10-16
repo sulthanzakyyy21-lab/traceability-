@@ -1,0 +1,1384 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Automated Digital Traceability System PT. Santos Jaya Abadi - Form F/QC/01.030" />
+  <title>Laporan Traceability – PT. Santos Jaya Abadi (Form F/QC/01.030)</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Times New Roman"', 'Times', 'serif'],
+            serif: ['"Times New Roman"', 'Times', 'serif'],
+            mono: ['"Times New Roman"', 'Times', 'serif'],
+          },
+        },
+      },
+    };
+  </script>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <script src="flowSections.js"></script>
+
+  <style>
+    /* ── STRICT TIMES NEW ROMAN ENFORCEMENT ── */
+    *, *::before, *::after, body, input, button, select, textarea, table, th, td, span, div, p, h1, h2, h3 {
+      font-family: 'Times New Roman', Times, serif !important;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #f1f5f9;
+      color: #0f172a;
+      line-height: 1.35;
+    }
+
+    /* ── SYSTEM TOP BAR (NAVBAR) ───────────── */
+    .app-header {
+      background: #0f172a;
+      border-bottom: 2px solid #1e293b;
+    }
+    .tab-btn {
+      padding: 9px 18px;
+      font-size: 13.5px;
+      border-bottom: 3px solid transparent;
+      color: #94a3b8;
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .tab-btn:hover { color: #ffffff; }
+    .tab-btn.active {
+      color: #ffffff;
+      border-bottom-color: #38bdf8;
+      font-weight: bold;
+    }
+
+    /* ── OFFICIAL WHITE DOCUMENT CANVAS ────── */
+    #form-document {
+      background: #ffffff;
+      border: 1.5px solid #000000;
+      box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.1);
+      color: #000000;
+      font-size: 11px;
+      width: 100%;
+    }
+
+    /* ── HEADER TABLE FORM RESMI ───────────── */
+    .doc-top-table {
+      width: 100%;
+      border-collapse: collapse;
+      border-bottom: 2px solid #000000;
+    }
+    .doc-top-table td {
+      border: 1px solid #000000;
+      padding: 6px 10px;
+      vertical-align: middle;
+    }
+
+    /* ── SUB-TABLES (INFORMASI & APPROVAL) ─── */
+    .doc-subtable {
+      width: 100%;
+      border-collapse: collapse;
+      border-bottom: 1.5px solid #000000;
+    }
+    .doc-subtable td, .doc-subtable th {
+      border: 1px solid #000000;
+      padding: 4px 8px;
+      font-size: 11px;
+      vertical-align: top;
+    }
+    .bg-cell-header {
+      background: #e2e8f0;
+      font-weight: bold;
+      color: #000000;
+      text-transform: uppercase;
+      font-size: 11px;
+      letter-spacing: 0.03em;
+    }
+
+    /* ── TABEL UTAMA 12 FLOW PROCESS ───────── */
+    .flow-table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 1.5px solid #000000;
+      table-layout: fixed;
+    }
+    .flow-table th {
+      background: #0f172a;
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: bold;
+      padding: 6px 8px;
+      text-align: center;
+      border: 1px solid #000000;
+    }
+    .flow-item-tr td {
+      border: 1px solid #000000 !important;
+      padding: 3px 6px;
+      font-size: 11px;
+      line-height: 1.35;
+    }
+
+    /* Flow name cell */
+    .flow-name-cell {
+      vertical-align: top !important;
+      font-weight: bold;
+      background: #f8fafc;
+      color: #000000;
+      padding: 8px 6px !important;
+      font-size: 11.5px;
+    }
+
+    /* Penjelasan proses line & border */
+    .proc-cell {
+      padding: 2.5px 6px !important;
+      vertical-align: middle !important;
+    }
+    .proc-header-cell {
+      background: #f1f5f9;
+      border-top: 1.5px solid #000000 !important;
+      border-bottom: 1px solid #000000 !important;
+    }
+    .proc-header-title {
+      font-weight: bold;
+      text-decoration: underline;
+      color: #000000;
+      font-size: 11px;
+    }
+    .proc-row-line {
+      display: flex;
+      align-items: baseline;
+      width: 100%;
+    }
+    .proc-label {
+      width: 260px;
+      flex-shrink: 0;
+      color: #000000;
+    }
+    .proc-colon {
+      width: 16px;
+      text-align: center;
+      font-weight: bold;
+      color: #000000;
+    }
+    .proc-value {
+      color: #000000;
+      flex: 1;
+    }
+    .proc-value-active {
+      font-weight: bold;
+      color: #047857;
+      background: #ecfdf5;
+      padding: 0 4px;
+      border-radius: 2px;
+    }
+
+    /* Document & PIC cells */
+    .doc-cell {
+      vertical-align: middle !important;
+      background: #ffffff;
+      font-size: 10.5px;
+      line-height: 1.35;
+      padding: 6px 8px !important;
+    }
+    .doc-badge-item {
+      margin-bottom: 3px;
+      color: #000000;
+      line-height: 1.3;
+    }
+    .doc-badge-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .pic-cell {
+      vertical-align: middle !important;
+      font-weight: bold;
+      padding: 6px !important;
+    }
+
+    .pic-tag {
+      display: inline-block;
+      padding: 2px 6px;
+      font-size: 10.5px;
+      font-weight: bold;
+      border-radius: 2px;
+      text-transform: uppercase;
+      border: 1px solid #000000;
+    }
+    .pic-produksi { background: #dbeafe; color: #1e3a8a; }
+    .pic-qc       { background: #fef3c7; color: #78350f; }
+    .pic-pa       { background: #e0e7ff; color: #312e81; }
+    .pic-fgw      { background: #dcfce7; color: #14532d; }
+    .pic-rmw      { background: #fce7f3; color: #831843; }
+
+    .temuan-cell, .saran-cell {
+      vertical-align: middle !important;
+      padding: 6px !important;
+    }
+
+    /* Signature footer */
+    .sig-table {
+      width: 100%;
+      border-collapse: collapse;
+      border-top: 2px solid #000000;
+    }
+    .sig-table td {
+      border: 1px solid #000000;
+      padding: 8px;
+      text-align: center;
+      vertical-align: top;
+      width: 25%;
+    }
+
+    /* ── PARAMETER KRITIS GREEN STACKED SUB-TABLES (EXCEL SCADA STYLE) ── */
+    .param-stacked-container {
+      width: 100%;
+      max-width: 100%;
+      margin-top: 6px;
+      margin-bottom: 4px;
+      overflow: hidden;
+    }
+    .param-scroll-box {
+      width: 100%;
+      max-width: 100%;
+      overflow-x: auto;
+      border: 1px solid #000000;
+      background: #ffffff;
+      margin-bottom: 8px;
+      scrollbar-width: thin;
+      scrollbar-color: #64748b #f1f5f9;
+    }
+    .param-scroll-box::-webkit-scrollbar {
+      height: 8px;
+    }
+    .param-scroll-box::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    .param-scroll-box::-webkit-scrollbar-thumb {
+      background: #64748b;
+      border-radius: 4px;
+    }
+    .param-scroll-box::-webkit-scrollbar-thumb:hover {
+      background: #334155;
+    }
+    .param-stacked-table {
+      width: max-content;
+      min-width: 100%;
+      border-collapse: collapse;
+      font-size: 9.5px;
+      line-height: 1.25;
+      background: #ffffff;
+      border: 1px solid #000000;
+    }
+    .param-green-th {
+      background: #165b33 !important; /* Authentic SCADA deep green matching Excel */
+      color: #ffffff !important;
+      padding: 5px 8px;
+      font-weight: bold;
+      font-size: 9.5px;
+      border: 1px solid #000000;
+      text-align: center;
+      vertical-align: middle;
+      white-space: nowrap !important; /* PREVENTS VERTICAL LETTER-BY-LETTER STACKING! */
+      letter-spacing: 0.02em;
+    }
+    .param-th-no {
+      width: 28px;
+      min-width: 28px;
+      background: #0f3d23 !important;
+      color: #ffffff !important;
+      font-size: 9.5px;
+      text-align: center;
+      border: 1px solid #000000;
+      white-space: nowrap !important;
+    }
+    .param-td-no {
+      text-align: center;
+      font-weight: bold;
+      background: #f1f5f9;
+      border: 1px solid #000000 !important;
+      padding: 3px 6px;
+      font-size: 9.5px;
+      white-space: nowrap !important;
+    }
+    .param-tr:nth-child(even) {
+      background: #f8fafc;
+    }
+    .param-tr:hover {
+      background: #f0fdf4;
+    }
+    .param-td {
+      border: 1px solid #000000 !important;
+      padding: 3px 8px;
+      color: #000000;
+      text-align: center;
+      font-size: 9.5px;
+      white-space: nowrap !important;
+    }
+
+    /* Print styles */
+    @media print {
+      .no-print { display: none !important; }
+      body { background: #ffffff !important; padding: 0 !important; }
+      #form-document {
+        box-shadow: none !important;
+        border: 1px solid #000000 !important;
+        margin: 0 !important;
+        width: 100% !important;
+      }
+      .doc-top-table td, .doc-subtable td, .flow-table td, .sig-table td {
+        border-color: #000000 !important;
+      }
+    }
+
+    /* Spinner */
+    .spin { animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+<div id="app" class="flex-1 flex flex-col">
+
+  <!-- ── APP HEADER (NAVBAR) ───────────────────────────────────── -->
+  <header class="app-header no-print text-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6">
+      <div class="flex items-center justify-between h-14">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 bg-white rounded flex items-center justify-center font-bold text-slate-900 text-sm border border-slate-300">
+            SJA
+          </div>
+          <div>
+            <div class="text-sm font-bold tracking-tight text-white leading-tight">PT. Santos Jaya Abadi</div>
+            <div class="text-xs text-slate-300">Automated Digital Traceability &bull; Form F/QC/01.030</div>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-4 text-xs">
+          <div class="flex items-center gap-2">
+            <span :class="dbConnected ? 'bg-emerald-400' : 'bg-red-400'" class="w-2.5 h-2.5 rounded-full inline-block"></span>
+            <span class="text-slate-200">MySQL: db_traceability_sja</span>
+          </div>
+          <span class="text-slate-400 border border-slate-700 px-2 py-0.5 rounded hidden sm:inline">Rev. 01 (15/06/2026)</span>
+        </div>
+      </div>
+
+      <div class="flex border-t border-slate-800">
+        <button @click="activeTab='trace'" :class="activeTab==='trace'?'active':''" class="tab-btn">
+          Laporan Traceability (Form F/QC/01.030)
+        </button>
+        <button @click="activeTab='sync'" :class="activeTab==='sync'?'active':''" class="tab-btn">
+          Data Sync (Upload Spreadsheet SCADA)
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ── MAIN CONTENT ─────────────────────────────────────────── -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6">
+
+    <!-- ══════════════════════════════════════════════════════════════
+         TAB 1: LAPORAN TRACEABILITY RESMI F/QC/01.030
+    ══════════════════════════════════════════════════════════════ -->
+    <div v-if="activeTab==='trace'" class="space-y-5">
+
+      <!-- ── Search & Filter Box ── -->
+      <div class="bg-white border border-slate-300 rounded p-4 no-print shadow-sm">
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+          <div class="flex flex-wrap items-end gap-3 flex-1">
+            <!-- No Batch -->
+            <div class="w-44">
+              <label class="block text-xs font-bold text-slate-800 mb-1">No. Batch Produk</label>
+              <input
+                v-model="traceForm.noBatch"
+                type="text"
+                placeholder="A370/26"
+                id="input-no-batch"
+                class="w-full border border-slate-400 px-2.5 py-1.5 text-xs font-bold text-slate-900 rounded focus:outline-none focus:border-slate-800 uppercase"
+              />
+            </div>
+
+            <!-- Tower Selector -->
+            <div>
+              <label class="block text-xs font-bold text-slate-800 mb-1">Tower</label>
+              <div class="flex border border-slate-400 rounded overflow-hidden">
+                <button
+                  type="button"
+                  @click="traceForm.tower='1'"
+                  :class="traceForm.tower==='1' ? 'bg-slate-900 text-white font-bold' : 'bg-white text-slate-700 hover:bg-slate-50'"
+                  class="px-3.5 py-1.5 text-xs transition-colors"
+                >
+                  Tower 1
+                </button>
+                <button
+                  type="button"
+                  @click="traceForm.tower='2'"
+                  :class="traceForm.tower==='2' ? 'bg-slate-900 text-white font-bold' : 'bg-white text-slate-700 hover:bg-slate-50'"
+                  class="px-3.5 py-1.5 text-xs border-l border-slate-400 transition-colors"
+                >
+                  Tower 2
+                </button>
+              </div>
+            </div>
+
+
+            <!-- Trace Action Button -->
+            <button
+              @click="doTrace"
+              :disabled="tracing || !traceForm.noBatch"
+              id="btn-trace"
+              class="px-5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+            >
+              <svg v-if="tracing" class="spin h-3.5 w-3.5" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+              </svg>
+              <span>{{ tracing ? 'Menarik Data...' : 'Trace Batch' }}</span>
+            </button>
+
+            <!-- Quick Preset for Audit Simulation -->
+            <button
+              @click="loadPresetAudit"
+              type="button"
+              class="px-3 py-1.5 border border-slate-400 hover:bg-slate-100 text-slate-800 text-xs font-medium rounded transition-colors"
+              title="Isi parameter simulasi audit batch A370/26"
+            >
+              Preset: A370/26 (Audit)
+            </button>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button
+              @click="printForm"
+              class="px-4 py-1.5 border border-slate-400 hover:bg-slate-100 text-slate-800 text-xs font-bold rounded transition-colors flex items-center gap-1.5"
+            >
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+              </svg>
+              <span>Cetak / PDF</span>
+            </button>
+          </div>
+        </div>
+
+        <div v-if="traceError" class="mt-3 text-xs text-red-700 bg-red-50 border border-red-300 rounded p-2.5 font-bold">
+          {{ traceError }}
+        </div>
+      </div>
+
+      <!-- ── FORM DOKUMEN F/QC/01.030 RESMI ── -->
+      <div id="form-document" class="p-6">
+
+        <!-- 1. HEADER RESMI PT. SANTOS JAYA ABADI -->
+        <table class="doc-top-table mb-4">
+          <tr>
+            <td style="width: 140px; text-align: center;">
+              <div class="font-bold text-xl text-black leading-none">SJA</div>
+              <div class="text-[10.5px] font-bold text-black mt-1 leading-tight">PT. SANTOS<br>JAYA ABADI</div>
+            </td>
+            <td style="text-align: center;">
+              <div class="text-[11px] font-bold text-slate-600 uppercase tracking-widest">FORM</div>
+              <div class="text-base font-bold text-black tracking-tight mt-0.5">LAPORAN TRACEABILITY</div>
+            </td>
+            <td style="width: 220px; font-size: 11px; line-height: 1.45;">
+              <div class="flex justify-between"><span>Dokumen No.</span><span class="font-bold">: F/QC/01.030</span></div>
+              <div class="flex justify-between"><span>Rev. No.</span><span class="font-bold">: 01</span></div>
+              <div class="flex justify-between"><span>Halaman</span><span class="font-bold">: 1/2</span></div>
+              <div class="flex justify-between"><span>Berlaku Tgl.</span><span class="font-bold">: 15/06/2026</span></div>
+            </td>
+          </tr>
+        </table>
+
+        <!-- 2. INFORMASI PELAKSANAAN & APPROVAL -->
+        <table class="doc-subtable mb-4">
+          <tr>
+            <th colspan="2" class="bg-cell-header text-left">Informasi Pelaksanaan Traceability</th>
+            <th colspan="2" class="bg-cell-header text-left">Approval</th>
+          </tr>
+          <tr>
+            <td style="width: 180px; color: #000000;">Area</td>
+            <td style="width: 35%; font-weight: bold;">SJA Sukodono</td>
+            <td style="width: 150px; color: #000000;">Auditor <span class="text-[10px]">(Nama &amp; TTD)</span></td>
+            <td style="font-weight: bold;">Pak Armando<br>Ibu Asih</td>
+          </tr>
+          <tr>
+            <td style="color: #000000;">Tanggal Pelaksanaan</td>
+            <td>13 Oktober 2026</td>
+            <td style="color: #000000;">Auditee <span class="text-[10px]">(Nama &amp; TTD)</span></td>
+            <td style="font-weight: bold;">Meisy, Dini, Udin, Yolanda</td>
+          </tr>
+          <tr>
+            <td style="color: #000000;">Waktu Pelaksanaan</td>
+            <td>Start ( 08:06 ) &nbsp; End ( 11:36 )</td>
+            <td style="color: #000000;">FSTL <span class="text-[10px]">(Nama &amp; TTD)</span></td>
+            <td style="font-weight: bold;">Suhendar Adikusuma</td>
+          </tr>
+          <tr>
+            <td style="color: #000000;">Total Waktu Pelaksanaan</td>
+            <td>3 jam 30 menit</td>
+            <td style="color: #000000;">Gambar Produk / Bahan</td>
+            <td class="text-slate-500 italic">Terlampir pada berkas sistem</td>
+          </tr>
+          <tr>
+            <td style="color: #000000;">Jenis Traceability</td>
+            <td><strong class="text-blue-900">Backward</strong></td>
+            <td colspan="2" rowspan="3" class="bg-slate-50 text-[10.5px] text-slate-700 italic p-2 align-middle border border-black">
+              Catatan: Data penarikan traceability divalidasi dan diambil langsung dari database sistem operasional SCADA PIC Produksi PT. Santos Jaya Abadi.
+            </td>
+          </tr>
+          <tr>
+            <td style="color: #000000;">PIC Pelaksana</td>
+            <td style="font-weight: bold;">Frengky Wahyudi</td>
+          </tr>
+          <tr>
+            <td style="color: #000000;">Scenario / Case Traceability</td>
+            <td>Simulasi traceability untuk audit eksternal FSSC</td>
+          </tr>
+        </table>
+
+        <!-- 3. IDENTITAS PRODUK (BACKWARD & FORWARD) -->
+        <table class="doc-subtable mb-4">
+          <tr>
+            <th colspan="2" class="bg-cell-header text-left">Identitas Produk (Backward)</th>
+            <th colspan="2" class="bg-cell-header text-left">Identitas Bahan / Proses (Forward)</th>
+          </tr>
+          <tr>
+            <td style="width: 180px; color: #000000;">Kategori Produk</td>
+            <td style="width: 35%; font-weight: bold;">Instant Coffee</td>
+            <td style="width: 180px; color: #000000;">Kategori Produk</td>
+            <td>-</td>
+          </tr>
+          <tr>
+            <td style="color: #000000;">Nama Produk</td>
+            <td style="font-weight: bold;">SIC 18 T</td>
+            <td style="color: #000000;">Nama Bahan / Proses</td>
+            <td>-</td>
+          </tr>
+          <tr>
+            <td style="color: #000000;">Nomer Batch</td>
+            <td><strong class="border border-green-700 bg-green-50 px-1.5 py-0.5 text-green-900 rounded">{{ traceResult?.input?.noBatchFull || traceForm.noBatch || 'A370/26' }}</strong></td>
+            <td style="color: #000000;">Nama Supplier Bahan</td>
+            <td>-</td>
+          </tr>
+          <tr>
+            <td style="color: #000000;">Tanggal Produksi</td>
+            <td>29 Agustus 2026</td>
+            <td style="color: #000000;">Tgl Kedatangan / Tgl Proses</td>
+            <td>-</td>
+          </tr>
+          <tr>
+            <td style="color: #000000;">Best Before</td>
+            <td>29 Agustus 2028</td>
+            <td style="color: #000000;">Lokasi Bahan/Proses</td>
+            <td>-</td>
+          </tr>
+          <tr>
+            <td style="color: #000000;">PIN</td>
+            <td>122</td>
+            <td colspan="2" rowspan="4" class="bg-slate-50 text-[10.5px] text-slate-700 p-2 align-top border border-black">
+              <strong>Note:</strong><br>
+              &bull; Semua data diisi sesuai keperluan dan disesuaikan dengan kondisi aktual di lapangan.<br>
+              &bull; Jika ada kolom yang tidak ada datanya di database, diberi tanda &quot;-&quot;.
+            </td>
+          </tr>
+          <tr>
+            <td style="color: #000000;">Nomer Box</td>
+            <td>p.041- 245</td>
+          </tr>
+          <tr>
+            <td style="color: #000000;">Tower 1/2</td>
+            <td><strong>Tower {{ traceResult?.input?.tower || traceForm.tower }}</strong></td>
+          </tr>
+          <tr>
+            <td style="color: #000000;">Mesin Packing</td>
+            <td>Shape (Tower {{ traceResult?.input?.tower || traceForm.tower }})</td>
+          </tr>
+        </table>
+
+        <!-- 4. TABEL FLOW PROCESS LENGKAP 12 TAHAPAN DENGAN GARIS PEMISAH PER ISI -->
+        <table class="flow-table">
+          <thead>
+            <tr>
+              <th style="width: 140px;">Flow Process</th>
+              <th style="width: 460px;">Penjelasan Proses</th>
+              <th style="width: 230px;">Nomor &amp; Judul Dokumen</th>
+              <th style="width: 80px;">PIC</th>
+              <th style="width: 80px;">Temuan</th>
+              <th style="width: 80px;">Saran Perbaikan</th>
+            </tr>
+          </thead>
+          <tbody>
+            <template v-for="sec in flowSections" :key="sec.name">
+              <template v-for="(block, bIdx) in sec.blocks" :key="bIdx">
+                <tr v-for="(item, iIdx) in block.items" :key="iIdx" class="flow-item-tr">
+                  <!-- Kolom Flow Process (Hanya dirender pada baris pertama di setiap section) -->
+                  <td
+                    v-if="bIdx === 0 && iIdx === 0"
+                    :rowspan="sec.totalRows"
+                    class="flow-name-cell"
+                  >
+                    {{ sec.name }}
+                  </td>
+
+                  <!-- Kolom Penjelasan Proses: Masing-masing isi memiliki baris & garis pemisah sendiri -->
+                  <td
+                    class="proc-cell"
+                    :class="item.isHeader ? 'proc-header-cell' : ''"
+                  >
+                    <div v-if="item.isHeader" class="proc-header-title">
+                      {{ item.label }}
+                    </div>
+                    <div v-else>
+                      <div class="proc-row-line">
+                        <span class="proc-label">{{ item.label }}</span>
+                        <span class="proc-colon">:</span>
+                        <div class="flex-1 flex flex-wrap items-center justify-between gap-2">
+                          <div class="flex items-center gap-2">
+                            <!-- Nilai biasa untuk selain parameter kritis -->
+                            <span
+                              v-if="!isParamKritis(item.key)"
+                              class="proc-value"
+                              :class="getItemValue(item.key) !== '-' ? 'proc-value-active' : ''"
+                            >
+                              {{ getItemValue(item.key) }}
+                            </span>
+                            <!-- Parameter Kritis: langsung tombol > buka tabel / v tutup tabel -->
+                            <template v-else>
+                              <button
+                                v-if="getProcessRows(item.key).length > 0"
+                                type="button"
+                                @click="toggleParamTable(getProcessKey(item.key))"
+                                class="no-print inline-flex items-center gap-1 text-[11px] font-bold text-emerald-800 hover:text-emerald-950 hover:underline cursor-pointer transition-colors"
+                                :title="showParamTable[getProcessKey(item.key)] ? 'Tutup tabel' : 'Buka tabel'"
+                              >
+                                <span class="font-mono font-bold">{{ showParamTable[getProcessKey(item.key)] ? 'v' : '>' }}</span>
+                                <span>{{ showParamTable[getProcessKey(item.key)] ? 'tutup tabel' : 'buka tabel' }}</span>
+                              </button>
+                              <span v-else class="text-slate-400 text-xs">-</span>
+                            </template>
+                          </div>
+
+                          <!-- Tombol Layar Penuh (muncul saat tabel dibuka) -->
+                          <button
+                            v-if="isParamKritis(item.key) && showParamTable[getProcessKey(item.key)]"
+                            type="button"
+                            @click="activeModalProcess = getProcessKey(item.key)"
+                            class="no-print inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold border border-emerald-800 bg-emerald-800 text-white rounded hover:bg-emerald-700 transition-colors cursor-pointer shadow-xs"
+                            title="Buka tabel di satu layar penuh"
+                          >
+                            <span>⛶ Layar Penuh</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      <!-- Sub-Tabel Tunggal Parameter Kritis SCADA (Bisa Digeser / Overflow-X Auto) -->
+                      <div
+                        v-if="isParamKritis(item.key) && showParamTable[getProcessKey(item.key)]"
+                        class="param-stacked-container no-print"
+                      >
+                        <div class="param-scroll-box">
+                          <table class="param-stacked-table mb-0">
+                            <thead>
+                              <tr>
+                                <th class="param-th-no">No</th>
+                                <th v-for="col in getProcessColumns(item.key)" :key="col" class="param-green-th">
+                                  {{ col }}
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr v-for="(row, rIdx) in getProcessRows(item.key)" :key="rIdx" class="param-tr">
+                                <td class="param-td-no">{{ rIdx + 1 }}</td>
+                                <td v-for="col in getProcessColumns(item.key)" :key="col" class="param-td">
+                                  {{ formatParamCell(row[col], col) }}
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+
+                  <!-- Kolom Nomor & Judul Dokumen (Dirender sesuai blok PIC terkait) -->
+                  <td
+                    v-if="iIdx === 0"
+                    :rowspan="block.items.length"
+                    class="doc-cell"
+                  >
+                    <div v-for="docLine in block.docs" :key="docLine" class="doc-badge-item">
+                      {{ docLine }}
+                    </div>
+                  </td>
+
+                  <!-- Kolom PIC (Dirender tersendiri berdampingan dengan baris prosesnya) -->
+                  <td
+                    v-if="iIdx === 0"
+                    :rowspan="block.items.length"
+                    class="pic-cell text-center"
+                  >
+                    <span v-if="block.pic" :class="'pic-tag pic-' + block.pic.toLowerCase().trim()">
+                      {{ block.pic }}
+                    </span>
+                    <span v-else class="text-slate-400">-</span>
+                  </td>
+
+                  <!-- Kolom Temuan -->
+                  <td
+                    v-if="iIdx === 0"
+                    :rowspan="block.items.length"
+                    class="temuan-cell text-center text-slate-400"
+                  >
+                    -
+                  </td>
+
+                  <!-- Kolom Saran Perbaikan -->
+                  <td
+                    v-if="iIdx === 0"
+                    :rowspan="block.items.length"
+                    class="saran-cell text-center text-slate-400"
+                  >
+                    -
+                  </td>
+                </tr>
+              </template>
+            </template>
+          </tbody>
+        </table>
+
+        <!-- 5. SIGNATURE FOOTER RESMI (4 PIHAK) -->
+        <table class="sig-table mt-4">
+          <tr>
+            <td>
+              <div class="text-[11px] text-black font-bold uppercase">Dibuat Oleh:</div>
+              <div class="h-14 border-b border-black my-2"></div>
+              <div class="text-xs font-bold text-black">Frengky Wahyudi</div>
+              <div class="text-[10px] text-slate-700">PIC Pelaksana Produksi</div>
+            </td>
+            <td>
+              <div class="text-[11px] text-black font-bold uppercase">Diperiksa Oleh:</div>
+              <div class="h-14 border-b border-black my-2"></div>
+              <div class="text-xs font-bold text-black">Meisy / Dini / Udin</div>
+              <div class="text-[10px] text-slate-700">Auditee / Supervisor Produksi</div>
+            </td>
+            <td>
+              <div class="text-[11px] text-black font-bold uppercase">Disetujui Oleh:</div>
+              <div class="h-14 border-b border-black my-2"></div>
+              <div class="text-xs font-bold text-black">Pak Armando / Ibu Asih</div>
+              <div class="text-[10px] text-slate-700">Auditor Quality Assurance</div>
+            </td>
+            <td>
+              <div class="text-[11px] text-black font-bold uppercase">Diketahui Oleh:</div>
+              <div class="h-14 border-b border-black my-2"></div>
+              <div class="text-xs font-bold text-black">Suhendar Adikusuma</div>
+              <div class="text-[10px] text-slate-700">FSTL / Plant Operations</div>
+            </td>
+          </tr>
+        </table>
+
+        <!-- Footer watermark -->
+        <div class="mt-3 text-center text-[10px] text-slate-600">
+          PT. Santos Jaya Abadi &bull; Form F/QC/01.030 Rev.01 &bull; Dokumen digital otomatis tersinkronisasi dari SCADA &bull; {{ today }}
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════
+         TAB 2: DATA SYNC (SPREADSHEET UPLOADER)
+    ══════════════════════════════════════════════════════════════ -->
+    <div v-if="activeTab==='sync'" class="space-y-4 no-print">
+
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-sm font-bold text-slate-900 uppercase tracking-tight">Data Sync — 7 Tabel SCADA Produksi</h1>
+          <p class="text-xs text-slate-600 mt-0.5">
+            Unggah spreadsheet SCADA untuk disinkronisasi ke dalam database MySQL <code class="bg-slate-200 px-1 py-0.5 rounded text-slate-900 font-bold">db_traceability_sja</code>.
+          </p>
+        </div>
+        <button
+          @click="refreshAllCounts"
+          class="text-xs border border-slate-400 hover:bg-slate-100 text-slate-800 px-3.5 py-1.5 rounded font-bold transition-colors"
+        >
+          Refresh Count Baris
+        </button>
+      </div>
+
+      <!-- Sync Cards Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div
+          v-for="tbl in tables"
+          :key="tbl.key"
+          class="bg-white border border-slate-400 rounded p-4 flex flex-col justify-between shadow-sm"
+        >
+          <div>
+            <div class="flex items-start justify-between gap-2">
+              <div>
+                <span class="text-[10px] uppercase text-slate-500 font-bold">{{ tbl.category }}</span>
+                <div class="text-xs font-bold text-slate-900 mt-0.5">{{ tbl.label }}</div>
+                <div class="text-[10px] text-slate-600">{{ tbl.key }}</div>
+              </div>
+              <span
+                :class="tbl.count > 0 ? 'bg-emerald-50 text-emerald-800 border-emerald-300' : 'bg-slate-100 text-slate-600 border-slate-300'"
+                class="text-[10px] font-bold border px-1.5 py-0.5 rounded"
+              >
+                {{ tbl.count > 0 ? 'Aktif' : 'Kosong' }}
+              </span>
+            </div>
+
+            <div class="bg-slate-50 border border-slate-300 rounded px-2.5 py-1.5 my-3 flex justify-between items-center">
+              <span class="text-xs text-slate-700">Total Baris Tersimpan</span>
+              <span class="text-xs font-bold text-slate-900">
+                {{ tbl.count !== null ? Number(tbl.count).toLocaleString() : '...' }}
+              </span>
+            </div>
+
+            <div class="text-[11px] text-slate-600 mb-3">
+              Sheet acuan: <span class="font-bold text-slate-900">{{ tbl.sheet }}</span>
+            </div>
+
+            <!-- Upload dropzone -->
+            <div
+              class="border-2 border-dashed border-slate-400 hover:border-slate-700 rounded p-3 text-center cursor-pointer transition-colors bg-slate-50/50"
+              :class="{ 'border-blue-500 bg-blue-50/30': tbl.dragover }"
+              @click="triggerUpload(tbl.key)"
+              @dragover.prevent="tbl.dragover = true"
+              @dragleave="tbl.dragover = false"
+              @drop.prevent="onDrop($event, tbl.key)"
+            >
+              <input
+                :id="'f-' + tbl.key"
+                type="file"
+                accept=".xlsx,.xls"
+                class="hidden"
+                @change="handleFileSelect($event, tbl.key)"
+              />
+              <div v-if="!tbl.uploading">
+                <svg class="w-5 h-5 mx-auto mb-1 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                </svg>
+                <div class="text-[11px] text-slate-700"><span class="font-bold text-slate-900">Pilih file</span> atau drop .xlsx</div>
+                <div v-if="tbl.fileName" class="text-[10px] text-blue-800 mt-1 truncate font-bold">
+                  {{ tbl.fileName }}
+                </div>
+              </div>
+              <div v-else class="py-2">
+                <svg class="spin h-5 w-5 text-slate-800 mx-auto mb-1" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                </svg>
+                <div class="text-[11px] text-slate-700 font-bold">Mengimpor seluruh baris data...</div>
+              </div>
+            </div>
+
+            <!-- Upload result message -->
+            <div
+              v-if="tbl.message"
+              class="text-[11px] p-2 rounded mt-2 border"
+              :class="tbl.status === 'ok' ? 'bg-green-50 text-green-900 border-green-300' : 'bg-red-50 text-red-900 border-red-300'"
+            >
+              {{ tbl.message }}
+            </div>
+          </div>
+
+          <!-- Action buttons -->
+          <div class="flex gap-2 mt-3 pt-3 border-t border-slate-300">
+            <button
+              v-if="tbl.fileName && !tbl.uploading"
+              @click="uploadFile(tbl.key)"
+              class="flex-1 text-xs bg-slate-900 hover:bg-slate-800 text-white py-1.5 rounded font-bold transition-colors"
+            >
+              Impor
+            </button>
+            <button
+              @click="clearTable(tbl.key)"
+              class="text-xs border border-slate-400 hover:bg-slate-100 text-slate-700 px-3 py-1.5 rounded font-medium transition-colors"
+              title="Kosongkan tabel"
+            >
+              Clear
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Import documentation box -->
+      <div class="bg-white border border-slate-400 rounded p-4 text-xs space-y-2 text-slate-700">
+        <div class="font-bold text-slate-900 uppercase tracking-wider text-[11px]">Informasi Penanganan Data SCADA</div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div class="p-2.5 bg-slate-50 border border-slate-300 rounded">
+            <strong class="text-slate-900 block mb-1">Tanpa Batas 1000 Baris</strong>
+            Sistem menggunakan multi-row INSERT per 500 baris. File dengan puluhan ribu data (misal 50.500 baris) diimpor 100% utuh ke MySQL.
+          </div>
+          <div class="p-2.5 bg-slate-50 border border-slate-300 rounded">
+            <strong class="text-slate-900 block mb-1">Mapping Indeks Kolom</strong>
+            Kolom dipetakan murni berdasarkan urutan fisik kolom pada worksheet (indeks 0 hingga N) tanpa tergantung pada nama header.
+          </div>
+          <div class="p-2.5 bg-slate-50 border border-slate-300 rounded">
+            <strong class="text-slate-900 block mb-1">Normalisasi Tanggal &amp; Waktu</strong>
+            Waktu SCADA (termasuk artefak tanggal 1899) dinormalisasi secara otomatis menjadi format jam operasional resmi WIB (HH:mm).
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Fullscreen Modal for SCADA Parameter Kritis -->
+    <div
+      v-if="activeModalProcess"
+      class="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 backdrop-blur-xs no-print"
+      @click.self="activeModalProcess = null"
+    >
+      <div class="bg-white rounded border-2 border-slate-900 shadow-2xl max-w-[96vw] w-full max-h-[92vh] flex flex-col overflow-hidden">
+        <div class="bg-slate-900 text-white px-4 py-2.5 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="w-3 h-3 bg-emerald-400 rounded-full inline-block"></span>
+            <span class="font-bold text-xs uppercase tracking-wide">Tabel Parameter Kritis &bull; {{ getProcessTitleByKey(activeModalProcess) }}</span>
+          </div>
+          <button
+            @click="activeModalProcess = null"
+            class="text-white hover:text-red-300 font-bold text-xs px-2 py-0.5 border border-slate-700 rounded transition-colors"
+          >
+            ✕ Tutup
+          </button>
+        </div>
+        <div class="p-4 overflow-y-auto flex-1 bg-slate-100">
+          <div class="border border-black bg-white shadow-sm overflow-x-auto">
+            <table class="param-stacked-table mb-0 w-full">
+              <thead>
+                <tr>
+                  <th class="param-th-no">No</th>
+                  <th v-for="col in getProcessColumnsByKey(activeModalProcess)" :key="col" class="param-green-th">
+                    {{ col }}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(row, rIdx) in getProcessRowsByKey(activeModalProcess)" :key="rIdx" class="param-tr">
+                  <td class="param-td-no">{{ rIdx + 1 }}</td>
+                  <td v-for="col in getProcessColumnsByKey(activeModalProcess)" :key="col" class="param-td">
+                    {{ formatParamCell(row[col], col) }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+const { createApp, ref, reactive, computed, onMounted } = Vue;
+
+createApp({
+  setup() {
+    const activeTab = ref('trace');
+    const tracing = ref(false);
+    const traceError = ref('');
+    const traceResult = ref(null);
+    const dbConnected = ref(true);
+
+    const flowSections = ref(window.FLOW_SECTIONS || []);
+
+    const today = computed(() => {
+      const d = new Date();
+      return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+    });
+
+    const traceForm = reactive({
+      noBatch: 'A370/26',
+      tower: '1',
+    });
+
+    function getItemValue(key) {
+      if (!key) return '-';
+      const d = traceResult.value;
+      if (!d) return '-';
+
+      // ── 1. DRYER (PIC Produksi) ──
+      if (key === 'dryer_waktu_proses') return d.dryer?.waktu_proses || '-';
+      if (key === 'dryer_operator') return d.dryer?.operator_produksi || '-';
+      if (key === 'dryer_final_tank') return d.dryer?.final_tank ? 'FT C0' + d.dryer.final_tank : '-';
+      if (key === 'dryer_mode') return d.dryer?.mode || '-';
+      if (key === 'dryer_parameter_kritis') return '';
+      if (key === 'dryer_abnormalitas') return d.dryer && !d.dryer.error ? 'tidak ada' : '-';
+
+      // ── 2. EVAPORATION (PIC Produksi) ──
+      if (key === 'evap_waktu_proses') return d.evaporation?.waktu_proses || '-';
+      if (key === 'evap_operator') return d.evaporation?.operator_produksi || '-';
+      if (key === 'evap_destination_tank') return d.evaporation?.no_final_tank ? 'FT C0' + d.evaporation.no_final_tank : '-';
+      if (key === 'evap_parameter_kritis') return '';
+      if (key === 'evap_abnormalitas') return d.evaporation && !d.evaporation.error ? 'tidak ada' : '-';
+
+      // ── 3. EXTRACTION (PIC Produksi) ──
+      if (key === 'ext_waktu_proses') return d.extraction?.waktu_proses || '-';
+      if (key === 'ext_mode') return d.extraction?.mode_ekstraksi || '-';
+      if (key === 'ext_percolator') return d.extraction?.jumlah_percolator ? d.extraction.jumlah_percolator + ' siklus' : '-';
+      if (key === 'ext_operator') return d.extraction?.operator_produksi || '-';
+      if (key === 'ext_silo') return d.extraction?.silo_degassing || '-';
+      if (key === 'ext_parameter_kritis') return '';
+      if (key === 'ext_abnormalitas') return d.extraction && !d.extraction.error ? 'tidak ada' : '-';
+
+      // ── 4. ROASTING (PIC Produksi) ──
+      if (key === 'roast_waktu_proses') return d.roasting?.waktu_proses || '-';
+      if (key === 'roast_mesin') return d.roasting?.mesin_goreng || '-';
+      if (key === 'roast_mode') return d.roasting?.jenis_kopi_goreng || '-';
+      if (key === 'roast_silo') return d.roasting?.silo_degassing || '-';
+      if (key === 'roast_jumlah_batch') return d.roasting?.jumlah_batch ? d.roasting.jumlah_batch + ' batch' : '-';
+      if (key === 'roast_operator') return d.roasting?.operator_produksi || '-';
+      if (key === 'roast_parameter_kritis') return '';
+      if (key === 'roast_abnormalitas') return d.roasting && !d.roasting.error ? 'tidak ada' : '-';
+      if (key === 'roast_jenis_biji') return d.roasting?.jenis_biji_mentah || '-';
+      if (key === 'roast_silocell') return d.roasting?.silo_cell_terpakai || '-';
+      if (key === 'roast_kopi_mentah') return d.roasting?.total_kopi_mentah_kg ? d.roasting.total_kopi_mentah_kg + ' kg' : '-';
+      if (key === 'roast_kopi_matang') return d.roasting?.total_kopi_matang_kg ? d.roasting.total_kopi_matang_kg + ' kg' : '-';
+      if (key === 'roast_yield') return d.roasting?.yield_roasting || '-';
+
+      // ── 5. UPBM (PIC Produksi) ──
+      if (key === 'upbm_waktu_inload') return d.upbm?.waktu_inload || '-';
+      if (key === 'upbm_bstb') return d.upbm?.nomor_bstb || '-';
+      if (key === 'upbm_jenis_biji') return d.upbm?.jenis_biji_kopi_mentah || '-';
+      if (key === 'upbm_silo_cell') return d.upbm?.silo_cell || '-';
+      if (key === 'upbm_disposisi') return d.upbm?.disposisi || '-';
+      if (key === 'upbm_total_biji') return d.upbm?.total_kopi_mentah_dipakai || '-';
+      if (key === 'upbm_operator') return d.upbm?.operator_produksi || '-';
+      if (key === 'upbm_abnormalitas') return d.upbm?.catatan_abnormalitas || '-';
+
+      // ── 6. MASS BALANCE PRODUKSI (PIC Produksi) ──
+      if (key === 'mb_output') return d.mass_balance?.total_output_produk || '-';
+      if (key === 'mb_kopi_goreng') return d.mass_balance?.total_kopi_goreng_transfer || '-';
+      if (key === 'mb_kopi_mentah') return d.mass_balance?.total_kopi_mentah || '-';
+      if (key === 'mb_rasio_ic') return d.mass_balance?.rasio_ic || '-';
+
+      return '-';
+    }
+
+    const tables = reactive([
+      { key: 'dryer_tower_1', label: 'Dryer Tower 1', category: 'Dryer', sheet: 'Checklist Scada Dryer - T1', count: null, status: 'idle', message: '', fileName: '', file: null, uploading: false, dragover: false },
+      { key: 'dryer_tower_2', label: 'Dryer Tower 2', category: 'Dryer', sheet: 'Checklist Scada Dryer - T2', count: null, status: 'idle', message: '', fileName: '', file: null, uploading: false, dragover: false },
+      { key: 'extraction_tower_1', label: 'Extraction Tower 1', category: 'Extraction', sheet: 'Checklist Hasil Ekstraksi', count: null, status: 'idle', message: '', fileName: '', file: null, uploading: false, dragover: false },
+      { key: 'extraction_tower_2', label: 'Extraction Tower 2', category: 'Extraction', sheet: 'Checklist Hasil Ekstraksi', count: null, status: 'idle', message: '', fileName: '', file: null, uploading: false, dragover: false },
+      { key: 'evaporation_tower_1', label: 'Evaporation Tower 1', category: 'Evaporation', sheet: 'Checklist Hasil Evaporasi', count: null, status: 'idle', message: '', fileName: '', file: null, uploading: false, dragover: false },
+      { key: 'evaporation_tower_2', label: 'Evaporation Tower 2', category: 'Evaporation', sheet: 'Checklist Hasil Evaporasi', count: null, status: 'idle', message: '', fileName: '', file: null, uploading: false, dragover: false },
+      { key: 'roasting_probat', label: 'Roasting Probat', category: 'Roasting', sheet: 'Checklist Hasil Produksi Roasti', count: null, status: 'idle', message: '', fileName: '', file: null, uploading: false, dragover: false },
+    ]);
+
+    const getTable = (key) => tables.find((t) => t.key === key);
+
+    async function fetchCount(key) {
+      try {
+        const r = await fetch(`/api/import/${key}/count`);
+        const d = await r.json();
+        const t = getTable(key);
+        if (t) t.count = d.count;
+      } catch {}
+    }
+
+    async function refreshAllCounts() {
+      for (const t of tables) await fetchCount(t.key);
+    }
+
+    function triggerUpload(key) {
+      document.getElementById('f-' + key)?.click();
+    }
+
+    function onDrop(e, key) {
+      const t = getTable(key);
+      if (!t) return;
+      t.dragover = false;
+      const f = e.dataTransfer.files[0];
+      if (f && (f.name.endsWith('.xlsx') || f.name.endsWith('.xls'))) {
+        t.file = f;
+        t.fileName = f.name;
+      }
+    }
+
+    function handleFileSelect(e, key) {
+      const t = getTable(key);
+      if (!t) return;
+      const f = e.target.files[0];
+      if (f) {
+        t.file = f;
+        t.fileName = f.name;
+      }
+    }
+
+    async function uploadFile(key) {
+      const t = getTable(key);
+      if (!t || !t.file) return;
+      t.uploading = true;
+      t.message = '';
+      t.status = 'idle';
+      try {
+        const fd = new FormData();
+        fd.append('file', t.file);
+        const res = await fetch(`/api/import/${key}`, { method: 'POST', body: fd });
+        const data = await res.json();
+        if (res.ok) {
+          t.status = 'ok';
+          t.message = data.message;
+          t.count = data.imported;
+          t.file = null;
+          t.fileName = '';
+          const inp = document.getElementById('f-' + key);
+          if (inp) inp.value = '';
+        } else {
+          t.status = 'error';
+          t.message = `Gagal: ${data.error}`;
+        }
+      } catch (err) {
+        t.status = 'error';
+        t.message = `Network error: ${err.message}`;
+      } finally {
+        t.uploading = false;
+      }
+    }
+
+    async function clearTable(key) {
+      if (!confirm(`Hapus semua baris data di tabel "${key}"?`)) return;
+      try {
+        const res = await fetch(`/api/import/${key}`, { method: 'DELETE' });
+        const data = await res.json();
+        const t = getTable(key);
+        if (t) {
+          t.count = 0;
+          t.status = 'idle';
+          t.message = data.message;
+        }
+      } catch (err) {
+        alert('Gagal mengosongkan tabel: ' + err.message);
+      }
+    }
+
+    async function doTrace() {
+      if (!traceForm.noBatch) return;
+      tracing.value = true;
+      traceError.value = '';
+      try {
+        const p = new URLSearchParams({
+          noBatchFull: traceForm.noBatch,
+          tower: traceForm.tower,
+        });
+        const res = await fetch(`/api/trace?${p.toString()}`);
+        const data = await res.json();
+        if (!res.ok) {
+          traceError.value = data.error || 'Terjadi kesalahan pada server.';
+        } else {
+          traceResult.value = data;
+        }
+      } catch (err) {
+        traceError.value = `Gagal terhubung ke API trace: ${err.message}`;
+      } finally {
+        tracing.value = false;
+      }
+    }
+
+    function loadPresetAudit() {
+      traceForm.noBatch = 'A370/26';
+      traceForm.tower = '1';
+      doTrace();
+    }
+
+    function printForm() {
+      window.print();
+    }
+
+    onMounted(async () => {
+      try {
+        const r = await fetch('/api/health');
+        dbConnected.value = r.ok;
+      } catch {
+        dbConnected.value = false;
+      }
+      refreshAllCounts();
+      // Auto-load default trace A370/26
+      doTrace();
+    });
+
+    // ── Parameter Kritis SCADA Collapsible Sub-Tables ──
+    const showParamTable = reactive({
+      dryer: false,
+      evaporation: false,
+      extraction: false,
+      roasting: false,
+    });
+
+    function toggleParamTable(proc) {
+      if (proc && showParamTable[proc] !== undefined) {
+        showParamTable[proc] = !showParamTable[proc];
+      }
+    }
+
+    function isParamKritis(key) {
+      return [
+        'dryer_parameter_kritis',
+        'evap_parameter_kritis',
+        'ext_parameter_kritis',
+        'roast_parameter_kritis',
+      ].includes(key);
+    }
+
+    function getProcessKey(key) {
+      if (key === 'dryer_parameter_kritis') return 'dryer';
+      if (key === 'evap_parameter_kritis') return 'evaporation';
+      if (key === 'ext_parameter_kritis') return 'extraction';
+      if (key === 'roast_parameter_kritis') return 'roasting';
+      return '';
+    }
+
+    function getProcessTitle(key) {
+      const tw = traceResult.value?.input?.tower || traceForm.tower || '1';
+      if (key === 'dryer_parameter_kritis') return 'Dryer Tower ' + tw;
+      if (key === 'evap_parameter_kritis') return 'Evaporation Tower ' + tw;
+      if (key === 'ext_parameter_kritis') return 'Extraction Tower ' + tw;
+      if (key === 'roast_parameter_kritis') return 'Roasting Probat';
+      return '';
+    }
+
+    function getProcessColumns(key) {
+      const p = getProcessKey(key);
+      return traceResult.value?.[p]?.columns || [];
+    }
+
+    function getProcessRows(key) {
+      const p = getProcessKey(key);
+      return traceResult.value?.[p]?.raw_rows || [];
+    }
+
+    const activeModalProcess = ref(null);
+
+    function formatParamCell(val, colName = '') {
+      if (val === null || val === undefined || val === '') return '-';
+      const sVal = String(val).trim();
+      const lowerCol = String(colName || '').toLowerCase();
+
+      // Tanggal column: format to DD/MM/YYYY with +30s drift compensation
+      if (lowerCol.includes('tanggal')) {
+        const d = new Date(new Date(sVal).getTime() + 30000);
+        if (!isNaN(d.getTime())) {
+          const pad = (n) => String(n).padStart(2, '0');
+          return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`;
+        }
+      }
+
+      // Waktu column or time values with 1899-12-30
+      if (lowerCol.includes('waktu') || sVal.includes('1899-12-30')) {
+        const timeMatch = sVal.match(/(\d{1,2}):(\d{2})/);
+        if (timeMatch) {
+          return `${timeMatch[1].padStart(2, '0')}:${timeMatch[2]}`;
+        }
+      }
+
+      // Stamp column
+      if (lowerCol === 'stamp' || lowerCol === 'stamp:' || lowerCol === 'stamp:+1') {
+        const d = new Date(new Date(sVal).getTime() + 30000);
+        if (!isNaN(d.getTime())) {
+          const pad = (n) => String(n).padStart(2, '0');
+          return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+        }
+      }
+
+      // Susut Goreng: format as percentage (e.g. -0.1240788688 -> -12.41%)
+      if (lowerCol.includes('susut')) {
+        const num = parseFloat(sVal.replace(',', '.'));
+        if (!isNaN(num)) {
+          return (num * 100).toFixed(2) + '%';
+        }
+      }
+
+      // Long float numbers: limit to 2 decimal places if has > 2 decimals
+      const num = parseFloat(sVal.replace(',', '.'));
+      if (!isNaN(num) && sVal.includes('.') && sVal.split('.')[1].length > 2 && !sVal.includes('/')) {
+        return num.toFixed(2);
+      }
+
+      return sVal;
+    }
+
+    function getProcessTitleByKey(procKey) {
+      const tw = traceResult.value?.input?.tower || traceForm.tower || '1';
+      if (procKey === 'dryer') return 'Dryer Tower ' + tw;
+      if (procKey === 'evaporation') return 'Evaporation Tower ' + tw;
+      if (procKey === 'extraction') return 'Extraction Tower ' + tw;
+      if (procKey === 'roasting') return 'Roasting Probat';
+      return '';
+    }
+
+    function getProcessColumnsByKey(procKey) {
+      return traceResult.value?.[procKey]?.columns || [];
+    }
+
+    function getProcessRowsByKey(procKey) {
+      return traceResult.value?.[procKey]?.raw_rows || [];
+    }
+
+    function getProcessColumnChunksByKey(procKey) {
+      const allCols = getProcessColumnsByKey(procKey);
+      if (!allCols || allCols.length === 0) return [];
+
+      if (procKey === 'dryer') {
+        const splitIdx = allCols.findIndex((c) => c && c.includes('Pressure Supply Steam'));
+        if (splitIdx !== -1) {
+          return [
+            allCols.slice(0, splitIdx + 1),
+            allCols.slice(splitIdx + 1),
+          ];
+        }
+      }
+
+      if (allCols.length > 12) {
+        const half = Math.ceil(allCols.length / 2);
+        return [
+          allCols.slice(0, half),
+          allCols.slice(half),
+        ];
+      }
+
+      return [allCols];
+    }
+
+    function getProcessColumnChunks(key) {
+      const p = getProcessKey(key);
+      return getProcessColumnChunksByKey(p);
+    }
+
+    return {
+      activeTab,
+      tracing,
+      traceError,
+      traceResult,
+      dbConnected,
+      today,
+      traceForm,
+      flowSections,
+      tables,
+      getItemValue,
+      triggerUpload,
+      onDrop,
+      handleFileSelect,
+      uploadFile,
+      clearTable,
+      doTrace,
+      loadPresetAudit,
+      printForm,
+      refreshAllCounts,
+      showParamTable,
+      toggleParamTable,
+      isParamKritis,
+      getProcessKey,
+      getProcessTitle,
+      getProcessColumns,
+      getProcessRows,
+      getProcessColumnChunks,
+      getProcessTitleByKey,
+      getProcessColumnsByKey,
+      getProcessRowsByKey,
+      getProcessColumnChunksByKey,
+      activeModalProcess,
+      formatParamCell,
+    };
+  },
+}).mount('#app');
+</script>
+</body>
+</html>
