@@ -319,10 +319,44 @@
       white-space: nowrap !important;
     }
 
+    /* ── SIDEBAR NAVIGATION STYLES ── */
+    .app-sidebar {
+      background: #090d16;
+      border-right: 1px solid #1e293b;
+      transition: width 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .sidebar-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 9px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      color: #94a3b8;
+      border-left: 3px solid transparent;
+      text-align: left;
+      width: 100%;
+    }
+    .sidebar-item:hover {
+      background: #1e293b;
+      color: #ffffff;
+    }
+    .sidebar-item.active {
+      background: #14532d;
+      color: #ffffff;
+      border-left-color: #34d399;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    }
+
     /* Print styles */
     @media print {
-      .no-print { display: none !important; }
+      .no-print, .app-sidebar, header { display: none !important; }
       body { background: #ffffff !important; padding: 0 !important; }
+      #app { display: block !important; }
+      .main-content-wrap { margin: 0 !important; padding: 0 !important; width: 100% !important; }
       #form-document {
         box-shadow: none !important;
         border: 1px solid #000000 !important;
@@ -339,45 +373,148 @@
     @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
-<body class="min-h-screen flex flex-col">
-<div id="app" class="flex-1 flex flex-col">
+<body class="min-h-screen bg-slate-100 font-sans antialiased text-slate-900">
+<div id="app" class="min-h-screen flex flex-row">
 
-  <!-- ── APP HEADER (NAVBAR) ───────────────────────────────────── -->
-  <header class="app-header no-print text-white">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6">
-      <div class="flex items-center justify-between h-14">
-        <div class="flex items-center gap-3">
-          <div class="w-8 h-8 bg-white rounded flex items-center justify-center font-bold text-slate-900 text-sm border border-slate-300">
-            SJA
-          </div>
-          <div>
-            <div class="text-sm font-bold tracking-tight text-white leading-tight">PT. Santos Jaya Abadi</div>
-            <div class="text-xs text-slate-300">Automated Digital Traceability &bull; Form F/QC/01.030</div>
-          </div>
+  <!-- ── SIDEBAR NAVIGATION ── -->
+  <aside
+    :class="sidebarOpen ? 'w-64' : 'w-16'"
+    class="app-sidebar no-print text-white flex-shrink-0 flex flex-col sticky top-0 h-screen select-none z-30 transition-all duration-200"
+  >
+    <!-- Brand -->
+    <div class="h-14 flex items-center px-3.5 border-b border-slate-800 justify-between bg-slate-950/70">
+      <div class="flex items-center gap-2.5 overflow-hidden">
+        <div class="w-7 h-7 rounded bg-emerald-700 border border-emerald-400/50 flex items-center justify-center font-black text-white text-xs flex-shrink-0 shadow-xs">
+          SJA
         </div>
-
-        <div class="flex items-center gap-4 text-xs">
-          <div class="flex items-center gap-2">
-            <span :class="dbConnected ? 'bg-emerald-400' : 'bg-red-400'" class="w-2.5 h-2.5 rounded-full inline-block"></span>
-            <span class="text-slate-200">MySQL: db_traceability_sja</span>
-          </div>
-          <span class="text-slate-400 border border-slate-700 px-2 py-0.5 rounded hidden sm:inline">Rev. 01 (15/06/2026)</span>
+        <div v-show="sidebarOpen" class="whitespace-nowrap overflow-hidden">
+          <div class="font-bold text-xs text-white leading-tight">PT. Santos Jaya Abadi</div>
+          <div class="text-[9.5px] text-emerald-400 font-mono">Traceability System</div>
         </div>
       </div>
+      <button
+        @click="sidebarOpen = !sidebarOpen"
+        class="text-slate-400 hover:text-white p-1 rounded hover:bg-slate-800 transition-colors text-xs font-mono cursor-pointer"
+        :title="sidebarOpen ? 'Kecilkan Sidebar' : 'Perluas Sidebar'"
+      >
+        {{ sidebarOpen ? '◀' : '▶' }}
+      </button>
+    </div>
 
-      <div class="flex border-t border-slate-800">
-        <button @click="activeTab='trace'" :class="activeTab==='trace'?'active':''" class="tab-btn">
-          Laporan Traceability (Form F/QC/01.030)
-        </button>
-        <button @click="activeTab='sync'" :class="activeTab==='sync'?'active':''" class="tab-btn">
-          Data Sync (Upload Spreadsheet SCADA)
-        </button>
+    <!-- Navigation Menu Items -->
+    <nav class="flex-1 py-4 px-2 space-y-1.5 overflow-y-auto">
+      <div v-show="sidebarOpen" class="px-2.5 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+        Navigasi Sistem
+      </div>
+
+      <!-- Item 1: Laporan Traceability -->
+      <button
+        type="button"
+        @click="activeTab = 'trace'"
+        :class="activeTab === 'trace' ? 'active' : ''"
+        class="sidebar-item"
+        title="Laporan Traceability (Form F/QC/01.030)"
+      >
+        <span class="text-base flex-shrink-0">📑</span>
+        <div v-show="sidebarOpen" class="flex-1 min-w-0">
+          <div class="truncate">Laporan Traceability</div>
+          <div class="text-[10px] text-slate-400 font-normal truncate">Form F/QC/01.030 Resmi</div>
+        </div>
+      </button>
+
+      <!-- Item 2: Penampil Data PIC -->
+      <button
+        type="button"
+        @click="activeTab = 'pic'; if (!picTableRows.length) loadPicTable(picSelectedTable, 1);"
+        :class="activeTab === 'pic' ? 'active' : ''"
+        class="sidebar-item"
+        title="Penampil Data PIC (Explorer Database)"
+      >
+        <span class="text-base flex-shrink-0">👥</span>
+        <div v-show="sidebarOpen" class="flex-1 min-w-0">
+          <div class="truncate">Penampil Data PIC</div>
+          <div class="text-[10px] text-slate-400 font-normal truncate">Preview Database PIC &amp; Tower</div>
+        </div>
+      </button>
+
+      <!-- Item 3: Convert Data -->
+      <button
+        type="button"
+        @click="activeTab = 'convert'"
+        :class="activeTab === 'convert' ? 'active' : ''"
+        class="sidebar-item"
+        title="Convert Data (Spreadsheet SCADA to Database)"
+      >
+        <span class="text-base flex-shrink-0">🔄</span>
+        <div v-show="sidebarOpen" class="flex-1 min-w-0">
+          <div class="truncate">Convert Data</div>
+          <div class="text-[10px] text-slate-400 font-normal truncate">Import &amp; Auto-Detect SCADA</div>
+        </div>
+      </button>
+    </nav>
+
+    <!-- Sidebar Bottom Status -->
+    <div class="p-3 border-t border-slate-800 bg-slate-950/50 text-[11px]">
+      <div v-show="sidebarOpen" class="space-y-1">
+        <div class="flex items-center justify-between text-slate-400 text-[10.5px]">
+          <span>Database MySQL:</span>
+          <span class="flex items-center gap-1 font-bold" :class="dbConnected ? 'text-emerald-400' : 'text-red-400'">
+            <span class="w-2 h-2 rounded-full inline-block" :class="dbConnected ? 'bg-emerald-400' : 'bg-red-400'"></span>
+            {{ dbConnected ? 'Aktif' : 'Offline' }}
+          </span>
+        </div>
+        <div class="text-[9.5px] text-slate-500 font-mono truncate">
+          db_traceability_sja
+        </div>
+      </div>
+      <div v-show="!sidebarOpen" class="flex justify-center" title="Status Database">
+        <span class="w-2.5 h-2.5 rounded-full inline-block" :class="dbConnected ? 'bg-emerald-400' : 'bg-red-400'"></span>
       </div>
     </div>
-  </header>
+  </aside>
 
-  <!-- ── MAIN CONTENT ─────────────────────────────────────────── -->
-  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6">
+  <!-- ── MAIN CONTENT WRAPPER ── -->
+  <div class="main-content-wrap flex-1 flex flex-col min-w-0 min-h-screen">
+
+    <!-- Topbar Header -->
+    <header class="h-14 bg-white border-b border-slate-300 no-print flex items-center justify-between px-4 sm:px-6 z-20 shadow-xs flex-shrink-0">
+      <div class="flex items-center gap-3">
+        <button
+          @click="sidebarOpen = !sidebarOpen"
+          class="text-slate-600 hover:text-slate-900 p-1.5 rounded hover:bg-slate-100 transition-colors cursor-pointer"
+          title="Toggle Sidebar"
+        >
+          <span class="text-sm">☰</span>
+        </button>
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-bold uppercase tracking-wider text-slate-750">
+            {{ activeTab === 'trace' ? 'Laporan Traceability' : activeTab === 'pic' ? 'Penampil Data PIC' : 'Convert Data SCADA' }}
+          </span>
+          <span class="text-slate-300">&bull;</span>
+          <span class="text-xs text-slate-500 hidden sm:inline">
+            {{ activeTab === 'trace' ? 'Form F/QC/01.030 (Traceability System)' : activeTab === 'pic' ? 'Explorer & Pratinjau Record Database' : 'Auto-Detection & Konversi Excel ke MySQL' }}
+          </span>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3 text-xs">
+        <button
+          v-if="activeTab === 'trace'"
+          @click="printForm"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded shadow-xs transition-colors cursor-pointer text-xs"
+        >
+          <span>🖨️</span>
+          <span>Cetak Form</span>
+        </button>
+        <div class="flex items-center gap-1.5 px-2.5 py-1 bg-slate-50 border border-slate-300 rounded text-slate-700 text-[11px] font-mono">
+          <span :class="dbConnected ? 'bg-emerald-500' : 'bg-red-500'" class="w-2 h-2 rounded-full inline-block"></span>
+          <span>MySQL: db_traceability_sja</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Content Body -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 overflow-y-auto">
 
     <!-- ══════════════════════════════════════════════════════════════
          TAB 1: LAPORAN TRACEABILITY RESMI F/QC/01.030
@@ -649,11 +786,12 @@
                                 v-if="getProcessRows(item.key).length > 0"
                                 type="button"
                                 @click="toggleParamTable(getProcessKey(item.key))"
-                                class="no-print inline-flex items-center gap-1 text-[11px] font-bold text-emerald-800 hover:text-emerald-950 hover:underline cursor-pointer transition-colors"
+                                class="no-print inline-flex items-center gap-1.5 text-[11px] font-bold text-emerald-800 hover:text-emerald-950 hover:underline cursor-pointer transition-colors"
                                 :title="showParamTable[getProcessKey(item.key)] ? 'Tutup tabel' : 'Buka tabel'"
                               >
                                 <span class="font-mono font-bold">{{ showParamTable[getProcessKey(item.key)] ? 'v' : '>' }}</span>
                                 <span>{{ showParamTable[getProcessKey(item.key)] ? 'tutup tabel' : 'buka tabel' }}</span>
+                                <span class="text-[10px] font-normal text-slate-500">({{ getProcessColumns(item.key).length }} kolom &bull; {{ getProcessRows(item.key).length }} baris)</span>
                               </button>
                               <span v-else class="text-slate-400 text-xs">-</span>
                             </template>
@@ -682,8 +820,8 @@
                             <thead>
                               <tr>
                                 <th class="param-th-no">No</th>
-                                <th v-for="col in getProcessColumns(item.key)" :key="col" class="param-green-th">
-                                  {{ col }}
+                                <th v-for="col in getProcessColumns(item.key)" :key="col" class="param-green-th" :title="col">
+                                  {{ formatColHeader(col) }}
                                 </th>
                               </tr>
                             </thead>
@@ -787,7 +925,7 @@
     <!-- ══════════════════════════════════════════════════════════════
          TAB 2: DATA CONVERT (UNIFIED AUTO-CONVERTER)
     ══════════════════════════════════════════════════════════════ -->
-    <div v-if="activeTab==='sync'" class="space-y-4 no-print">
+    <div v-if="activeTab==='convert'" class="space-y-4 no-print">
 
       <!-- Header -->
       <div class="flex items-center justify-between">
@@ -1039,6 +1177,253 @@
 
     </div>
 
+    <!-- ══════════════════════════════════════════════════════════════
+         TAB 3: PENAMPIL DATA PIC (DATABASE EXPLORER)
+    ══════════════════════════════════════════════════════════════ -->
+    <div v-if="activeTab === 'pic'" class="space-y-5 no-print">
+
+      <!-- Header Banner Penampil Data PIC -->
+      <div class="bg-white border border-slate-300 rounded p-4 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="w-3 h-3 bg-emerald-700 rounded-full inline-block"></span>
+            <h2 class="text-sm font-bold text-slate-900 uppercase tracking-tight">Penampil Data PIC &amp; Pratinjau Database</h2>
+          </div>
+          <p class="text-xs text-slate-600 mt-1">
+            Pilih divisi PIC dan filter Tower untuk melihat seluruh tabel database, mengecek jumlah baris, dan menjelajahi baris rekaman secara interaktif.
+          </p>
+        </div>
+
+        <button
+          @click="refreshAllCounts(); loadPicTable(picSelectedTable, 1);"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded text-slate-800 text-xs font-bold transition-colors cursor-pointer"
+        >
+          <span>🔄</span>
+          <span>Refresh Data</span>
+        </button>
+      </div>
+
+      <!-- Filter PIC & Tower Selector -->
+      <div class="bg-white border border-slate-300 rounded p-4 shadow-xs space-y-3">
+        <!-- 1. Filter PIC -->
+        <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+          <span class="text-xs font-bold text-slate-700 w-28 flex-shrink-0">Pilih Divisi PIC:</span>
+          <div class="flex flex-wrap gap-2">
+            <button
+              v-for="pic in picList"
+              :key="pic"
+              type="button"
+              @click="changePic(pic); autoSelectFirstPicTable();"
+              :class="selectedPic === pic ? 'bg-slate-900 text-white font-bold shadow-xs' : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300'"
+              class="px-3.5 py-1.5 text-xs rounded transition-all cursor-pointer flex items-center gap-1.5"
+            >
+              <span class="w-2 h-2 rounded-full inline-block" :class="pic === 'Produksi' ? 'bg-amber-400' : pic === 'PA' ? 'bg-blue-400' : pic === 'QC' ? 'bg-emerald-400' : 'bg-purple-400'"></span>
+              <span>{{ pic }}</span>
+              <span class="text-[10px] opacity-75">({{ getPicTablesCount(pic) }})</span>
+            </button>
+            <button
+              type="button"
+              @click="selectedPic = 'Semua'; autoSelectFirstPicTable();"
+              :class="selectedPic === 'Semua' ? 'bg-slate-900 text-white font-bold shadow-xs' : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300'"
+              class="px-3.5 py-1.5 text-xs rounded transition-all cursor-pointer"
+            >
+              Semua PIC ({{ tables.length }})
+            </button>
+          </div>
+        </div>
+
+        <!-- 2. Filter Tower -->
+        <div class="flex flex-col sm:flex-row sm:items-center gap-3 pt-2.5 border-t border-slate-200">
+          <span class="text-xs font-bold text-slate-700 w-28 flex-shrink-0">Filter Tower:</span>
+          <div class="flex border border-slate-300 rounded overflow-hidden">
+            <button
+              v-for="tw in towerOptions"
+              :key="tw"
+              type="button"
+              @click="changeTower(tw); autoSelectFirstPicTable();"
+              :class="selectedTower === tw ? 'bg-slate-900 text-white font-bold' : 'bg-white text-slate-700 hover:bg-slate-50'"
+              class="px-3.5 py-1.5 text-xs border-r last:border-r-0 border-slate-300 transition-colors cursor-pointer"
+            >
+              {{ tw }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Grid Daftar Tabel Sesuai Filter PIC & Tower -->
+      <div v-if="picFilteredTables.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        <div
+          v-for="tbl in picFilteredTables"
+          :key="tbl.key"
+          @click="changePicTable(tbl.key)"
+          :class="picSelectedTable === tbl.key ? 'border-2 border-emerald-600 bg-emerald-50/40 shadow-sm ring-1 ring-emerald-500/20' : 'border border-slate-300 bg-white hover:border-slate-400 shadow-xs'"
+          class="rounded p-3.5 cursor-pointer transition-all flex flex-col justify-between"
+        >
+          <div>
+            <div class="flex items-center justify-between gap-2 mb-1.5">
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider" :class="tbl.tower === 'Tower 1' ? 'bg-blue-100 text-blue-900 border border-blue-200' : tbl.tower === 'Tower 2' ? 'bg-indigo-100 text-indigo-900 border border-indigo-200' : 'bg-slate-100 text-slate-800 border border-slate-200'">
+                {{ tbl.tower }}
+              </span>
+              <span class="text-[10px] font-mono text-slate-500">Flow: {{ tbl.flow }}</span>
+            </div>
+            <div class="font-bold text-xs text-slate-900 leading-snug">{{ tbl.label }}</div>
+            <div class="font-mono text-[11px] text-slate-500 mt-0.5 truncate">{{ tbl.key }}</div>
+          </div>
+
+          <div class="mt-3 pt-2.5 border-t border-slate-200 flex items-center justify-between text-xs">
+            <div class="flex items-center gap-1 font-bold" :class="tbl.count > 0 ? 'text-emerald-700' : 'text-slate-400'">
+              <span>●</span>
+              <span>{{ tbl.count !== null ? Number(tbl.count).toLocaleString() + ' baris' : '...' }}</span>
+            </div>
+            <span
+              :class="picSelectedTable === tbl.key ? 'bg-emerald-800 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'"
+              class="text-[10px] font-bold px-2.5 py-1 rounded transition-colors"
+            >
+              {{ picSelectedTable === tbl.key ? '✓ Sedang Dilihat' : '👁️ Buka Data' }}
+            </span>
+          </div>
+        </div>
+      </div>
+      <div v-else class="text-xs text-slate-500 bg-slate-50 border border-dashed border-slate-300 rounded p-4 text-center">
+        Tidak ada tabel database untuk divisi PIC {{ selectedPic }} dan filter {{ selectedTower }}.
+      </div>
+
+      <!-- Live Data Viewer Panel -->
+      <div class="bg-white border-2 border-slate-800 rounded shadow-md overflow-hidden">
+        <!-- Panel Header -->
+        <div class="bg-slate-900 text-white px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div class="flex items-center gap-2.5">
+            <span class="w-3 h-3 bg-emerald-400 rounded-full inline-block"></span>
+            <div>
+              <div class="font-bold text-xs uppercase tracking-wide flex items-center gap-2">
+                <span>Data Record: {{ getTableLabelByKey(picSelectedTable) }}</span>
+                <span class="bg-slate-800 text-emerald-300 font-mono text-[10px] px-2 py-0.5 rounded border border-slate-700">
+                  {{ picTableColumns.length }} kolom &bull; {{ Number(picTotalRows).toLocaleString() }} total baris
+                </span>
+              </div>
+              <div class="text-[10px] text-slate-400 font-mono">
+                SELECT * FROM `{{ picSelectedTable }}`
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <!-- Search Input -->
+            <div class="relative w-48 sm:w-64">
+              <input
+                v-model="picSearchQuery"
+                @keyup.enter="searchPicTable"
+                type="text"
+                placeholder="Cari Batch / Nama / Tanggal..."
+                class="w-full bg-slate-800 border border-slate-700 text-white placeholder-slate-400 text-xs rounded px-2.5 py-1 focus:outline-none focus:border-emerald-500"
+              />
+            </div>
+            <button
+              @click="searchPicTable"
+              class="px-2.5 py-1 bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-bold rounded transition-colors cursor-pointer"
+            >
+              Cari
+            </button>
+            <button
+              v-if="picSearchQuery"
+              @click="picSearchQuery = ''; searchPicTable();"
+              class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs rounded transition-colors cursor-pointer"
+              title="Reset pencarian"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+
+        <!-- Table Container -->
+        <div class="p-3 bg-slate-100 overflow-hidden">
+          <div v-if="picTableLoading" class="p-12 text-center bg-white rounded border border-slate-300">
+            <svg class="spin h-7 w-7 text-emerald-700 mx-auto mb-2" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+            </svg>
+            <div class="text-xs font-bold text-slate-800">Memuat data dari database MySQL...</div>
+          </div>
+
+          <div v-else-if="picTableError" class="p-6 text-center bg-red-50 text-red-900 rounded border border-red-300 text-xs">
+            <div class="font-bold text-sm mb-1">Terjadi Kesalahan</div>
+            <div>{{ picTableError }}</div>
+          </div>
+
+          <div v-else-if="picTableRows.length > 0" class="border border-slate-400 bg-white shadow-xs overflow-x-auto max-h-[560px]">
+            <table class="param-stacked-table mb-0 w-full text-xs">
+              <thead class="sticky top-0 z-10">
+                <tr>
+                  <th class="param-th-no">No</th>
+                  <th v-for="col in picTableColumns" :key="col" class="param-green-th" :title="col">
+                    {{ formatColHeader(col) }}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(row, rIdx) in picTableRows" :key="rIdx" class="param-tr">
+                  <td class="param-td-no">{{ (picPage - 1) * picLimit + rIdx + 1 }}</td>
+                  <td v-for="col in picTableColumns" :key="col" class="param-td">
+                    {{ formatParamCell(row[col], col) }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div v-else class="p-12 text-center bg-white rounded border border-slate-300 text-xs text-slate-500">
+            <div class="text-base mb-1">📭</div>
+            <div class="font-bold text-slate-700">Tidak ada data ditemukan</div>
+            <div class="mt-1">Tabel {{ picSelectedTable }} kosong atau tidak ada data yang cocok dengan pencarian "{{ picSearchQuery }}".</div>
+          </div>
+
+          <!-- Pagination Footer -->
+          <div class="mt-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs bg-white border border-slate-300 rounded p-2.5">
+            <div class="text-slate-600">
+              Menampilkan <span class="font-bold text-slate-900">{{ picTableRows.length }}</span> dari total <span class="font-bold text-slate-900">{{ Number(picTotalRows).toLocaleString() }}</span> baris data
+            </div>
+
+            <div class="flex items-center gap-3">
+              <div class="flex items-center gap-1.5">
+                <span class="text-slate-500 text-[11px]">Baris per hal:</span>
+                <select
+                  v-model.number="picLimit"
+                  @change="loadPicTable(picSelectedTable, 1)"
+                  class="border border-slate-300 rounded px-1.5 py-0.5 text-xs bg-white"
+                >
+                  <option :value="10">10</option>
+                  <option :value="25">25</option>
+                  <option :value="50">50</option>
+                  <option :value="100">100</option>
+                </select>
+              </div>
+
+              <div class="flex items-center gap-1">
+                <button
+                  :disabled="picPage <= 1"
+                  @click="loadPicTable(picSelectedTable, picPage - 1)"
+                  class="px-2.5 py-1 border border-slate-300 rounded hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed font-medium text-xs transition-colors cursor-pointer"
+                >
+                  ◀ Sebelumnya
+                </button>
+                <span class="px-2 font-bold text-slate-800 text-[11px]">
+                  Hal {{ picPage }} / {{ picTotalPages }}
+                </span>
+                <button
+                  :disabled="picPage >= picTotalPages"
+                  @click="loadPicTable(picSelectedTable, picPage + 1)"
+                  class="px-2.5 py-1 border border-slate-300 rounded hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed font-medium text-xs transition-colors cursor-pointer"
+                >
+                  Berikutnya ▶
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
     <!-- Fullscreen Modal for SCADA Parameter Kritis -->
     <div
       v-if="activeModalProcess"
@@ -1049,11 +1434,14 @@
         <div class="bg-slate-900 text-white px-4 py-2.5 flex items-center justify-between">
           <div class="flex items-center gap-2">
             <span class="w-3 h-3 bg-emerald-400 rounded-full inline-block"></span>
-            <span class="font-bold text-xs uppercase tracking-wide">Tabel Parameter Kritis &bull; {{ getProcessTitleByKey(activeModalProcess) }}</span>
+            <span class="font-bold text-xs uppercase tracking-wide">
+              Tabel Parameter Kritis &bull; {{ getProcessTitleByKey(activeModalProcess) }}
+              <span class="text-emerald-300 font-normal text-[11px] ml-2">({{ getProcessColumnsByKey(activeModalProcess).length }} Kolom Database &bull; {{ getProcessRowsByKey(activeModalProcess).length }} Baris)</span>
+            </span>
           </div>
           <button
             @click="activeModalProcess = null"
-            class="text-white hover:text-red-300 font-bold text-xs px-2 py-0.5 border border-slate-700 rounded transition-colors"
+            class="text-white hover:text-red-300 font-bold text-xs px-2 py-0.5 border border-slate-700 rounded transition-colors cursor-pointer"
           >
             ✕ Tutup
           </button>
@@ -1064,8 +1452,8 @@
               <thead>
                 <tr>
                   <th class="param-th-no">No</th>
-                  <th v-for="col in getProcessColumnsByKey(activeModalProcess)" :key="col" class="param-green-th">
-                    {{ col }}
+                  <th v-for="col in getProcessColumnsByKey(activeModalProcess)" :key="col" class="param-green-th" :title="col">
+                    {{ formatColHeader(col) }}
                   </th>
                 </tr>
               </thead>
@@ -1084,12 +1472,14 @@
     </div>
   </main>
 </div>
+</div>
 
 <script>
 const { createApp, ref, reactive, computed, onMounted } = Vue;
 
 createApp({
   setup() {
+    const sidebarOpen = ref(true);
     const activeTab = ref('trace');
     const tracing = ref(false);
     const traceError = ref('');
@@ -1112,6 +1502,22 @@ createApp({
       if (!key) return '-';
       const d = traceResult.value;
       if (!d) return '-';
+
+      // ── 0. PACKING (PIC Produksi) ──
+      if (key === 'packing_waktu_proses') return d.packing?.waktu_proses || '-';
+      if (key === 'packing_shift') return d.packing?.shift || '-';
+      if (key === 'packing_operator') return d.packing?.operator_packing || '-';
+      if (key === 'packing_helper') return d.packing?.team ? 'Regu ' + d.packing.team : '-';
+      if (key === 'packing_ccp') return d.packing?.dehumidifier ? 'Dehumidifier: ' + d.packing.dehumidifier : '-';
+      if (key === 'packing_suhu_rh') return d.packing?.suhu_rh_packing || '-';
+      if (key === 'packing_kebersihan') return d.packing && !d.packing.error ? 'Memenuhi Standar' : '-';
+      if (key === 'packing_lot_karton') return '-';
+      if (key === 'packing_supplier_karton') return '-';
+      if (key === 'packing_lot_plastik') return '-';
+      if (key === 'packing_supplier_plastik') return '-';
+      if (key === 'packing_abnormalitas') return d.packing?.abnormalitas || (d.packing && !d.packing.error ? 'tidak ada' : '-');
+      if (key === 'packing_berat_box') return d.packing?.berat_box || '-';
+      if (key === 'packing_total_output') return d.packing?.total_output || '-';
 
       // ── 1. DRYER (PIC Produksi) ──
       if (key === 'dryer_waktu_proses') return d.dryer?.waktu_proses || '-';
@@ -1168,6 +1574,142 @@ createApp({
       if (key === 'mb_kopi_mentah') return d.mass_balance?.total_kopi_mentah || '-';
       if (key === 'mb_rasio_ic') return d.mass_balance?.rasio_ic || '-';
 
+      // ── 7. QC PACKING (qc_dryer_t1) ──
+      if (key === 'qc_pack_verifikasi_label') return d.qc?.dryer?.found ? 'Sesuai' : '-';
+      if (key === 'qc_pack_visual_kemasan') return d.qc?.dryer?.found ? 'Baik' : '-';
+      if (key === 'qc_pack_kadar_air') return d.qc?.dryer?.data?.['Kadar Air (%)'] ? d.qc.dryer.data['Kadar Air (%)'] + '%' : '-';
+      if (key === 'qc_pack_density') return d.qc?.dryer?.data?.['Density (g/L)'] ? d.qc.dryer.data['Density (g/L)'] + ' g/L' : '-';
+      if (key === 'qc_pack_fm') return d.qc?.dryer?.data?.['FM'] || '-';
+      if (key === 'qc_pack_visual') return d.qc?.dryer?.data?.['Vis'] || '-';
+      if (key === 'qc_pack_warna') return d.qc?.dryer?.data?.['Warna'] || '-';
+      if (key === 'qc_pack_brix') return d.qc?.dryer?.data?.['Brix (°brix)'] ? d.qc.dryer.data['Brix (°brix)'] + '°' : '-';
+      if (key === 'qc_pack_ph') return d.qc?.dryer?.data?.['pH'] || '-';
+      if (key === 'qc_pack_floating_particles') return d.qc?.dryer?.data?.['Floating Particles'] || '-';
+      if (key === 'qc_pack_fluidity') return d.qc?.dryer?.data?.['Fluidity'] || '-';
+      if (key === 'qc_pack_solubility') return d.qc?.dryer?.data?.['Solubility (s)'] ? d.qc.dryer.data['Solubility (s)'] + ' s' : '-';
+      if (key === 'qc_pack_cuptest_wangi') return d.qc?.dryer?.data?.['Cup Test Wangi'] || '-';
+      if (key === 'qc_pack_cuptest_pahit') return d.qc?.dryer?.data?.['Cup Test Pahit'] || '-';
+      if (key === 'qc_pack_cuptest_asam') return d.qc?.dryer?.data?.['Cup Test Asam'] || '-';
+      if (key === 'qc_pack_cuptest_body') return d.qc?.dryer?.data?.['Cup Test Body'] || '-';
+      if (key === 'qc_pack_cuptest_sepat') return d.qc?.dryer?.data?.['Cup Test Sepet'] || '-';
+      if (key === 'qc_pack_pic') return d.qc?.dryer?.data?.['TTD'] || '-';
+      if (key === 'qc_pack_status_ok') {
+        if (d.qc?.dryer?.raw_rows && d.qc.dryer.raw_rows.length > 0) {
+          const okRows = d.qc.dryer.raw_rows.filter(r => (r.Status || '').toUpperCase().includes('OK'));
+          return okRows.length > 0 ? okRows.length + ' Box' : (d.qc.dryer.data?.['Status'] || '-');
+        }
+        return d.qc?.dryer?.data?.['Status'] || '-';
+      }
+      if (key === 'qc_pack_status_bo') {
+        if (d.qc?.dryer?.raw_rows && d.qc.dryer.raw_rows.length > 0) {
+          const boRows = d.qc.dryer.raw_rows.filter(r => (r.Status || '').toUpperCase().includes('BO'));
+          return boRows.length + ' Box';
+        }
+        return '-';
+      }
+      if (key === 'qc_pack_status_pic') return d.qc?.dryer?.data?.['TTD'] || '-';
+
+      // ── 8. QC REWORK (qc_rework_t1) ──
+      if (key === 'qc_rework_verifikasi') return d.qc?.rework?.data?.['Verifikasi'] || (d.qc?.rework?.found ? 'Sesuai' : '-');
+      if (key === 'qc_rework_visual_fm') return d.qc?.rework?.data?.['Visual / Foreign Matter'] || '-';
+      if (key === 'qc_rework_brix_ts') return d.qc?.rework?.data?.['Brix (°brix) / TS (%)'] || '-';
+      if (key === 'qc_rework_viskositas') return d.qc?.rework?.data?.['Viscosity (cP)'] ? d.qc.rework.data['Viscosity (cP)'] + ' cP' : '-';
+      if (key === 'qc_rework_density') return d.qc?.rework?.data?.['Density (g/L)'] ? d.qc.rework.data['Density (g/L)'] + ' g/L' : '-';
+      if (key === 'qc_rework_screening') return d.qc?.rework?.data?.['Screening Test'] || '-';
+      if (key === 'qc_rework_cuptest_wangi') return d.qc?.rework?.data?.['Cuptest Wangi'] || '-';
+      if (key === 'qc_rework_cuptest_pahit') return d.qc?.rework?.data?.['Cuptest Pahit'] || '-';
+      if (key === 'qc_rework_cuptest_asam') return d.qc?.rework?.data?.['Cuptest Asam'] || '-';
+      if (key === 'qc_rework_status') return d.qc?.rework?.data?.['Status'] || '-';
+      if (key === 'qc_rework_pic') return d.qc?.rework?.data?.['Dianalisa Oleh'] || '-';
+
+      // ── 9. QC DRYER (qc_dryer_t1) ──
+      if (key === 'qc_dryer_kadar_air') return d.qc?.dryer?.data?.['Kadar Air (%)'] ? d.qc.dryer.data['Kadar Air (%)'] + '%' : '-';
+      if (key === 'qc_dryer_density') return d.qc?.dryer?.data?.['Density (g/L)'] ? d.qc.dryer.data['Density (g/L)'] + ' g/L' : '-';
+      if (key === 'qc_dryer_fm') return d.qc?.dryer?.data?.['FM'] || '-';
+      if (key === 'qc_dryer_visual') return d.qc?.dryer?.data?.['Vis'] || '-';
+      if (key === 'qc_dryer_warna') return d.qc?.dryer?.data?.['Warna'] || '-';
+      if (key === 'qc_dryer_brix') return d.qc?.dryer?.data?.['Brix (°brix)'] ? d.qc.dryer.data['Brix (°brix)'] + '°' : '-';
+      if (key === 'qc_dryer_ph') return d.qc?.dryer?.data?.['pH'] || '-';
+      if (key === 'qc_dryer_floating_particles') return d.qc?.dryer?.data?.['Floating Particles'] || '-';
+      if (key === 'qc_dryer_cuptest_wangi') return d.qc?.dryer?.data?.['Cup Test Wangi'] || '-';
+      if (key === 'qc_dryer_cuptest_pahit') return d.qc?.dryer?.data?.['Cup Test Pahit'] || '-';
+      if (key === 'qc_dryer_cuptest_asam') return d.qc?.dryer?.data?.['Cup Test Asam'] || '-';
+      if (key === 'qc_dryer_cuptest_body') return d.qc?.dryer?.data?.['Cup Test Body'] || '-';
+      if (key === 'qc_dryer_cuptest_sepat') return d.qc?.dryer?.data?.['Cup Test Sepet'] || '-';
+      if (key === 'qc_dryer_pic') return d.qc?.dryer?.data?.['TTD'] || '-';
+
+      // ── 10. QC EVAPORATION (qc_evaporasi_t1) ──
+      if (key === 'qc_evap_visual_fm') return d.qc?.evaporasi?.data?.['Vis/FM'] || '-';
+      if (key === 'qc_evap_brix_ts') return formatBrixTs(d.qc?.evaporasi?.data?.['Brix (°brix)'], d.qc?.evaporasi?.data?.['TS (%)']);
+      if (key === 'qc_evap_ph') return d.qc?.evaporasi?.data?.['pH'] || '-';
+      if (key === 'qc_evap_viskositas') return d.qc?.evaporasi?.data?.['Viskositas'] || '-';
+      if (key === 'qc_evap_density') return d.qc?.evaporasi?.data?.['Density (g/L)'] ? d.qc.evaporasi.data['Density (g/L)'] + ' g/L' : '-';
+      if (key === 'qc_evap_screening') return d.qc?.evaporasi?.data?.['Screening Test'] || '-';
+      if (key === 'qc_evap_cuptest_wangi') return d.qc?.evaporasi?.data?.['Cup Test Wangi'] || '-';
+      if (key === 'qc_evap_cuptest_pahit') return d.qc?.evaporasi?.data?.['Cup Test Pahit'] || '-';
+      if (key === 'qc_evap_cuptest_asam') return d.qc?.evaporasi?.data?.['Cup Test Asam'] || '-';
+      if (key === 'qc_evap_pic') return d.qc?.evaporasi?.data?.['TTD'] || '-';
+
+      // ── 11. QC FINAL TANK (qc_final_tank_t1) ──
+      if (key === 'qc_ft_nomor') return d.qc?.final_tank?.data?.['Final Tank'] ? 'FT C0' + d.qc.final_tank.data['Final Tank'] : '-';
+      if (key === 'qc_ft_pure_aroma') return d.qc?.final_tank?.data?.['Pure Aroma (kg)'] ? d.qc.final_tank.data['Pure Aroma (kg)'] + ' kg' : '-';
+      if (key === 'qc_ft_level') return d.qc?.final_tank?.data?.['Level'] ? d.qc.final_tank.data['Level'] + '%' : '-';
+      if (key === 'qc_ft_visual_fm') return d.qc?.final_tank?.data?.['Vis/FM'] || '-';
+      if (key === 'qc_ft_brix_ts') return formatBrixTs(d.qc?.final_tank?.data?.['Brix (°brix)'], d.qc?.final_tank?.data?.['TS (%)']);
+      if (key === 'qc_ft_ph') return d.qc?.final_tank?.data?.['pH'] || '-';
+      if (key === 'qc_ft_viskositas') return d.qc?.final_tank?.data?.['Viskositas cP'] ? d.qc.final_tank.data['Viskositas cP'] + ' cP' : '-';
+      if (key === 'qc_ft_density') return d.qc?.final_tank?.data?.['Density (g/L)'] ? d.qc.final_tank.data['Density (g/L)'] + ' g/L' : '-';
+      if (key === 'qc_ft_screening') return d.qc?.final_tank?.data?.['Screening Test'] || '-';
+      if (key === 'qc_ft_cuptest_wangi') return d.qc?.final_tank?.data?.['Cup Test Wangi'] || '-';
+      if (key === 'qc_ft_cuptest_pahit') return d.qc?.final_tank?.data?.['Cup Test Pahit'] || '-';
+      if (key === 'qc_ft_cuptest_asam') return d.qc?.final_tank?.data?.['Cup Test Asam'] || '-';
+      if (key === 'qc_ft_pic') return d.qc?.final_tank?.data?.['TTD'] || '-';
+
+      // ── 12. QC EXTRACTION: Grinding (qc_grinding_t1) ──
+      if (key === 'qc_grind_silo') return d.qc?.grinding?.data?.['Silo Degassing'] || '-';
+      if (key === 'qc_grind_rga_rgb') return d.qc?.grinding?.data?.['RGA/RGB'] || '-';
+      if (key === 'qc_grind_fm') return d.qc?.grinding?.data?.['FM'] || '-';
+      if (key === 'qc_grind_mesh_lt850') return d.qc?.grinding?.data?.['<850'] || '-';
+      if (key === 'qc_grind_mesh_850_1000') return d.qc?.grinding?.data?.['850-<1000'] || '-';
+      if (key === 'qc_grind_mesh_1000_2350') return d.qc?.grinding?.data?.['1000-<2350'] || '-';
+      if (key === 'qc_grind_mesh_2350_3350') return d.qc?.grinding?.data?.['2350-<3350'] || '-';
+      if (key === 'qc_grind_mesh_3350_4000') return d.qc?.grinding?.data?.['3350-<4000'] || '-';
+      if (key === 'qc_grind_mesh_4000_5600') return d.qc?.grinding?.data?.['4000-<5600'] || '-';
+      if (key === 'qc_grind_mesh_5600_6300') return d.qc?.grinding?.data?.['5600-<6300'] || '-';
+      if (key === 'qc_grind_mesh_gt6300') return d.qc?.grinding?.data?.['>6300'] || '-';
+      if (key === 'qc_grind_kadar_air') return d.qc?.grinding?.data?.['Kadar air (%)'] ? d.qc.grinding.data['Kadar air (%)'] + '%' : '-';
+      if (key === 'qc_grind_density') return d.qc?.grinding?.data?.['Density (gr/L)'] ? d.qc.grinding.data['Density (gr/L)'] + ' g/L' : '-';
+      if (key === 'qc_grind_pic') return d.qc?.grinding?.data?.['TTD'] || '-';
+
+      // ── 13. QC EXTRACTION: Aroma (qc_aroma_t1) ──
+      if (key === 'qc_aroma_silo') return d.qc?.aroma?.data?.['Silo degasing'] || '-';
+      if (key === 'qc_aroma_visual_fm') return d.qc?.aroma?.data?.['Vis/FM'] || '-';
+      if (key === 'qc_aroma_brix_ts') return formatBrixTs(d.qc?.aroma?.data?.['Brix (°brix)'], d.qc?.aroma?.data?.['TS (%)']);
+      if (key === 'qc_aroma_ph') return d.qc?.aroma?.data?.['pH'] || '-';
+      if (key === 'qc_aroma_suhu') return d.qc?.aroma?.data?.['T (°C)'] ? d.qc.aroma.data['T (°C)'] + '°C' : '-';
+      if (key === 'qc_aroma_cuptest_wangi') return d.qc?.aroma?.data?.['Cup Test Wangi'] || '-';
+      if (key === 'qc_aroma_cuptest_pahit') return d.qc?.aroma?.data?.['Cup Test Pahit'] || '-';
+      if (key === 'qc_aroma_cuptest_asam') return d.qc?.aroma?.data?.['Cup Test Asam'] || '-';
+      if (key === 'qc_aroma_pic') return d.qc?.aroma?.data?.['PIC'] || '-';
+
+      // ── 14. QC EXTRACTION: Hidrolise (qc_hydro_t1) ──
+      if (key === 'qc_hydro_silo') return d.qc?.hydro?.data?.['Silo Degassing'] || '-';
+      if (key === 'qc_hydro_visual_fm') return d.qc?.hydro?.data?.['Vis/FM'] || '-';
+      if (key === 'qc_hydro_brix_ts') return formatBrixTs(d.qc?.hydro?.data?.['Brix (°brix)'], d.qc?.hydro?.data?.['TS (%)']);
+      if (key === 'qc_hydro_ph') return d.qc?.hydro?.data?.['pH'] || '-';
+      if (key === 'qc_hydro_suhu') return d.qc?.hydro?.data?.['T (°C)'] ? d.qc.hydro.data['T (°C)'] + '°C' : '-';
+      if (key === 'qc_hydro_cuptest_wangi') return d.qc?.hydro?.data?.['Cup Test Wangi'] || '-';
+      if (key === 'qc_hydro_cuptest_pahit') return d.qc?.hydro?.data?.['Cup Test Pahit'] || '-';
+      if (key === 'qc_hydro_cuptest_asam') return d.qc?.hydro?.data?.['Cup Test Asam'] || '-';
+      if (key === 'qc_hydro_pic') return d.qc?.hydro?.data?.['TTD'] || '-';
+
+      return '-';
+    }
+
+    function formatBrixTs(brix, ts) {
+      if (brix && ts) return `${brix}° / ${ts}%`;
+      if (brix) return `${brix}°`;
+      if (ts) return `${ts}%`;
       return '-';
     }
 
@@ -1186,6 +1728,17 @@ createApp({
       { key: 'roasting_probat',    label: 'Roasting Probat',    flow: 'ROASTING',    pic: 'Produksi', tower: 'Non-Tower', count: null },
       { key: 'packing_tower_1',    label: 'Packing Tower 1',    flow: 'PACKING',     pic: 'Produksi', tower: 'Tower 1', count: null },
       { key: 'packing_tower_2',    label: 'Packing Tower 2',    flow: 'PACKING',     pic: 'Produksi', tower: 'Tower 2', count: null },
+      // ── QC Tower 1 Tables ──
+      { key: 'qc_rework_t1',       label: 'QC Rework T1',       flow: 'REWORK',      pic: 'QC', tower: 'Tower 1', count: null },
+      { key: 'qc_dryer_t1',        label: 'QC Dryer T1',        flow: 'DRYER',       pic: 'QC', tower: 'Tower 1', count: null },
+      { key: 'qc_feed_tank_t1',    label: 'QC Feed Tank T1',    flow: 'DRYER',       pic: 'QC', tower: 'Tower 1', count: null },
+      { key: 'qc_final_tank_t1',   label: 'QC Final Tank T1',   flow: 'EVAPORATION', pic: 'QC', tower: 'Tower 1', count: null },
+      { key: 'qc_evaporasi_t1',    label: 'QC Evaporasi T1',    flow: 'EVAPORATION', pic: 'QC', tower: 'Tower 1', count: null },
+      { key: 'qc_tank_system_t1',  label: 'QC Tank System T1',  flow: 'EXTRACTION',  pic: 'QC', tower: 'Tower 1', count: null },
+      { key: 'qc_pure_aroma_t1',   label: 'QC Pure Aroma T1',   flow: 'EXTRACTION',  pic: 'QC', tower: 'Tower 1', count: null },
+      { key: 'qc_hydro_t1',        label: 'QC Hydro T1',        flow: 'EXTRACTION',  pic: 'QC', tower: 'Tower 1', count: null },
+      { key: 'qc_aroma_t1',        label: 'QC Aroma T1',        flow: 'EXTRACTION',  pic: 'QC', tower: 'Tower 1', count: null },
+      { key: 'qc_grinding_t1',     label: 'QC Grinding T1',     flow: 'EXTRACTION',  pic: 'QC', tower: 'Tower 1', count: null },
     ]);
 
     const filteredTables = computed(() => {
@@ -1196,6 +1749,74 @@ createApp({
         return t.tower === selectedTower.value || t.tower === 'Non-Tower';
       });
     });
+
+    // ── Penampil Data PIC State & Methods ──
+    const picSelectedTable = ref('dryer_tower_1');
+    const picTableColumns = ref([]);
+    const picTableRows = ref([]);
+    const picTableLoading = ref(false);
+    const picTableError = ref('');
+    const picSearchQuery = ref('');
+    const picPage = ref(1);
+    const picLimit = ref(25);
+    const picTotalRows = ref(0);
+    const picTotalPages = ref(1);
+
+    const picFilteredTables = computed(() => {
+      return tables.filter(t => {
+        if (selectedPic.value !== 'Semua' && t.pic !== selectedPic.value) return false;
+        if (selectedTower.value === 'Non-Tower / Semua') return true;
+        return t.tower === selectedTower.value || t.tower === 'Non-Tower';
+      });
+    });
+
+    function getPicTablesCount(picName) {
+      return tables.filter(t => t.pic === picName).length;
+    }
+
+    function getTableLabelByKey(tblKey) {
+      const t = tables.find(x => x.key === tblKey);
+      return t ? t.label : tblKey;
+    }
+
+    async function loadPicTable(tableName, page = 1) {
+      if (tableName) picSelectedTable.value = tableName;
+      picPage.value = page;
+      picTableLoading.value = true;
+      picTableError.value = '';
+      try {
+        const q = encodeURIComponent(picSearchQuery.value || '');
+        const res = await fetch(`/api/import/${picSelectedTable.value}/rows?page=${picPage.value}&limit=${picLimit.value}&search=${q}`);
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Gagal memuat baris data dari database.');
+        picTableColumns.value = data.columns || [];
+        picTableRows.value = data.rows || [];
+        picTotalRows.value = data.totalRows || 0;
+        picTotalPages.value = data.totalPages || 1;
+      } catch (err) {
+        picTableError.value = err.message;
+        picTableRows.value = [];
+      } finally {
+        picTableLoading.value = false;
+      }
+    }
+
+    function searchPicTable() {
+      loadPicTable(picSelectedTable.value, 1);
+    }
+
+    function changePicTable(tblKey) {
+      picSelectedTable.value = tblKey;
+      picSearchQuery.value = '';
+      loadPicTable(tblKey, 1);
+    }
+
+    function autoSelectFirstPicTable() {
+      const avail = picFilteredTables.value;
+      if (avail.length > 0 && !avail.some(t => t.key === picSelectedTable.value)) {
+        changePicTable(avail[0].key);
+      }
+    }
 
     const inspectState = reactive({
       loading: false,
@@ -1397,6 +2018,8 @@ createApp({
       refreshAllCounts();
       // Auto-load default trace A370/26
       doTrace();
+      // Pre-load default PIC table
+      loadPicTable('dryer_tower_1', 1);
     });
 
     // ── Parameter Kritis SCADA Collapsible Sub-Tables ──
@@ -1451,10 +2074,33 @@ createApp({
 
     const activeModalProcess = ref(null);
 
+    function formatColHeader(col) {
+      if (!col) return '';
+      return String(col).replace(/\s+/g, ' ').trim();
+    }
+
     function formatParamCell(val, colName = '') {
       if (val === null || val === undefined || val === '') return '-';
       const sVal = String(val).trim();
       const lowerCol = String(colName || '').toLowerCase();
+
+      // Excel date serial number check (e.g. 45881 -> 12/08/2025)
+      if (!isNaN(Number(sVal)) && Number(sVal) > 30000 && Number(sVal) < 60000 && (lowerCol.includes('tanggal') || lowerCol.includes('stamp'))) {
+        const d = new Date(Math.round((Number(sVal) - 25569) * 86400 * 1000));
+        const pad = (n) => String(n).padStart(2, '0');
+        if (lowerCol.includes('stamp')) {
+          return `${pad(d.getUTCDate())}/${pad(d.getUTCMonth() + 1)}/${d.getUTCFullYear()} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`;
+        }
+        return `${pad(d.getUTCDate())}/${pad(d.getUTCMonth() + 1)}/${d.getUTCFullYear()}`;
+      }
+
+      // Excel time fraction check (e.g. 0.784027 -> 18:49)
+      if (lowerCol.includes('waktu') && !isNaN(Number(sVal)) && Number(sVal) > 0 && Number(sVal) < 1) {
+        const totalSec = Math.round(Number(sVal) * 86400);
+        const h = String(Math.floor(totalSec / 3600)).padStart(2, '0');
+        const m = String(Math.floor((totalSec % 3600) / 60)).padStart(2, '0');
+        return `${h}:${m}`;
+      }
 
       // Tanggal column: format to DD/MM/YYYY with +30s drift compensation
       if (lowerCol.includes('tanggal')) {
@@ -1501,6 +2147,7 @@ createApp({
 
     function getProcessTitleByKey(procKey) {
       const tw = traceResult.value?.input?.tower || traceForm.tower || '1';
+      if (procKey === 'packing') return 'Packing Tower ' + tw;
       if (procKey === 'dryer') return 'Dryer Tower ' + tw;
       if (procKey === 'evaporation') return 'Evaporation Tower ' + tw;
       if (procKey === 'extraction') return 'Extraction Tower ' + tw;
@@ -1547,6 +2194,24 @@ createApp({
     }
 
     return {
+      sidebarOpen,
+      picSelectedTable,
+      picTableColumns,
+      picTableRows,
+      picTableLoading,
+      picTableError,
+      picSearchQuery,
+      picPage,
+      picLimit,
+      picTotalRows,
+      picTotalPages,
+      picFilteredTables,
+      getPicTablesCount,
+      getTableLabelByKey,
+      loadPicTable,
+      searchPicTable,
+      changePicTable,
+      autoSelectFirstPicTable,
       activeTab,
       tracing,
       traceError,
@@ -1576,6 +2241,7 @@ createApp({
       getProcessColumnChunksByKey,
       activeModalProcess,
       formatParamCell,
+      formatColHeader,
       picList,
       towerOptions,
       selectedPic,

@@ -106,72 +106,72 @@ const FLOW_SECTIONS = [
           {
             "label": "Waktu proses",
             "isHeader": false,
-            "key": null
+            "key": "packing_waktu_proses"
           },
           {
             "label": "Shift",
             "isHeader": false,
-            "key": null
+            "key": "packing_shift"
           },
           {
             "label": "Nama operator packing",
             "isHeader": false,
-            "key": null
+            "key": "packing_operator"
           },
           {
             "label": "Nama helper packing",
             "isHeader": false,
-            "key": null
+            "key": "packing_helper"
           },
           {
             "label": "Waktu dan hasil verifikasi/validasi CCP",
             "isHeader": false,
-            "key": null
+            "key": "packing_ccp"
           },
           {
             "label": "Suhu dan RH ruang packing",
             "isHeader": false,
-            "key": null
+            "key": "packing_suhu_rh"
           },
           {
             "label": "Checklist kebersihan area packing",
             "isHeader": false,
-            "key": null
+            "key": "packing_kebersihan"
           },
           {
             "label": "No Lot/Batch karton",
             "isHeader": false,
-            "key": null
+            "key": "packing_lot_karton"
           },
           {
             "label": "Nama supplier",
             "isHeader": false,
-            "key": null
+            "key": "packing_supplier_karton"
           },
           {
             "label": "No Lot/Batch plastik",
             "isHeader": false,
-            "key": null
+            "key": "packing_lot_plastik"
           },
           {
             "label": "Nama supplier",
             "isHeader": false,
-            "key": null
+            "key": "packing_supplier_plastik"
           },
           {
             "label": "Catatan abnormalitas proses",
             "isHeader": false,
-            "key": null
+            "key": "packing_abnormalitas"
           },
           {
             "label": "Berat box",
             "isHeader": false,
-            "key": null
+            "key": "packing_berat_box"
           },
           {
             "label": "Total output produk",
             "isHeader": false,
-            "key": null
+            "key": "packing_total_output"
           }
         ]
       },
@@ -190,62 +190,62 @@ const FLOW_SECTIONS = [
           {
             "label": "Verifikasi label",
             "isHeader": false,
-            "key": null
+            "key": "qc_pack_verifikasi_label"
           },
           {
             "label": "Kondisi visual kemasan",
             "isHeader": false,
-            "key": null
+            "key": "qc_pack_visual_kemasan"
           },
           {
             "label": "Kadar air",
             "isHeader": false,
-            "key": null
+            "key": "qc_pack_kadar_air"
           },
           {
             "label": "Density",
             "isHeader": false,
-            "key": null
+            "key": "qc_pack_density"
           },
           {
             "label": "Foreign Matter",
             "isHeader": false,
-            "key": null
+            "key": "qc_pack_fm"
           },
           {
             "label": "Visual",
             "isHeader": false,
-            "key": null
+            "key": "qc_pack_visual"
           },
           {
             "label": "Warna",
             "isHeader": false,
-            "key": null
+            "key": "qc_pack_warna"
           },
           {
             "label": "Brix",
             "isHeader": false,
-            "key": null
+            "key": "qc_pack_brix"
           },
           {
             "label": "pH",
             "isHeader": false,
-            "key": null
+            "key": "qc_pack_ph"
           },
           {
             "label": "Floating Particles",
             "isHeader": false,
-            "key": null
+            "key": "qc_pack_floating_particles"
           },
           {
             "label": "Fluidity",
             "isHeader": false,
-            "key": null
+            "key": "qc_pack_fluidity"
           },
           {
             "label": "Solubility",
             "isHeader": false,
-            "key": null
+            "key": "qc_pack_solubility"
           },
           {
             "label": "Score Cuptest",
@@ -255,27 +255,27 @@ const FLOW_SECTIONS = [
           {
             "label": "Wangi",
             "isHeader": false,
-            "key": null
+            "key": "qc_pack_cuptest_wangi"
           },
           {
             "label": "Pahit",
             "isHeader": false,
-            "key": null
+            "key": "qc_pack_cuptest_pahit"
           },
           {
             "label": "Asam",
             "isHeader": false,
-            "key": null
+            "key": "qc_pack_cuptest_asam"
           },
           {
             "label": "Body",
             "isHeader": false,
-            "key": null
+            "key": "qc_pack_cuptest_body"
           },
           {
             "label": "Sepat",
             "isHeader": false,
-            "key": null
+            "key": "qc_pack_cuptest_sepat"
           },
           {
             "label": "Particle Size",
@@ -285,47 +285,47 @@ const FLOW_SECTIONS = [
           {
             "label": ">600",
             "isHeader": false,
-            "key": null
+            "key": "qc_pack_mesh_gt600"
           },
           {
             "label": "425-600",
             "isHeader": false,
-            "key": null
+            "key": "qc_pack_mesh_425_600"
           },
           {
             "label": "300-425",
             "isHeader": false,
-            "key": null
+            "key": "qc_pack_mesh_300_425"
           },
           {
             "label": "250-300",
             "isHeader": false,
-            "key": null
+            "key": "qc_pack_mesh_250_300"
           },
           {
             "label": "212-250",
             "isHeader": false,
-            "key": null
+            "key": "qc_pack_mesh_212_250"
           },
           {
             "label": "180-212",
             "isHeader": false,
-            "key": null
+            "key": "qc_pack_mesh_180_212"
           },
           {
             "label": "150-180",
             "isHeader": false,
-            "key": null
+            "key": "qc_pack_mesh_150_180"
           },
           {
             "label": "<150",
             "isHeader": false,
-            "key": null
+            "key": "qc_pack_mesh_lt150"
           },
           {
             "label": "PIC QC",
             "isHeader": false,
-            "key": null
+            "key": "qc_pack_pic"
           },
           {
             "label": "Analisa Mikrobiologi",
@@ -335,17 +335,17 @@ const FLOW_SECTIONS = [
           {
             "label": "TPC",
             "isHeader": false,
-            "key": null
+            "key": "qc_pack_micro_tpc"
           },
           {
             "label": "Yeast & Mold",
             "isHeader": false,
-            "key": null
+            "key": "qc_pack_micro_ym"
           },
           {
             "label": "PIC QC",
             "isHeader": false,
-            "key": null
+            "key": "qc_pack_micro_pic"
           },
           {
             "label": "Status Produk",
@@ -355,17 +355,17 @@ const FLOW_SECTIONS = [
           {
             "label": "Jumlah Produk Status OK",
             "isHeader": false,
-            "key": null
+            "key": "qc_pack_status_ok"
           },
           {
             "label": "Jumlah Produk Status BO",
             "isHeader": false,
-            "key": null
+            "key": "qc_pack_status_bo"
           },
           {
             "label": "PIC QC",
             "isHeader": false,
-            "key": null
+            "key": "qc_pack_status_pic"
           }
         ]
       },
@@ -585,32 +585,32 @@ const FLOW_SECTIONS = [
           {
             "label": "Verifikasi bahan rework",
             "isHeader": false,
-            "key": null
+            "key": "qc_rework_verifikasi"
           },
           {
             "label": "Visual/FM",
             "isHeader": false,
-            "key": null
+            "key": "qc_rework_visual_fm"
           },
           {
             "label": "Brix/TS",
             "isHeader": false,
-            "key": null
+            "key": "qc_rework_brix_ts"
           },
           {
             "label": "Viskositas",
             "isHeader": false,
-            "key": null
+            "key": "qc_rework_viskositas"
           },
           {
             "label": "Density",
             "isHeader": false,
-            "key": null
+            "key": "qc_rework_density"
           },
           {
             "label": "Screening Test",
             "isHeader": false,
-            "key": null
+            "key": "qc_rework_screening"
           },
           {
             "label": "Score Cuptest",
@@ -620,27 +620,27 @@ const FLOW_SECTIONS = [
           {
             "label": "Wangi",
             "isHeader": false,
-            "key": null
+            "key": "qc_rework_cuptest_wangi"
           },
           {
             "label": "Pahit",
             "isHeader": false,
-            "key": null
+            "key": "qc_rework_cuptest_pahit"
           },
           {
             "label": "Asam",
             "isHeader": false,
-            "key": null
+            "key": "qc_rework_cuptest_asam"
           },
           {
             "label": "Status",
             "isHeader": false,
-            "key": null
+            "key": "qc_rework_status"
           },
           {
             "label": "PIC QC",
             "isHeader": false,
-            "key": null
+            "key": "qc_rework_pic"
           }
         ]
       }
@@ -648,7 +648,7 @@ const FLOW_SECTIONS = [
   },
   {
     "name": "DRYER",
-    "totalRows": 28,
+    "totalRows": 30,
     "blocks": [
       {
         "pic": "Produksi",
@@ -661,6 +661,16 @@ const FLOW_SECTIONS = [
             "label": "Waktu proses",
             "isHeader": false,
             "key": "dryer_waktu_proses"
+          },
+          {
+            "label": "Final Tank (Tangki Asal)",
+            "isHeader": false,
+            "key": "dryer_final_tank"
+          },
+          {
+            "label": "Mode Dryer",
+            "isHeader": false,
+            "key": "dryer_mode"
           },
           {
             "label": "Parameter kritis proses",
@@ -741,42 +751,42 @@ const FLOW_SECTIONS = [
           {
             "label": "Kadar air",
             "isHeader": false,
-            "key": null
+            "key": "qc_dryer_kadar_air"
           },
           {
             "label": "Density",
             "isHeader": false,
-            "key": null
+            "key": "qc_dryer_density"
           },
           {
             "label": "Foreign Matter",
             "isHeader": false,
-            "key": null
+            "key": "qc_dryer_fm"
           },
           {
             "label": "Visual",
             "isHeader": false,
-            "key": null
+            "key": "qc_dryer_visual"
           },
           {
             "label": "Warna",
             "isHeader": false,
-            "key": null
+            "key": "qc_dryer_warna"
           },
           {
             "label": "Brix",
             "isHeader": false,
-            "key": null
+            "key": "qc_dryer_brix"
           },
           {
             "label": "pH",
             "isHeader": false,
-            "key": null
+            "key": "qc_dryer_ph"
           },
           {
             "label": "Floating Particles",
             "isHeader": false,
-            "key": null
+            "key": "qc_dryer_floating_particles"
           },
           {
             "label": "Score Cuptest",
@@ -786,32 +796,32 @@ const FLOW_SECTIONS = [
           {
             "label": "Wangi",
             "isHeader": false,
-            "key": null
+            "key": "qc_dryer_cuptest_wangi"
           },
           {
             "label": "Pahit",
             "isHeader": false,
-            "key": null
+            "key": "qc_dryer_cuptest_pahit"
           },
           {
             "label": "Asam",
             "isHeader": false,
-            "key": null
+            "key": "qc_dryer_cuptest_asam"
           },
           {
             "label": "Body",
             "isHeader": false,
-            "key": null
+            "key": "qc_dryer_cuptest_body"
           },
           {
             "label": "Sepat",
             "isHeader": false,
-            "key": null
+            "key": "qc_dryer_cuptest_sepat"
           },
           {
             "label": "PIC QC",
             "isHeader": false,
-            "key": null
+            "key": "qc_dryer_pic"
           }
         ]
       }
@@ -819,7 +829,7 @@ const FLOW_SECTIONS = [
   },
   {
     "name": "EVAPORATION",
-    "totalRows": 42,
+    "totalRows": 43,
     "blocks": [
       {
         "pic": "Produksi",
@@ -832,6 +842,11 @@ const FLOW_SECTIONS = [
             "label": "Waktu proses",
             "isHeader": false,
             "key": "evap_waktu_proses"
+          },
+          {
+            "label": "Destination Final Tank (Tangki Tujuan)",
+            "isHeader": false,
+            "key": "evap_destination_tank"
           },
           {
             "label": "Parameter kritis proses",
@@ -897,32 +912,32 @@ const FLOW_SECTIONS = [
           {
             "label": "Visual/Foreign Matter",
             "isHeader": false,
-            "key": null
+            "key": "qc_evap_visual_fm"
           },
           {
             "label": "Brix/TS",
             "isHeader": false,
-            "key": null
+            "key": "qc_evap_brix_ts"
           },
           {
             "label": "pH",
             "isHeader": false,
-            "key": null
+            "key": "qc_evap_ph"
           },
           {
             "label": "Viskositas",
             "isHeader": false,
-            "key": null
+            "key": "qc_evap_viskositas"
           },
           {
             "label": "Density",
             "isHeader": false,
-            "key": null
+            "key": "qc_evap_density"
           },
           {
             "label": "Screening Test",
             "isHeader": false,
-            "key": null
+            "key": "qc_evap_screening"
           },
           {
             "label": "Score Cuptest",
@@ -932,22 +947,22 @@ const FLOW_SECTIONS = [
           {
             "label": "Wangi",
             "isHeader": false,
-            "key": null
+            "key": "qc_evap_cuptest_wangi"
           },
           {
             "label": "Pahit",
             "isHeader": false,
-            "key": null
+            "key": "qc_evap_cuptest_pahit"
           },
           {
             "label": "Asam",
             "isHeader": false,
-            "key": null
+            "key": "qc_evap_cuptest_asam"
           },
           {
             "label": "PIC QC",
             "isHeader": false,
-            "key": null
+            "key": "qc_evap_pic"
           }
         ]
       },
@@ -965,47 +980,47 @@ const FLOW_SECTIONS = [
           {
             "label": "Nomer Final Tank",
             "isHeader": false,
-            "key": null
+            "key": "qc_ft_nomor"
           },
           {
             "label": "Jumlah Pure Aroma",
             "isHeader": false,
-            "key": null
+            "key": "qc_ft_pure_aroma"
           },
           {
             "label": "Level Final Tank",
             "isHeader": false,
-            "key": null
+            "key": "qc_ft_level"
           },
           {
             "label": "Visual/Foreign Matter",
             "isHeader": false,
-            "key": null
+            "key": "qc_ft_visual_fm"
           },
           {
             "label": "Brix/TS",
             "isHeader": false,
-            "key": null
+            "key": "qc_ft_brix_ts"
           },
           {
             "label": "pH",
             "isHeader": false,
-            "key": null
+            "key": "qc_ft_ph"
           },
           {
             "label": "Viskositas",
             "isHeader": false,
-            "key": null
+            "key": "qc_ft_viskositas"
           },
           {
             "label": "Density",
             "isHeader": false,
-            "key": null
+            "key": "qc_ft_density"
           },
           {
             "label": "Screening Test",
             "isHeader": false,
-            "key": null
+            "key": "qc_ft_screening"
           },
           {
             "label": "Score Cuptest",
@@ -1015,22 +1030,22 @@ const FLOW_SECTIONS = [
           {
             "label": "Wangi",
             "isHeader": false,
-            "key": null
+            "key": "qc_ft_cuptest_wangi"
           },
           {
             "label": "Pahit",
             "isHeader": false,
-            "key": null
+            "key": "qc_ft_cuptest_pahit"
           },
           {
             "label": "Asam",
             "isHeader": false,
-            "key": null
+            "key": "qc_ft_cuptest_asam"
           },
           {
             "label": "PIC QC",
             "isHeader": false,
-            "key": null
+            "key": "qc_ft_pic"
           }
         ]
       },
@@ -1076,7 +1091,7 @@ const FLOW_SECTIONS = [
   },
   {
     "name": "EXTRACTION",
-    "totalRows": 52,
+    "totalRows": 53,
     "blocks": [
       {
         "pic": "Produksi",
@@ -1100,6 +1115,11 @@ const FLOW_SECTIONS = [
             "label": "Jumlah percolator",
             "isHeader": false,
             "key": "ext_percolator"
+          },
+          {
+            "label": "Silo Degassing (Asal Kopi Goreng)",
+            "isHeader": false,
+            "key": "ext_silo"
           },
           {
             "label": "Parameter kritis proses",
@@ -1184,17 +1204,17 @@ const FLOW_SECTIONS = [
           {
             "label": "Asal silo degassing",
             "isHeader": false,
-            "key": null
+            "key": "qc_grind_silo"
           },
           {
             "label": "RGA/RGB",
             "isHeader": false,
-            "key": null
+            "key": "qc_grind_rga_rgb"
           },
           {
             "label": "Visual/Foreign Matter",
             "isHeader": false,
-            "key": null
+            "key": "qc_grind_fm"
           },
           {
             "label": "Particle Size",
@@ -1204,57 +1224,57 @@ const FLOW_SECTIONS = [
           {
             "label": "<850",
             "isHeader": false,
-            "key": null
+            "key": "qc_grind_mesh_lt850"
           },
           {
             "label": "850-<1000",
             "isHeader": false,
-            "key": null
+            "key": "qc_grind_mesh_850_1000"
           },
           {
             "label": "1000-<2350",
             "isHeader": false,
-            "key": null
+            "key": "qc_grind_mesh_1000_2350"
           },
           {
             "label": "2350-<3350",
             "isHeader": false,
-            "key": null
+            "key": "qc_grind_mesh_2350_3350"
           },
           {
             "label": "3350-<4000",
             "isHeader": false,
-            "key": null
+            "key": "qc_grind_mesh_3350_4000"
           },
           {
             "label": "4000-<5600",
             "isHeader": false,
-            "key": null
+            "key": "qc_grind_mesh_4000_5600"
           },
           {
             "label": "5600-<6300",
             "isHeader": false,
-            "key": null
+            "key": "qc_grind_mesh_5600_6300"
           },
           {
             "label": ">6300",
             "isHeader": false,
-            "key": null
+            "key": "qc_grind_mesh_gt6300"
           },
           {
             "label": "Kadar air",
             "isHeader": false,
-            "key": null
+            "key": "qc_grind_kadar_air"
           },
           {
             "label": "Density",
             "isHeader": false,
-            "key": null
+            "key": "qc_grind_density"
           },
           {
             "label": "PIC QC",
             "isHeader": false,
-            "key": null
+            "key": "qc_grind_pic"
           },
           {
             "label": "Analisa Kualitas Aroma",
@@ -1264,27 +1284,27 @@ const FLOW_SECTIONS = [
           {
             "label": "Asal silo degassing",
             "isHeader": false,
-            "key": null
+            "key": "qc_aroma_silo"
           },
           {
             "label": "Visual/Foreign Matter",
             "isHeader": false,
-            "key": null
+            "key": "qc_aroma_visual_fm"
           },
           {
             "label": "Brix/TS",
             "isHeader": false,
-            "key": null
+            "key": "qc_aroma_brix_ts"
           },
           {
             "label": "pH",
             "isHeader": false,
-            "key": null
+            "key": "qc_aroma_ph"
           },
           {
             "label": "Suhu",
             "isHeader": false,
-            "key": null
+            "key": "qc_aroma_suhu"
           },
           {
             "label": "Score Cuptest",
@@ -1294,22 +1314,22 @@ const FLOW_SECTIONS = [
           {
             "label": "Wangi",
             "isHeader": false,
-            "key": null
+            "key": "qc_aroma_cuptest_wangi"
           },
           {
             "label": "Pahit",
             "isHeader": false,
-            "key": null
+            "key": "qc_aroma_cuptest_pahit"
           },
           {
             "label": "Asam",
             "isHeader": false,
-            "key": null
+            "key": "qc_aroma_cuptest_asam"
           },
           {
             "label": "PIC QC",
             "isHeader": false,
-            "key": null
+            "key": "qc_aroma_pic"
           },
           {
             "label": "Analisa Kualitas Hidrolise",
@@ -1319,27 +1339,27 @@ const FLOW_SECTIONS = [
           {
             "label": "Asal silo degassing",
             "isHeader": false,
-            "key": null
+            "key": "qc_hydro_silo"
           },
           {
             "label": "Visual/Foreign Matter",
             "isHeader": false,
-            "key": null
+            "key": "qc_hydro_visual_fm"
           },
           {
             "label": "Brix/TS",
             "isHeader": false,
-            "key": null
+            "key": "qc_hydro_brix_ts"
           },
           {
             "label": "pH",
             "isHeader": false,
-            "key": null
+            "key": "qc_hydro_ph"
           },
           {
             "label": "Suhu",
             "isHeader": false,
-            "key": null
+            "key": "qc_hydro_suhu"
           },
           {
             "label": "Score Cuptest",
@@ -1349,22 +1369,22 @@ const FLOW_SECTIONS = [
           {
             "label": "Wangi",
             "isHeader": false,
-            "key": null
+            "key": "qc_hydro_cuptest_wangi"
           },
           {
             "label": "Pahit",
             "isHeader": false,
-            "key": null
+            "key": "qc_hydro_cuptest_pahit"
           },
           {
             "label": "Asam",
             "isHeader": false,
-            "key": null
+            "key": "qc_hydro_cuptest_asam"
           },
           {
             "label": "PIC QC",
             "isHeader": false,
-            "key": null
+            "key": "qc_hydro_pic"
           }
         ]
       }
@@ -1461,7 +1481,7 @@ const FLOW_SECTIONS = [
   },
   {
     "name": "ROASTING",
-    "totalRows": 22,
+    "totalRows": 27,
     "blocks": [
       {
         "pic": "Produksi",
@@ -1509,6 +1529,31 @@ const FLOW_SECTIONS = [
             "label": "Operator produksi",
             "isHeader": false,
             "key": "roast_operator"
+          },
+          {
+            "label": "Jenis biji kopi mentah",
+            "isHeader": false,
+            "key": "roast_jenis_biji"
+          },
+          {
+            "label": "SiloCell yang digunakan",
+            "isHeader": false,
+            "key": "roast_silocell"
+          },
+          {
+            "label": "Total input kopi mentah",
+            "isHeader": false,
+            "key": "roast_kopi_mentah"
+          },
+          {
+            "label": "Total output kopi matang",
+            "isHeader": false,
+            "key": "roast_kopi_matang"
+          },
+          {
+            "label": "Yield Roasting",
+            "isHeader": false,
+            "key": "roast_yield"
           }
         ]
       },
