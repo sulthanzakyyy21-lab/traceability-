@@ -785,140 +785,258 @@
     </div>
 
     <!-- ══════════════════════════════════════════════════════════════
-         TAB 2: DATA SYNC (SPREADSHEET UPLOADER)
+         TAB 2: DATA CONVERT (UNIFIED AUTO-CONVERTER)
     ══════════════════════════════════════════════════════════════ -->
     <div v-if="activeTab==='sync'" class="space-y-4 no-print">
 
+      <!-- Header -->
       <div class="flex items-center justify-between">
         <div>
-          <h1 class="text-sm font-bold text-slate-900 uppercase tracking-tight">Data Sync — 7 Tabel SCADA Produksi</h1>
+          <h1 class="text-sm font-bold text-slate-900 uppercase tracking-tight">Data Convert — Auto Flow & Table Detection</h1>
           <p class="text-xs text-slate-600 mt-0.5">
-            Unggah spreadsheet SCADA untuk disinkronisasi ke dalam database MySQL <code class="bg-slate-200 px-1 py-0.5 rounded text-slate-900 font-bold">db_traceability_sja</code>.
+            Pilih <span class="font-bold text-slate-800">PIC</span> dan <span class="font-bold text-slate-800">Tower</span>. Sistem akan mendeteksi flow dan tabel database secara otomatis dari struktur kolom Excel.
           </p>
         </div>
         <button
           @click="refreshAllCounts"
           class="text-xs border border-slate-400 hover:bg-slate-100 text-slate-800 px-3.5 py-1.5 rounded font-bold transition-colors"
         >
-          Refresh Count Baris
+          ↻ Refresh Data
         </button>
       </div>
 
-      <!-- Sync Cards Grid -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      <!-- ── SELECTOR PIC & TOWER ── -->
+      <div class="bg-white border border-slate-400 rounded p-4 space-y-3.5">
+        <!-- 1. PILIH PIC -->
+        <div>
+          <div class="text-[10px] uppercase font-bold text-slate-500 mb-1.5 tracking-wider">
+            1. Pilih PIC (Penanggung Jawab Flow):
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <button
+              v-for="p in picList"
+              :key="p"
+              type="button"
+              @click="changePic(p)"
+              :class="selectedPic === p
+                ? 'bg-slate-900 text-white border-slate-900 shadow-sm'
+                : 'bg-white text-slate-700 border-slate-300 hover:border-slate-500 hover:bg-slate-50'"
+              class="px-4 py-2 rounded text-xs font-bold border transition-all flex items-center gap-1.5 cursor-pointer"
+            >
+              <span class="w-2 h-2 rounded-full" :class="selectedPic === p ? 'bg-emerald-400' : 'bg-slate-300'"></span>
+              PIC {{ p }}
+            </button>
+          </div>
+        </div>
+
+        <!-- 2. PILIH TOWER -->
+        <div>
+          <div class="text-[10px] uppercase font-bold text-slate-500 mb-1.5 tracking-wider">
+            2. Pilih Tower:
+          </div>
+          <div v-if="selectedPic === 'RMW'" class="text-xs bg-amber-50 border border-amber-200 text-amber-900 px-3 py-2 rounded font-medium inline-block">
+            ℹ️ <strong>RMW (Raw Material Warehouse)</strong> tidak menggunakan pembagian Tower.
+          </div>
+          <div v-else class="flex flex-wrap gap-2">
+            <button
+              v-for="tow in towerOptions"
+              :key="tow"
+              type="button"
+              @click="changeTower(tow)"
+              :class="selectedTower === tow
+                ? 'bg-blue-900 text-white border-blue-900 shadow-sm'
+                : 'bg-white text-slate-700 border-slate-300 hover:border-slate-500 hover:bg-slate-50'"
+              class="px-3.5 py-1.5 rounded text-xs font-bold border transition-all cursor-pointer"
+            >
+              {{ tow }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SMART DROPZONE & DETECTOR PANEL ── -->
+      <div class="bg-white border border-slate-400 rounded p-5 space-y-4">
+        <div class="flex items-center justify-between">
+          <div class="text-xs font-bold uppercase tracking-wider text-slate-800">
+            3. Upload File Excel (.xlsx / .xls)
+          </div>
+          <div class="text-[11px] text-slate-500">
+            Filter Aktif: <strong class="text-slate-800">PIC {{ selectedPic }}</strong> &bull; <strong class="text-slate-800">{{ selectedPic === 'RMW' ? 'Non-Tower' : selectedTower }}</strong>
+          </div>
+        </div>
+
+        <!-- Drag & Drop Area -->
         <div
-          v-for="tbl in tables"
-          :key="tbl.key"
-          class="bg-white border border-slate-400 rounded p-4 flex flex-col justify-between shadow-sm"
+          class="border-2 border-dashed rounded p-6 text-center cursor-pointer transition-colors"
+          :class="inspectState.dragover
+            ? 'border-blue-500 bg-blue-50'
+            : 'border-slate-400 hover:border-slate-700 bg-slate-50'"
+          @click="triggerFileInput"
+          @dragover.prevent="inspectState.dragover = true"
+          @dragleave="inspectState.dragover = false"
+          @drop.prevent="onDropFile"
         >
+          <input
+            id="excel-auto-file"
+            type="file"
+            accept=".xlsx,.xls"
+            class="hidden"
+            @change="onFileSelected"
+          />
+
+          <div v-if="!inspectState.loading">
+            <svg class="w-8 h-8 mx-auto mb-2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            <div class="text-xs text-slate-700">
+              <span class="font-bold text-slate-900 underline">Pilih file Excel</span> atau seret file ke area ini
+            </div>
+            <div class="text-[10px] text-slate-500 mt-1">
+              File akan dianalisis secara otomatis untuk mencocokkan flow & tabel yang sesuai.
+            </div>
+            <div v-if="inspectState.fileName" class="mt-2.5 inline-block bg-blue-50 border border-blue-300 text-blue-900 text-xs font-bold px-3 py-1 rounded">
+              📄 {{ inspectState.fileName }}
+            </div>
+          </div>
+
+          <div v-else class="py-4">
+            <svg class="spin h-7 w-7 text-slate-700 mx-auto mb-2" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+            </svg>
+            <div class="text-xs text-slate-700 font-bold">Menganalisis struktur kolom file...</div>
+          </div>
+        </div>
+
+        <!-- ── HASIL DETEKSI OTOMATIS ── -->
+        <div v-if="inspectState.detected && inspectState.data" class="bg-emerald-50 border-2 border-emerald-500 rounded p-4">
+          <div class="flex items-start justify-between gap-3 mb-3">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="bg-emerald-700 text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase">Flow Terdeteksi</span>
+                <span class="text-sm font-bold text-slate-900 uppercase tracking-tight">{{ inspectState.data.flow }}</span>
+              </div>
+              <div class="text-xs text-emerald-950 font-bold mt-1">
+                Tabel Target: <code class="bg-white border border-emerald-300 px-1.5 py-0.5 rounded text-emerald-900 font-mono text-[11px]">db_traceability_sja.{{ inspectState.data.table }}</code>
+              </div>
+            </div>
+            <span class="text-[11px] font-bold bg-white text-emerald-800 border border-emerald-300 px-2.5 py-1 rounded">
+              🎯 Cocok Otomatis (Score: {{ inspectState.data.score }})
+            </span>
+          </div>
+
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs bg-white/70 border border-emerald-200 rounded p-2.5 mb-3">
+            <div>
+              <div class="text-[10px] text-slate-500">Sheet:</div>
+              <div class="font-bold text-slate-800 truncate">{{ inspectState.data.sheetName }}</div>
+            </div>
+            <div>
+              <div class="text-[10px] text-slate-500">Jumlah Baris:</div>
+              <div class="font-bold text-slate-800">{{ Number(inspectState.data.totalRows).toLocaleString() }} baris</div>
+            </div>
+            <div>
+              <div class="text-[10px] text-slate-500">Jumlah Kolom:</div>
+              <div class="font-bold text-slate-800">{{ inspectState.data.colCount }} kolom</div>
+            </div>
+            <div>
+              <div class="text-[10px] text-slate-500">Tower Target:</div>
+              <div class="font-bold text-slate-800">{{ inspectState.data.tower || '-' }}</div>
+            </div>
+          </div>
+
+          <!-- Action buttons for import -->
+          <div class="flex items-center gap-2 pt-1">
+            <button
+              v-if="!importState.importing"
+              @click="executeAutoImport"
+              class="flex-1 bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-bold py-2.5 px-4 rounded transition-colors shadow-sm flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <span>🚀 Konversi &amp; Simpan ke Database ({{ inspectState.data.table }})</span>
+            </button>
+            <div v-else class="flex-1 bg-slate-200 text-slate-700 text-xs font-bold py-2.5 px-4 rounded flex items-center justify-center gap-2">
+              <svg class="spin h-4 w-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+              <span>Mengimpor {{ Number(inspectState.data.totalRows).toLocaleString() }} baris data...</span>
+            </div>
+            <button
+              @click="resetAutoInspect"
+              class="text-xs border border-slate-300 hover:bg-slate-100 text-slate-700 py-2.5 px-3 rounded font-medium transition-colors cursor-pointer"
+            >
+              Batal
+            </button>
+          </div>
+        </div>
+
+        <!-- ── GAGAL DETEKSI / TIDAK COCOK ── -->
+        <div v-if="inspectState.error" class="bg-red-50 border border-red-300 rounded p-3 text-xs text-red-900 flex items-start gap-2">
+          <span class="text-base leading-none">⚠️</span>
           <div>
-            <div class="flex items-start justify-between gap-2">
-              <div>
-                <span class="text-[10px] uppercase text-slate-500 font-bold">{{ tbl.category }}</span>
-                <div class="text-xs font-bold text-slate-900 mt-0.5">{{ tbl.label }}</div>
-                <div class="text-[10px] text-slate-600">{{ tbl.key }}</div>
-              </div>
-              <span
-                :class="tbl.count > 0 ? 'bg-emerald-50 text-emerald-800 border-emerald-300' : 'bg-slate-100 text-slate-600 border-slate-300'"
-                class="text-[10px] font-bold border px-1.5 py-0.5 rounded"
-              >
-                {{ tbl.count > 0 ? 'Aktif' : 'Kosong' }}
-              </span>
-            </div>
-
-            <div class="bg-slate-50 border border-slate-300 rounded px-2.5 py-1.5 my-3 flex justify-between items-center">
-              <span class="text-xs text-slate-700">Total Baris Tersimpan</span>
-              <span class="text-xs font-bold text-slate-900">
-                {{ tbl.count !== null ? Number(tbl.count).toLocaleString() : '...' }}
-              </span>
-            </div>
-
-            <div class="text-[11px] text-slate-600 mb-3">
-              Sheet acuan: <span class="font-bold text-slate-900">{{ tbl.sheet }}</span>
-            </div>
-
-            <!-- Upload dropzone -->
-            <div
-              class="border-2 border-dashed border-slate-400 hover:border-slate-700 rounded p-3 text-center cursor-pointer transition-colors bg-slate-50/50"
-              :class="{ 'border-blue-500 bg-blue-50/30': tbl.dragover }"
-              @click="triggerUpload(tbl.key)"
-              @dragover.prevent="tbl.dragover = true"
-              @dragleave="tbl.dragover = false"
-              @drop.prevent="onDrop($event, tbl.key)"
-            >
-              <input
-                :id="'f-' + tbl.key"
-                type="file"
-                accept=".xlsx,.xls"
-                class="hidden"
-                @change="handleFileSelect($event, tbl.key)"
-              />
-              <div v-if="!tbl.uploading">
-                <svg class="w-5 h-5 mx-auto mb-1 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
-                </svg>
-                <div class="text-[11px] text-slate-700"><span class="font-bold text-slate-900">Pilih file</span> atau drop .xlsx</div>
-                <div v-if="tbl.fileName" class="text-[10px] text-blue-800 mt-1 truncate font-bold">
-                  {{ tbl.fileName }}
-                </div>
-              </div>
-              <div v-else class="py-2">
-                <svg class="spin h-5 w-5 text-slate-800 mx-auto mb-1" fill="none" viewBox="0 0 24 24">
-                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-                </svg>
-                <div class="text-[11px] text-slate-700 font-bold">Mengimpor seluruh baris data...</div>
-              </div>
-            </div>
-
-            <!-- Upload result message -->
-            <div
-              v-if="tbl.message"
-              class="text-[11px] p-2 rounded mt-2 border"
-              :class="tbl.status === 'ok' ? 'bg-green-50 text-green-900 border-green-300' : 'bg-red-50 text-red-900 border-red-300'"
-            >
-              {{ tbl.message }}
-            </div>
+            <div class="font-bold">Struktur Kolom Tidak Cocok</div>
+            <div class="mt-0.5">{{ inspectState.error }}</div>
           </div>
+        </div>
 
-          <!-- Action buttons -->
-          <div class="flex gap-2 mt-3 pt-3 border-t border-slate-300">
-            <button
-              v-if="tbl.fileName && !tbl.uploading"
-              @click="uploadFile(tbl.key)"
-              class="flex-1 text-xs bg-slate-900 hover:bg-slate-800 text-white py-1.5 rounded font-bold transition-colors"
-            >
-              Impor
-            </button>
-            <button
-              @click="clearTable(tbl.key)"
-              class="text-xs border border-slate-400 hover:bg-slate-100 text-slate-700 px-3 py-1.5 rounded font-medium transition-colors"
-              title="Kosongkan tabel"
-            >
-              Clear
-            </button>
+        <!-- ── STATUS PESAN IMPOR ── -->
+        <div
+          v-if="importState.message"
+          class="text-xs p-3.5 rounded border flex items-center justify-between"
+          :class="importState.success ? 'bg-green-50 text-green-900 border-green-300' : 'bg-red-50 text-red-900 border-red-300'"
+        >
+          <div class="flex items-center gap-2">
+            <span>{{ importState.success ? '✅' : '❌' }}</span>
+            <span class="font-bold">{{ importState.message }}</span>
           </div>
+          <button @click="importState.message = ''" class="text-xs text-slate-500 hover:text-slate-800 font-bold px-1.5 cursor-pointer">✕</button>
         </div>
       </div>
 
-      <!-- Import documentation box -->
-      <div class="bg-white border border-slate-400 rounded p-4 text-xs space-y-2 text-slate-700">
-        <div class="font-bold text-slate-900 uppercase tracking-wider text-[11px]">Informasi Penanganan Data SCADA</div>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-          <div class="p-2.5 bg-slate-50 border border-slate-300 rounded">
-            <strong class="text-slate-900 block mb-1">Tanpa Batas 1000 Baris</strong>
-            Sistem menggunakan multi-row INSERT per 500 baris. File dengan puluhan ribu data (misal 50.500 baris) diimpor 100% utuh ke MySQL.
+      <!-- ── RINGKASAN TABEL DATABASE (SESUAI PIC & TOWER) ── -->
+      <div class="bg-white border border-slate-400 rounded p-4">
+        <div class="flex items-center justify-between mb-3">
+          <div class="text-xs font-bold text-slate-800 uppercase tracking-tight">
+            Status Tabel Database &bull; PIC {{ selectedPic }} ({{ selectedTower }})
           </div>
-          <div class="p-2.5 bg-slate-50 border border-slate-300 rounded">
-            <strong class="text-slate-900 block mb-1">Mapping Indeks Kolom</strong>
-            Kolom dipetakan murni berdasarkan urutan fisik kolom pada worksheet (indeks 0 hingga N) tanpa tergantung pada nama header.
-          </div>
-          <div class="p-2.5 bg-slate-50 border border-slate-300 rounded">
-            <strong class="text-slate-900 block mb-1">Normalisasi Tanggal &amp; Waktu</strong>
-            Waktu SCADA (termasuk artefak tanggal 1899) dinormalisasi secara otomatis menjadi format jam operasional resmi WIB (HH:mm).
-          </div>
+          <span class="text-[11px] text-slate-500">
+            Total: {{ filteredTables.length }} tabel
+          </span>
+        </div>
+
+        <div v-if="filteredTables.length > 0" class="overflow-x-auto">
+          <table class="w-full text-xs text-left border border-slate-300 border-collapse">
+            <thead class="bg-slate-100 text-[10px] uppercase font-bold text-slate-700">
+              <tr>
+                <th class="border border-slate-300 px-3 py-2">Flow</th>
+                <th class="border border-slate-300 px-3 py-2">Nama Tabel</th>
+                <th class="border border-slate-300 px-3 py-2">Tower</th>
+                <th class="border border-slate-300 px-3 py-2 text-right">Baris di Database</th>
+                <th class="border border-slate-300 px-3 py-2 text-center w-28">Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="tbl in filteredTables" :key="tbl.key" class="hover:bg-slate-50">
+                <td class="border border-slate-300 px-3 py-2 font-bold text-slate-900">{{ tbl.flow }}</td>
+                <td class="border border-slate-300 px-3 py-2 font-mono text-[11px] text-slate-700">{{ tbl.key }}</td>
+                <td class="border border-slate-300 px-3 py-2 text-slate-600">{{ tbl.tower }}</td>
+                <td class="border border-slate-300 px-3 py-2 text-right font-bold" :class="tbl.count > 0 ? 'text-emerald-700' : 'text-slate-400'">
+                  {{ tbl.count !== null ? Number(tbl.count).toLocaleString() + ' baris' : '...' }}
+                </td>
+                <td class="border border-slate-300 px-3 py-2 text-center">
+                  <button
+                    @click="clearTable(tbl.key)"
+                    class="text-[11px] text-slate-500 hover:text-red-700 hover:bg-red-50 border border-slate-300 hover:border-red-300 px-2 py-0.5 rounded transition-colors cursor-pointer"
+                  >
+                    Kosongkan
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div v-else class="text-xs text-slate-500 bg-slate-50 border border-dashed border-slate-300 rounded p-4 text-center">
+          Belum ada tabel database untuk PIC {{ selectedPic }} dan filter {{ selectedTower }}.
         </div>
       </div>
+
     </div>
 
     <!-- Fullscreen Modal for SCADA Parameter Kritis -->
@@ -1053,15 +1171,47 @@ createApp({
       return '-';
     }
 
+    const picList = ['Produksi', 'PA', 'QC', 'FGW', 'RMW'];
+    const towerOptions = ['Tower 1', 'Tower 2', 'Non-Tower / Semua'];
+    const selectedPic = ref('Produksi');
+    const selectedTower = ref('Tower 1');
+
     const tables = reactive([
-      { key: 'dryer_tower_1', label: 'Dryer Tower 1', category: 'Dryer', sheet: 'Checklist Scada Dryer - T1', count: null, status: 'idle', message: '', fileName: '', file: null, uploading: false, dragover: false },
-      { key: 'dryer_tower_2', label: 'Dryer Tower 2', category: 'Dryer', sheet: 'Checklist Scada Dryer - T2', count: null, status: 'idle', message: '', fileName: '', file: null, uploading: false, dragover: false },
-      { key: 'extraction_tower_1', label: 'Extraction Tower 1', category: 'Extraction', sheet: 'Checklist Hasil Ekstraksi', count: null, status: 'idle', message: '', fileName: '', file: null, uploading: false, dragover: false },
-      { key: 'extraction_tower_2', label: 'Extraction Tower 2', category: 'Extraction', sheet: 'Checklist Hasil Ekstraksi', count: null, status: 'idle', message: '', fileName: '', file: null, uploading: false, dragover: false },
-      { key: 'evaporation_tower_1', label: 'Evaporation Tower 1', category: 'Evaporation', sheet: 'Checklist Hasil Evaporasi', count: null, status: 'idle', message: '', fileName: '', file: null, uploading: false, dragover: false },
-      { key: 'evaporation_tower_2', label: 'Evaporation Tower 2', category: 'Evaporation', sheet: 'Checklist Hasil Evaporasi', count: null, status: 'idle', message: '', fileName: '', file: null, uploading: false, dragover: false },
-      { key: 'roasting_probat', label: 'Roasting Probat', category: 'Roasting', sheet: 'Checklist Hasil Produksi Roasti', count: null, status: 'idle', message: '', fileName: '', file: null, uploading: false, dragover: false },
+      { key: 'dryer_tower_1',      label: 'Dryer Tower 1',      flow: 'DRYER',       pic: 'Produksi', tower: 'Tower 1', count: null },
+      { key: 'dryer_tower_2',      label: 'Dryer Tower 2',      flow: 'DRYER',       pic: 'Produksi', tower: 'Tower 2', count: null },
+      { key: 'extraction_tower_1', label: 'Extraction Tower 1', flow: 'EXTRACTION',  pic: 'Produksi', tower: 'Tower 1', count: null },
+      { key: 'extraction_tower_2', label: 'Extraction Tower 2', flow: 'EXTRACTION',  pic: 'Produksi', tower: 'Tower 2', count: null },
+      { key: 'evaporation_tower_1',label: 'Evaporation Tower 1',flow: 'EVAPORATION', pic: 'Produksi', tower: 'Tower 1', count: null },
+      { key: 'evaporation_tower_2',label: 'Evaporation Tower 2',flow: 'EVAPORATION', pic: 'Produksi', tower: 'Tower 2', count: null },
+      { key: 'roasting_probat',    label: 'Roasting Probat',    flow: 'ROASTING',    pic: 'Produksi', tower: 'Non-Tower', count: null },
+      { key: 'packing_tower_1',    label: 'Packing Tower 1',    flow: 'PACKING',     pic: 'Produksi', tower: 'Tower 1', count: null },
+      { key: 'packing_tower_2',    label: 'Packing Tower 2',    flow: 'PACKING',     pic: 'Produksi', tower: 'Tower 2', count: null },
     ]);
+
+    const filteredTables = computed(() => {
+      return tables.filter(t => {
+        if (t.pic !== selectedPic.value) return false;
+        if (selectedPic.value === 'RMW') return true;
+        if (selectedTower.value === 'Non-Tower / Semua') return true;
+        return t.tower === selectedTower.value || t.tower === 'Non-Tower';
+      });
+    });
+
+    const inspectState = reactive({
+      loading: false,
+      detected: false,
+      data: null,
+      error: '',
+      file: null,
+      fileName: '',
+      dragover: false,
+    });
+
+    const importState = reactive({
+      importing: false,
+      success: false,
+      message: '',
+    });
 
     const getTable = (key) => tables.find((t) => t.key === key);
 
@@ -1078,59 +1228,113 @@ createApp({
       for (const t of tables) await fetchCount(t.key);
     }
 
-    function triggerUpload(key) {
-      document.getElementById('f-' + key)?.click();
+    function changePic(p) {
+      selectedPic.value = p;
+      if (p === 'RMW') {
+        selectedTower.value = 'Non-Tower / Semua';
+      }
+      if (inspectState.file) {
+        inspectFile(inspectState.file);
+      }
     }
 
-    function onDrop(e, key) {
-      const t = getTable(key);
-      if (!t) return;
-      t.dragover = false;
+    function changeTower(tow) {
+      selectedTower.value = tow;
+      if (inspectState.file) {
+        inspectFile(inspectState.file);
+      }
+    }
+
+    function triggerFileInput() {
+      document.getElementById('excel-auto-file')?.click();
+    }
+
+    function onFileSelected(e) {
+      const f = e.target.files[0];
+      if (f) inspectFile(f);
+    }
+
+    function onDropFile(e) {
+      inspectState.dragover = false;
       const f = e.dataTransfer.files[0];
       if (f && (f.name.endsWith('.xlsx') || f.name.endsWith('.xls'))) {
-        t.file = f;
-        t.fileName = f.name;
+        inspectFile(f);
       }
     }
 
-    function handleFileSelect(e, key) {
-      const t = getTable(key);
-      if (!t) return;
-      const f = e.target.files[0];
-      if (f) {
-        t.file = f;
-        t.fileName = f.name;
-      }
-    }
+    async function inspectFile(file) {
+      inspectState.file = file;
+      inspectState.fileName = file.name;
+      inspectState.loading = true;
+      inspectState.detected = false;
+      inspectState.data = null;
+      inspectState.error = '';
+      importState.message = '';
 
-    async function uploadFile(key) {
-      const t = getTable(key);
-      if (!t || !t.file) return;
-      t.uploading = true;
-      t.message = '';
-      t.status = 'idle';
       try {
         const fd = new FormData();
-        fd.append('file', t.file);
-        const res = await fetch(`/api/import/${key}`, { method: 'POST', body: fd });
+        fd.append('file', file);
+        fd.append('pic', selectedPic.value);
+        fd.append('tower', selectedTower.value === 'Non-Tower / Semua' ? 'Semua' : selectedTower.value);
+
+        const res = await fetch('/api/import/inspect', {
+          method: 'POST',
+          body: fd,
+        });
         const data = await res.json();
-        if (res.ok) {
-          t.status = 'ok';
-          t.message = data.message;
-          t.count = data.imported;
-          t.file = null;
-          t.fileName = '';
-          const inp = document.getElementById('f-' + key);
-          if (inp) inp.value = '';
+        if (data.detected) {
+          inspectState.detected = true;
+          inspectState.data = data;
         } else {
-          t.status = 'error';
-          t.message = `Gagal: ${data.error}`;
+          inspectState.detected = false;
+          inspectState.error = data.message || 'File tidak cocok dengan struktur tabel manapun.';
         }
       } catch (err) {
-        t.status = 'error';
-        t.message = `Network error: ${err.message}`;
+        inspectState.error = 'Gagal menganalisis file: ' + err.message;
       } finally {
-        t.uploading = false;
+        inspectState.loading = false;
+      }
+    }
+
+    function resetAutoInspect() {
+      inspectState.file = null;
+      inspectState.fileName = '';
+      inspectState.detected = false;
+      inspectState.data = null;
+      inspectState.error = '';
+      const inp = document.getElementById('excel-auto-file');
+      if (inp) inp.value = '';
+    }
+
+    async function executeAutoImport() {
+      if (!inspectState.file || !inspectState.data) return;
+      const targetTable = inspectState.data.table;
+      importState.importing = true;
+      importState.message = '';
+
+      try {
+        const fd = new FormData();
+        fd.append('file', inspectState.file);
+
+        const res = await fetch(`/api/import/${targetTable}`, {
+          method: 'POST',
+          body: fd,
+        });
+        const data = await res.json();
+        if (res.ok) {
+          importState.success = true;
+          importState.message = `Berhasil! ${data.imported.toLocaleString()} baris berhasil diimpor ke tabel ${targetTable}.`;
+          await fetchCount(targetTable);
+          resetAutoInspect();
+        } else {
+          importState.success = false;
+          importState.message = `Gagal mengimpor: ${data.error}`;
+        }
+      } catch (err) {
+        importState.success = false;
+        importState.message = `Network error: ${err.message}`;
+      } finally {
+        importState.importing = false;
       }
     }
 
@@ -1142,8 +1346,8 @@ createApp({
         const t = getTable(key);
         if (t) {
           t.count = 0;
-          t.status = 'idle';
-          t.message = data.message;
+          importState.message = data.message;
+          importState.success = true;
         }
       } catch (err) {
         alert('Gagal mengosongkan tabel: ' + err.message);
@@ -1353,10 +1557,6 @@ createApp({
       flowSections,
       tables,
       getItemValue,
-      triggerUpload,
-      onDrop,
-      handleFileSelect,
-      uploadFile,
       clearTable,
       doTrace,
       loadPresetAudit,
@@ -1376,6 +1576,21 @@ createApp({
       getProcessColumnChunksByKey,
       activeModalProcess,
       formatParamCell,
+      picList,
+      towerOptions,
+      selectedPic,
+      selectedTower,
+      changePic,
+      changeTower,
+      inspectState,
+      importState,
+      filteredTables,
+      triggerFileInput,
+      onFileSelected,
+      onDropFile,
+      inspectFile,
+      resetAutoInspect,
+      executeAutoImport,
     };
   },
 }).mount('#app');
