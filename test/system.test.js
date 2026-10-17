@@ -7,7 +7,7 @@ const { TABLE_COLUMNS_MAP, ALLOWED_TABLES, TABLE_METADATA } = require('../server
 const pool = require('../server/db');
 const { TraceQuerySchema } = require('../server/schemas/traceSchema');
 const { TableNameParamSchema, PicRowsQuerySchema } = require('../server/schemas/importSchema');
-const { parseBatch } = require('../server/utils/traceHelpers');
+const { parseBatch, formatAvg2 } = require('../server/utils/traceHelpers');
 
 describe('Traceability System - Automated Monitoring & Validation', () => {
 
@@ -69,7 +69,7 @@ describe('Traceability System - Automated Monitoring & Validation', () => {
   // ══════════════════════════════════════════════════════════════
   // Test Case 2: Logika Kalkulasi Traceability
   // ══════════════════════════════════════════════════════════════
-  test('TC-2: Verifikasi Formula Kalkulasi Traceability (Yield & Rasio IC)', () => {
+  test('TC-2: Verifikasi Formula Kalkulasi Traceability (Yield & Rasio IC) & formatAvg2', () => {
     const boxCount = 205;
     const kgPerBox = 30;
     const totalOutputKg = boxCount * kgPerBox;
@@ -85,6 +85,14 @@ describe('Traceability System - Automated Monitoring & Validation', () => {
     const rawRasioIC = beratKopiMentah / totalOutputKg;
     const rasioICFormatted = rawRasioIC.toFixed(2);
     assert.strictEqual(rasioICFormatted, '2.16', 'Rasio IC (13285.8 / 6150) harus bernilai 2.16');
+
+    // formatAvg2 helper validation
+    assert.strictEqual(formatAvg2([3.5555]), '3,56', '3.5555 harus diformat menjadi "3,56"');
+    assert.strictEqual(formatAvg2([3.10, 3.50]), '3,30', 'Rata-rata 3.10 dan 3.50 harus "3,30"');
+    assert.strictEqual(formatAvg2(['3,1', '3,5']), '3,30', 'String dengan koma harus didukung');
+    assert.strictEqual(formatAvg2([0, -1, 4.222]), '4,22', 'Nilai <= 0 harus diabaikan');
+    assert.strictEqual(formatAvg2([]), '-', 'Array kosong harus mengembalikan "-"');
+    assert.strictEqual(formatAvg2([0, -5]), '-', 'Array tanpa nilai > 0 harus mengembalikan "-"');
   });
 
   // ══════════════════════════════════════════════════════════════
@@ -162,4 +170,78 @@ describe('Traceability System - Automated Monitoring & Validation', () => {
     checkDir(serverDir);
   });
 
+  // ══════════════════════════════════════════════════════════════
+  // Test Case 6: Proteksi Anti-Duplikasi Data (Deduplication Safeguard)
+  // ══════════════════════════════════════════════════════════════
+  test('TC-6: Proteksi Anti-Duplikasi Data Excel (Deduplication Safeguard)', async () => {
+    const { filterDuplicateRows } = require('../server/utils/dedupHelper');
+    const columns = ['Tanggal', 'Jam', 'Batch', 'Nomor Box', 'Kadar Air (%)'];
+    const fakeIncoming = [
+      ['2026-03-01', '08:00', 'B999', 'Box 1', '3.10'],
+      ['2026-03-01', '08:00', 'B999', 'Box 1', '3.10'], // internal duplicate
+      ['2026-03-01', '08:30', 'B999', 'Box 2', '3.40'],
+    ];
+
+    const mockPoolEmpty = { query: async () => [[]] };
+    const res1 = await filterDuplicateRows('test_tbl', columns, fakeIncoming, mockPoolEmpty);
+    assert.strictEqual(res1.totalIncoming, 3);
+    assert.strictEqual(res1.duplicateCount, 1, 'Duplikat internal harus ditolak');
+    assert.strictEqual(res1.newRows.length, 2, 'Hanya 2 baris unik yang lolos');
+
+    const mockPoolExisting = {
+      query: async () => [[
+        { Tanggal: '2026-03-01', Jam: '08:00', Batch: 'B999', 'Nomor Box': 'Box 1', 'Kadar Air (%)': '3.10' }
+      ]],
+    };
+    const res2 = await filterDuplicateRows('test_tbl', columns, fakeIncoming, mockPoolExisting);
+    assert.strictEqual(res2.duplicateCount, 2, 'Baris existing di DB + duplikat internal harus ditolak');
+    assert.strictEqual(res2.newRows.length, 1, 'Hanya Box 2 yang lolos sebagai baris baru');
+  });
+
+  // ══════════════════════════════════════════════════════════════
+  // Test Case 7: Validasi Kolom Excel Otomatis & Peringatan Kolom
+  // ══════════════════════════════════════════════════════════════
+  test('TC-7: Validasi Kolom Excel Otomatis & Peringatan Ketidakcocokan Kolom', () => {
+    const xlsx = require('xlsx');
+    const { inspectExcelWorkbook } = require('../server/utils/inspectHelper');
+
+    // 1. Valid workbook for qc_rework_t1
+    const validHeaders = TABLE_COLUMNS_MAP.qc_rework_t1;
+    const wb1 = xlsx.utils.book_new();
+    const ws1 = xlsx.utils.aoa_to_sheet([validHeaders, ['LOC-1', '1', 'B370', 'SIC 18 T']]);
+    xlsx.utils.book_append_sheet(wb1, ws1, 'QC REWORK');
+    const validBuf = xlsx.write(wb1, { type: 'buffer', bookType: 'xlsx' });
+
+    const resValid = inspectExcelWorkbook(validBuf, 'QC', 'Tower 1');
+    assert.strictEqual(resValid.detected, true, 'Harus terdeteksi sebagai tabel');
+    assert.strictEqual(resValid.valid, true, 'File dengan kolom lengkap harus valid');
+    assert.strictEqual(resValid.table, 'qc_rework_t1');
+    assert.strictEqual(resValid.missingCount, 0, 'Tidak boleh ada kolom wajib yang kurang');
+
+    // 2. Mismatched workbook (e.g. arbitrary non-matching columns)
+    const badHeaders = ['Nama Siswa', 'Nilai Ujian', 'Mata Pelajaran', 'Kelas'];
+    const wb2 = xlsx.utils.book_new();
+    const ws2 = xlsx.utils.aoa_to_sheet([badHeaders, ['Budi', '90', 'Matematika', '10A']]);
+    xlsx.utils.book_append_sheet(wb2, ws2, 'Data Siswa');
+    const badBuf = xlsx.write(wb2, { type: 'buffer', bookType: 'xlsx' });
+
+    const resBad = inspectExcelWorkbook(badBuf, 'QC', 'Tower 1');
+    assert.strictEqual(resBad.valid, false, 'File dengan kolom tidak cocok harus tidak valid (valid: false)');
+    assert.ok(resBad.warning && resBad.warning.length > 0, 'Harus memberikan teks peringatan ketidakcocokan kolom');
+
+    // 3. Partial columns (<40% match) -> should trigger mismatch warning
+    const partialHeaders = ['Lokasi Sampling', 'Masakan ke', 'Bahan Rework'];
+    const wb3 = xlsx.utils.book_new();
+    const ws3 = xlsx.utils.aoa_to_sheet([partialHeaders, ['LOC-1', '1', 'Rework A']]);
+    xlsx.utils.book_append_sheet(wb3, ws3, 'QC REWORK');
+    const partialBuf = xlsx.write(wb3, { type: 'buffer', bookType: 'xlsx' });
+
+    const resPartial = inspectExcelWorkbook(partialBuf, 'QC', 'Tower 1');
+    assert.strictEqual(resPartial.valid, false, 'Kesesuaian kolom < 40% harus ditolak');
+    assert.ok(resPartial.warning.includes('Peringatan: Kolom tidak cocok'), 'Peringatan harus menginformasikan ketidakcocokan kolom');
+    assert.ok(resPartial.missingColumns.length > 0, 'Daftar kolom yang hilang harus terisi');
+  });
+
 });
+
+

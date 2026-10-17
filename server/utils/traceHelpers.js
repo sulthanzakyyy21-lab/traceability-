@@ -88,6 +88,37 @@ function uniqueJoin(arr, sep = ' & ') {
   return result.join(sep);
 }
 
+/**
+ * Menghitung rata-rata nilai numerik (> 0) dan memformatnya menjadi string 2 digit desimal dengan koma (contoh: 3.5555 -> "3,56").
+ * @param {Array} array - Array berisi angka atau string angka
+ * @returns {string} String rata-rata dengan 2 digit desimal dan koma, atau "-" jika tidak ada nilai valid > 0
+ */
+function formatAvg2(array) {
+  if (!Array.isArray(array) || array.length === 0) return '-';
+
+  const validNums = [];
+  for (const item of array) {
+    if (item === null || item === undefined) continue;
+    let num;
+    if (typeof item === 'number') {
+      num = item;
+    } else {
+      const s = String(item).trim().replace(',', '.');
+      const m = s.match(/^-?\d+(\.\d+)?/);
+      num = m ? parseFloat(m[0]) : NaN;
+    }
+
+    if (!isNaN(num) && num > 0) {
+      validNums.push(num);
+    }
+  }
+
+  if (validNums.length === 0) return '-';
+
+  const avg = validNums.reduce((sum, n) => sum + n, 0) / validNums.length;
+  return avg.toFixed(2).replace('.', ',');
+}
+
 module.exports = {
   parseBatch,
   formatDateDisplay,
@@ -96,4 +127,6 @@ module.exports = {
   parseSiloNums,
   extractTankNo,
   uniqueJoin,
+  formatAvg2,
 };
+

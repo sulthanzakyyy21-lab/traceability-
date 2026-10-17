@@ -1082,6 +1082,20 @@
             </div>
           </div>
 
+          <!-- Warning alert if any columns are missing -->
+          <div v-if="inspectState.data.warning" class="mb-3 p-2.5 bg-amber-50 border border-amber-300 rounded text-xs text-amber-950 font-medium flex items-start gap-2">
+            <span>⚠️</span>
+            <div>
+              <div>{{ inspectState.data.warning }}</div>
+              <div v-if="inspectState.data.missingColumns?.length" class="mt-1 flex flex-wrap gap-1 items-center">
+                <span class="text-[10px] text-amber-800">Kolom tidak ditemukan:</span>
+                <span v-for="mc in inspectState.data.missingColumns" :key="mc" class="text-[10px] font-mono bg-white border border-amber-300 text-amber-900 px-1 py-0.5 rounded">
+                  {{ mc }}
+                </span>
+              </div>
+            </div>
+          </div>
+
           <!-- Action buttons for import -->
           <div class="flex items-center gap-2 pt-1">
             <button
@@ -1904,8 +1918,13 @@ createApp({
         });
         const data = await res.json();
         if (data.detected) {
-          inspectState.detected = true;
-          inspectState.data = data;
+          if (data.valid === false) {
+            inspectState.detected = false;
+            inspectState.error = data.warning || data.message || 'Struktur kolom file tidak cocok.';
+          } else {
+            inspectState.detected = true;
+            inspectState.data = data;
+          }
         } else {
           inspectState.detected = false;
           inspectState.error = data.message || 'File tidak cocok dengan struktur tabel manapun.';
@@ -1944,12 +1963,17 @@ createApp({
         const data = await res.json();
         if (res.ok) {
           importState.success = true;
-          importState.message = `Berhasil! ${data.imported.toLocaleString()} baris berhasil diimpor ke tabel ${targetTable}.`;
+          const impCount = Number(data.imported || 0).toLocaleString();
+          let msg = `Berhasil! ${impCount} baris berhasil diimpor ke tabel ${targetTable}.`;
+          if (data.skipped > 0) {
+            msg += ` (${data.skipped.toLocaleString()} baris duplikat dilewati).`;
+          }
+          importState.message = msg;
           await fetchCount(targetTable);
           resetAutoInspect();
         } else {
           importState.success = false;
-          importState.message = `Gagal mengimpor: ${data.error}`;
+          importState.message = `Gagal mengimpor: ${data.error || data.message}`;
         }
       } catch (err) {
         importState.success = false;
