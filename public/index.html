@@ -11,6 +11,21 @@
     tailwind.config = {
       theme: {
         extend: {
+          colors: {
+            coffee: {
+              50: '#fdfaf7',
+              100: '#f4ede6',
+              200: '#e8dcce',
+              300: '#d5c2ad',
+              400: '#bca188',
+              500: '#a38165',
+              600: '#876348',
+              700: '#6d4c35',
+              800: '#4a2c1d',
+              900: '#3c2415',
+              950: '#26160c',
+            },
+          },
           fontFamily: {
             sans: ['"Plus Jakarta Sans"', 'Inter', 'system-ui', 'sans-serif'],
             serif: ['"Times New Roman"', 'Times', 'serif'],
@@ -324,36 +339,42 @@
       white-space: nowrap !important;
     }
 
-    /* ── SIDEBAR NAVIGATION STYLES ── */
+    /* ── SIDEBAR NAVIGATION STYLES (LIGHT INDUSTRIAL COFFEE) ── */
     .app-sidebar {
-      background: #090d16;
-      border-right: 1px solid #1e293b;
-      transition: width 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+      background: #ffffff;
+      border-right: 1px solid #e7e5e4;
+      box-shadow: 1px 0 6px -1px rgba(60, 36, 21, 0.04);
+      transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     }
     .sidebar-item {
       display: flex;
       align-items: center;
       gap: 12px;
-      padding: 9px 12px;
-      border-radius: 6px;
-      font-size: 12px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      font-size: 12.5px;
       font-weight: 600;
       cursor: pointer;
-      transition: all 0.15s ease;
-      color: #94a3b8;
-      border-left: 3px solid transparent;
+      transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+      color: #57534e;
       text-align: left;
       width: 100%;
+      border: 1px solid transparent;
     }
     .sidebar-item:hover {
-      background: #1e293b;
-      color: #ffffff;
+      background: #f4ede6;
+      color: #3c2415;
     }
     .sidebar-item.active {
-      background: #14532d;
+      background: #4a2c1d;
       color: #ffffff;
-      border-left-color: #34d399;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+      box-shadow: 0 4px 12px -2px rgba(74, 44, 29, 0.25);
+    }
+    .sidebar-item.active .sidebar-subtext {
+      color: #d5c2ad !important;
+    }
+    .sidebar-item.active svg {
+      stroke: #ffffff;
     }
 
     /* Print styles */
@@ -378,37 +399,39 @@
     @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
-<body class="min-h-screen bg-slate-100 font-sans antialiased text-slate-900">
+<body class="min-h-screen bg-[#fbfaf8] font-sans antialiased text-stone-900 ambient-pattern">
 <div id="app" class="min-h-screen flex flex-row">
 
-  <!-- ── SIDEBAR NAVIGATION ── -->
+  <!-- ── SIDEBAR NAVIGATION (NO FULL CLOSE - COLLAPSES TO MINI RAIL) ── -->
   <aside
-    :class="sidebarOpen ? 'w-64' : 'w-16'"
-    class="app-sidebar no-print text-white flex-shrink-0 flex flex-col sticky top-0 h-screen select-none z-30 transition-all duration-200"
+    :class="sidebarOpen ? 'w-64' : 'w-20'"
+    class="app-sidebar no-print flex-shrink-0 flex flex-col sticky top-0 h-screen select-none z-30 transition-all duration-300 ease-in-out"
   >
     <!-- Brand -->
-    <div class="h-14 flex items-center px-3.5 border-b border-slate-800 justify-between bg-slate-950/70">
-      <div class="flex items-center gap-2.5 overflow-hidden">
-        <div class="w-7 h-7 rounded bg-emerald-700 border border-emerald-400/50 flex items-center justify-center font-black text-white text-xs flex-shrink-0 shadow-xs">
+    <div class="h-16 flex items-center px-4 border-b border-stone-200 justify-between bg-white">
+      <div class="flex items-center gap-3 overflow-hidden">
+        <div class="w-9 h-9 rounded-xl bg-[#4a2c1d] border border-[#3c2415] flex items-center justify-center font-black text-white text-xs flex-shrink-0 shadow-sm">
           SJA
         </div>
-        <div v-show="sidebarOpen" class="whitespace-nowrap overflow-hidden">
-          <div class="font-bold text-xs text-white leading-tight">PT. Santos Jaya Abadi</div>
-          <div class="text-[9.5px] text-emerald-400 font-mono">Traceability System</div>
+        <div v-show="sidebarOpen" class="whitespace-nowrap overflow-hidden transition-opacity duration-200">
+          <div class="font-extrabold text-xs text-stone-900 leading-tight tracking-tight">PT. Santos Jaya Abadi</div>
+          <div class="text-[10px] text-coffee-700 font-semibold">Traceability Platform</div>
         </div>
       </div>
       <button
         @click="sidebarOpen = !sidebarOpen"
-        class="text-slate-400 hover:text-white p-1 rounded hover:bg-slate-800 transition-colors text-xs font-mono cursor-pointer"
-        :title="sidebarOpen ? 'Kecilkan Sidebar' : 'Perluas Sidebar'"
+        class="text-stone-400 hover:text-stone-800 p-1.5 rounded-lg hover:bg-stone-100 transition-colors cursor-pointer"
+        :title="sidebarOpen ? 'Kecilkan Sidebar ke Mode Icon Rail' : 'Perluas Sidebar'"
       >
-        {{ sidebarOpen ? '◀' : '▶' }}
+        <svg class="w-4 h-4 transition-transform duration-200" :class="sidebarOpen ? '' : 'rotate-180'" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
       </button>
     </div>
 
     <!-- Navigation Menu Items -->
-    <nav class="flex-1 py-4 px-2 space-y-1.5 overflow-y-auto">
-      <div v-show="sidebarOpen" class="px-2.5 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+    <nav class="flex-1 py-4 px-2.5 space-y-1.5 overflow-y-auto">
+      <div v-show="sidebarOpen" class="px-2 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-stone-400">
         Navigasi Sistem
       </div>
 
@@ -416,14 +439,19 @@
       <button
         type="button"
         @click="activeTab = 'dashboard'"
-        :class="activeTab === 'dashboard' ? 'active' : ''"
+        :class="[activeTab === 'dashboard' ? 'active' : '', !sidebarOpen ? 'justify-center px-0' : '']"
         class="sidebar-item"
         title="Dashboard Utama (Executive & Factory Overview)"
       >
-        <span class="text-base flex-shrink-0">🏠</span>
+        <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+          <rect x="3" y="3" width="7" height="7" rx="1.5"></rect>
+          <rect x="14" y="3" width="7" height="7" rx="1.5"></rect>
+          <rect x="14" y="14" width="7" height="7" rx="1.5"></rect>
+          <rect x="3" y="14" width="7" height="7" rx="1.5"></rect>
+        </svg>
         <div v-show="sidebarOpen" class="flex-1 min-w-0">
           <div class="truncate">Dashboard Utama</div>
-          <div class="text-[10px] text-slate-400 font-normal truncate">Executive KPI &amp; Overview</div>
+          <div class="text-[10px] text-stone-500 sidebar-subtext font-normal truncate">Executive KPI &amp; Overview</div>
         </div>
       </button>
 
@@ -431,14 +459,20 @@
       <button
         type="button"
         @click="activeTab = 'pipeline'"
-        :class="activeTab === 'pipeline' ? 'active' : ''"
+        :class="[activeTab === 'pipeline' ? 'active' : '', !sidebarOpen ? 'justify-center px-0' : '']"
         class="sidebar-item"
         title="Interactive Traceability (Pipeline Journey & Genealogi)"
       >
-        <span class="text-base flex-shrink-0">🔍</span>
+        <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+          <circle cx="6" cy="18" r="3"></circle>
+          <circle cx="6" cy="6" r="3"></circle>
+          <circle cx="18" cy="12" r="3"></circle>
+          <path d="M6 9v6"></path>
+          <path d="M9 6h4a5 5 0 0 1 5 5v1"></path>
+        </svg>
         <div v-show="sidebarOpen" class="flex-1 min-w-0">
           <div class="truncate">Interactive Traceability</div>
-          <div class="text-[10px] text-slate-400 font-normal truncate">Visual Pipeline &amp; Genealogi</div>
+          <div class="text-[10px] text-stone-500 sidebar-subtext font-normal truncate">Visual Pipeline &amp; Genealogi</div>
         </div>
       </button>
 
@@ -446,18 +480,24 @@
       <button
         type="button"
         @click="activeTab = 'report'"
-        :class="activeTab === 'report' ? 'active' : ''"
+        :class="[activeTab === 'report' ? 'active' : '', !sidebarOpen ? 'justify-center px-0' : '']"
         class="sidebar-item"
         title="Laporan Dokumen Audit (Form F/QC/01.030 Resmi)"
       >
-        <span class="text-base flex-shrink-0">📑</span>
+        <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <line x1="16" y1="13" x2="8" y2="13"></line>
+          <line x1="16" y1="17" x2="8" y2="17"></line>
+          <polyline points="10 9 9 9 8 9"></polyline>
+        </svg>
         <div v-show="sidebarOpen" class="flex-1 min-w-0">
           <div class="truncate">Dokumen Audit Resmi</div>
-          <div class="text-[10px] text-slate-400 font-normal truncate">Format Cetak F/QC/01.030</div>
+          <div class="text-[10px] text-stone-500 sidebar-subtext font-normal truncate">Format Cetak F/QC/01.030</div>
         </div>
       </button>
 
-      <div v-show="sidebarOpen" class="pt-3 px-2.5 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+      <div v-show="sidebarOpen" class="pt-3 px-2 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-stone-400">
         Pusat Data Pabrik
       </div>
 
@@ -465,14 +505,18 @@
       <button
         type="button"
         @click="activeTab = 'pic'; if (!picTableRows.length) loadPicTable(picSelectedTable, 1);"
-        :class="activeTab === 'pic' ? 'active' : ''"
+        :class="[activeTab === 'pic' ? 'active' : '', !sidebarOpen ? 'justify-center px-0' : '']"
         class="sidebar-item"
         title="Data Divisi Pabrik (Explorer Database Multi-Divisi)"
       >
-        <span class="text-base flex-shrink-0">🏢</span>
+        <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+          <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+          <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
+          <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
+        </svg>
         <div v-show="sidebarOpen" class="flex-1 min-w-0">
           <div class="truncate">Data Divisi Pabrik</div>
-          <div class="text-[10px] text-slate-400 font-normal truncate">Explorer 5 Divisi (Produksi, QC, RMW)</div>
+          <div class="text-[10px] text-stone-500 sidebar-subtext font-normal truncate">Explorer 5 Divisi (Produksi, QC, RMW)</div>
         </div>
       </button>
 
@@ -480,34 +524,37 @@
       <button
         type="button"
         @click="activeTab = 'sync'"
-        :class="activeTab === 'sync' ? 'active' : ''"
+        :class="[activeTab === 'sync' ? 'active' : '', !sidebarOpen ? 'justify-center px-0' : '']"
         class="sidebar-item"
         title="Data Hub & Cloud Sync (Live Google Sheets & Preview)"
       >
-        <span class="text-base flex-shrink-0">☁️</span>
+        <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+          <path d="M20 16.2A4.5 4.5 0 0 0 17.5 8h-1.8A7 7 0 1 0 4 14.9"></path>
+          <polyline points="12 12 12 18 16 14"></polyline>
+        </svg>
         <div v-show="sidebarOpen" class="flex-1 min-w-0">
           <div class="truncate">Data Hub &amp; Cloud Sync</div>
-          <div class="text-[10px] text-slate-400 font-normal truncate">Live Google Sheets &amp; Preview</div>
+          <div class="text-[10px] text-stone-500 sidebar-subtext font-normal truncate">Live Google Sheets &amp; Preview</div>
         </div>
       </button>
     </nav>
 
     <!-- Sidebar Bottom Status -->
-    <div class="p-3 border-t border-slate-800 bg-slate-950/50 text-[11px]">
+    <div class="p-3 border-t border-stone-200 bg-stone-50 text-[11px]">
       <div v-show="sidebarOpen" class="space-y-1">
-        <div class="flex items-center justify-between text-slate-400 text-[10.5px]">
+        <div class="flex items-center justify-between text-stone-500 text-[10.5px]">
           <span>Database MySQL:</span>
-          <span class="flex items-center gap-1 font-bold" :class="dbConnected ? 'text-emerald-400' : 'text-red-400'">
-            <span class="w-2 h-2 rounded-full inline-block" :class="dbConnected ? 'bg-emerald-400' : 'bg-red-400'"></span>
+          <span class="flex items-center gap-1.5 font-bold" :class="dbConnected ? 'text-emerald-700' : 'text-red-600'">
+            <span class="w-2 h-2 rounded-full inline-block" :class="dbConnected ? 'bg-emerald-500' : 'bg-red-500'"></span>
             {{ dbConnected ? 'Aktif' : 'Offline' }}
           </span>
         </div>
-        <div class="text-[9.5px] text-slate-500 font-mono truncate">
+        <div class="text-[9.5px] text-stone-400 font-mono truncate">
           db_traceability_sja
         </div>
       </div>
-      <div v-show="!sidebarOpen" class="flex justify-center" title="Status Database">
-        <span class="w-2.5 h-2.5 rounded-full inline-block" :class="dbConnected ? 'bg-emerald-400' : 'bg-red-400'"></span>
+      <div v-show="!sidebarOpen" class="flex justify-center" title="Status Database: db_traceability_sja">
+        <span class="w-2.5 h-2.5 rounded-full inline-block" :class="dbConnected ? 'bg-emerald-500' : 'bg-red-500'"></span>
       </div>
     </div>
   </aside>
@@ -516,17 +563,21 @@
   <div class="main-content-wrap flex-1 flex flex-col min-w-0 min-h-screen">
 
     <!-- Topbar Header -->
-    <header class="h-14 bg-slate-900 border-b border-slate-800 text-white no-print flex items-center justify-between px-4 sm:px-6 z-20 shadow-xs flex-shrink-0">
+    <header class="h-16 bg-white/90 backdrop-blur-md border-b border-stone-200 text-stone-900 no-print flex items-center justify-between px-4 sm:px-6 z-20 shadow-xs flex-shrink-0">
       <div class="flex items-center gap-3">
         <button
           @click="sidebarOpen = !sidebarOpen"
-          class="text-slate-400 hover:text-white p-1.5 rounded hover:bg-slate-800 transition-colors cursor-pointer"
-          title="Toggle Sidebar"
+          class="text-stone-500 hover:text-stone-900 p-2 rounded-lg hover:bg-stone-100 transition-colors cursor-pointer flex items-center justify-center"
+          :title="sidebarOpen ? 'Kecilkan Sidebar ke Mode Icon Rail' : 'Perluas Sidebar'"
         >
-          <span class="text-sm">☰</span>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
         </button>
         <div class="flex items-center gap-2">
-          <span class="text-xs font-bold uppercase tracking-wider text-white">
+          <span class="text-xs font-bold uppercase tracking-wider text-stone-900">
             {{
               activeTab === 'dashboard' ? 'Dashboard Utama' :
               activeTab === 'pipeline' ? 'Interactive Traceability' :
@@ -534,8 +585,8 @@
               activeTab === 'pic' ? 'Data Divisi Pabrik' : 'Data Hub & Cloud Sync'
             }}
           </span>
-          <span class="text-slate-500">&bull;</span>
-          <span class="text-xs text-slate-400 hidden sm:inline font-normal">
+          <span class="text-stone-300">&bull;</span>
+          <span class="text-xs text-stone-500 hidden sm:inline font-normal">
             {{
               activeTab === 'dashboard' ? 'Executive Overview & Quick Batch Search' :
               activeTab === 'pipeline' ? 'Visual Timeline Journey & Genealogi Kualitas' :
@@ -550,24 +601,31 @@
         <button
           v-if="activeTab === 'pipeline'"
           @click="activeTab = 'report'"
-          class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-600 text-slate-100 font-bold rounded shadow-xs transition-colors cursor-pointer text-xs"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-stone-100 hover:bg-stone-200 border border-stone-300 text-stone-800 font-bold rounded-lg shadow-2xs transition-all cursor-pointer text-xs btn-action"
         >
-          <span>📄</span>
-          <span>Buka Dokumen Cetak ↗</span>
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+          </svg>
+          <span>Buka Dokumen Cetak</span>
         </button>
 
         <button
           v-if="activeTab === 'report'"
           @click="printForm"
-          class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded shadow-xs transition-colors cursor-pointer text-xs"
+          class="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-[#4a2c1d] hover:bg-[#3c2415] text-white font-bold rounded-lg shadow-sm transition-all cursor-pointer text-xs btn-action"
         >
-          <span>🖨️</span>
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+            <polyline points="6 9 6 2 18 2 18 9"></polyline>
+            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+            <rect x="6" y="14" width="12" height="8"></rect>
+          </svg>
           <span>Cetak Dokumen Resmi</span>
         </button>
 
-        <div class="flex items-center gap-1.5 px-2.5 py-1 bg-slate-950/70 border border-slate-800 rounded text-slate-300 text-[11px] font-mono">
-          <span :class="dbConnected ? 'bg-emerald-400 animate-pulse' : 'bg-red-400'" class="w-2 h-2 rounded-full inline-block"></span>
-          <span>db_traceability_sja</span>
+        <div class="flex items-center gap-1.5 px-2.5 py-1 bg-stone-100 border border-stone-200 rounded-lg text-stone-700 text-[11px] font-mono">
+          <span :class="dbConnected ? 'bg-emerald-500' : 'bg-red-500'" class="w-2 h-2 rounded-full inline-block"></span>
+          <span class="font-semibold">MySQL SJA</span>
         </div>
       </div>
     </header>
@@ -580,53 +638,143 @@
     ══════════════════════════════════════════════════════════════ -->
     <div v-if="activeTab === 'dashboard'" class="space-y-6 no-print">
 
-      <!-- ── HERO QUICK SEARCH BAR (GLASSMORPHISM) ── -->
-      <div class="glass-card rounded-2xl p-6 relative overflow-hidden">
-        <!-- Ambient decorative gradient glow -->
-        <div class="absolute -right-20 -top-20 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
-        <div class="absolute -left-20 -bottom-20 w-80 h-80 bg-sky-500/10 rounded-full blur-3xl pointer-events-none"></div>
+      <!-- ── TOP 4 BENTO KPI STAT CARDS (ENERPIZE STYLE) ── -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 reveal-on-scroll">
+        <!-- Stat 1: Total Records -->
+        <div class="glass-card rounded-2xl p-5 flex items-center justify-between glass-card-hover border border-stone-200/90 shadow-xs">
+          <div>
+            <div class="text-[11px] font-bold text-stone-500 uppercase tracking-wider">Total Record Mutu</div>
+            <div class="text-2xl sm:text-3xl font-extrabold text-stone-900 mt-1 font-mono">112.098</div>
+            <div class="inline-flex items-center gap-1.5 mt-2 text-[10.5px] font-semibold text-coffee-800 bg-coffee-100 px-2.5 py-0.5 rounded-full border border-coffee-200">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                <polyline points="18 15 12 9 6 15"></polyline>
+              </svg>
+              <span>+100% Sinkron Cloud</span>
+            </div>
+          </div>
+          <div class="w-12 h-12 rounded-2xl bg-coffee-100 border border-coffee-200 flex items-center justify-center text-coffee-800 shrink-0">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+              <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
+              <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Stat 2: Verifikasi Mutu Produk -->
+        <div class="glass-card rounded-2xl p-5 flex items-center justify-between glass-card-hover border border-stone-200/90 shadow-xs">
+          <div>
+            <div class="text-[11px] font-bold text-stone-500 uppercase tracking-wider">Integritas Standar Mutu</div>
+            <div class="text-2xl sm:text-3xl font-extrabold text-stone-900 mt-1">100% Valid</div>
+            <div class="inline-flex items-center gap-1.5 mt-2 text-[10.5px] font-semibold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+              <span>11 Parameter T1 &amp; T2</span>
+            </div>
+          </div>
+          <div class="w-12 h-12 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-700 shrink-0">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Stat 3: Divisi Terintegrasi -->
+        <div class="glass-card rounded-2xl p-5 flex items-center justify-between glass-card-hover border border-stone-200/90 shadow-xs">
+          <div>
+            <div class="text-[11px] font-bold text-stone-500 uppercase tracking-wider">Divisi Terintegrasi</div>
+            <div class="text-2xl sm:text-3xl font-extrabold text-stone-900 mt-1">5 Divisi</div>
+            <div class="inline-flex items-center gap-1.5 mt-2 text-[10.5px] font-semibold text-amber-800 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200">
+              <span>Produksi, QC, RMW, FGW</span>
+            </div>
+          </div>
+          <div class="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-700 shrink-0">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect>
+              <line x1="9" y1="22" x2="9" y2="22.01"></line>
+              <line x1="15" y1="22" x2="15" y2="22.01"></line>
+              <line x1="9" y1="6" x2="9" y2="6.01"></line>
+              <line x1="15" y1="6" x2="15" y2="6.01"></line>
+              <line x1="9" y1="10" x2="9" y2="10.01"></line>
+              <line x1="15" y1="10" x2="15" y2="10.01"></line>
+              <line x1="9" y1="14" x2="9" y2="14.01"></line>
+              <line x1="15" y1="14" x2="15" y2="14.01"></line>
+              <line x1="9" y1="18" x2="9" y2="18.01"></line>
+              <line x1="15" y1="18" x2="15" y2="18.01"></line>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Stat 4: Live Cloud Sync Hub -->
+        <div class="glass-card rounded-2xl p-5 flex items-center justify-between glass-card-hover border border-stone-200/90 shadow-xs">
+          <div>
+            <div class="text-[11px] font-bold text-stone-500 uppercase tracking-wider">Cloud Data Hub</div>
+            <div class="text-2xl sm:text-3xl font-extrabold text-stone-900 mt-1">Tower 1 &amp; 2</div>
+            <div class="inline-flex items-center gap-1.5 mt-2 text-[10.5px] font-semibold text-coffee-800 bg-coffee-100 px-2.5 py-0.5 rounded-full border border-coffee-200">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+              <span>Google Drive Enterprise</span>
+            </div>
+          </div>
+          <div class="w-12 h-12 rounded-2xl bg-coffee-100 border border-coffee-200 flex items-center justify-center text-coffee-800 shrink-0">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <path d="M20 16.2A4.5 4.5 0 0 0 17.5 8h-1.8A7 7 0 1 0 4 14.9"></path>
+              <polyline points="12 12 12 18 16 14"></polyline>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── HERO QUICK SEARCH BAR (LIGHT COFFEE INDUSTRIAL) ── -->
+      <div class="glass-card rounded-2xl p-6 sm:p-7 relative overflow-hidden border border-stone-200 shadow-sm reveal-on-scroll">
+        <!-- Ambient decorative warm glow -->
+        <div class="absolute -right-24 -top-24 w-96 h-96 bg-amber-100/60 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute -left-24 -bottom-24 w-96 h-96 bg-stone-200/50 rounded-full blur-3xl pointer-events-none"></div>
 
         <div class="relative z-10 max-w-3xl">
-          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-semibold mb-3">
-            <span>● Sistem Aktif</span>
-            <span class="text-slate-400">&bull;</span>
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-coffee-100 border border-coffee-200 text-coffee-800 text-xs font-semibold mb-3">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span>
+            <span>Sistem Operasional Aktif</span>
+            <span class="text-stone-300">&bull;</span>
             <span>PT. Santos Jaya Abadi</span>
           </div>
-          <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight mb-2">
+          <h1 class="text-2xl sm:text-3xl font-extrabold text-stone-900 tracking-tight mb-2">
             Pusat Operasional &amp; Penelusuran Mutu Kopi Instan
           </h1>
-          <p class="text-xs sm:text-sm text-slate-300 mb-6">
-            Lacak rekam jejak produksi dari karung biji kopi mentah (Green Bean) hingga nomor box kemasan produk jadi di pasar secara instan.
+          <p class="text-xs sm:text-sm text-stone-600 mb-6">
+            Lacak rekam jejak rantai proses produksi dari karung biji kopi mentah (Green Bean) hingga nomor box kemasan produk jadi di pasar secara instan.
           </p>
 
           <!-- Search Input Box -->
-          <div class="bg-slate-950/80 border border-slate-700/80 rounded-xl p-2.5 flex flex-col sm:flex-row items-center gap-2 shadow-2xl backdrop-blur-md">
-            <div class="flex-1 w-full flex items-center gap-2 px-3">
-              <span class="text-slate-400 text-base">🔍</span>
+          <div class="bg-white border-2 border-stone-200 focus-within:border-coffee-700 rounded-xl p-2 flex flex-col sm:flex-row items-center gap-2 shadow-sm transition-colors">
+            <div class="flex-1 w-full flex items-center gap-2.5 px-3">
+              <svg class="w-5 h-5 text-stone-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
               <input
                 v-model="traceForm.noBatch"
                 type="text"
                 placeholder="Masukkan Nomor Batch (contoh: A370/26 atau 370)"
-                class="w-full bg-transparent border-0 text-white placeholder-slate-500 text-sm font-semibold focus:outline-none uppercase"
+                class="w-full bg-transparent border-0 text-stone-900 placeholder-stone-400 text-sm font-semibold focus:outline-none uppercase"
                 @keyup.enter="doTrace"
               />
             </div>
 
             <!-- Tower Toggle Pills -->
-            <div class="flex items-center bg-slate-900 border border-slate-700/80 rounded-lg p-1 self-stretch sm:self-auto">
+            <div class="flex items-center bg-stone-100 border border-stone-200 rounded-lg p-1 self-stretch sm:self-auto">
               <button
                 type="button"
                 @click="traceForm.tower = '1'"
-                :class="traceForm.tower === '1' ? 'bg-emerald-600 text-white font-bold' : 'text-slate-400 hover:text-white'"
-                class="px-3 py-1 rounded text-xs transition-all cursor-pointer"
+                :class="traceForm.tower === '1' ? 'bg-[#4a2c1d] text-white font-bold shadow-2xs' : 'text-stone-600 hover:text-stone-900'"
+                class="px-3.5 py-1 rounded text-xs transition-all cursor-pointer"
               >
                 Tower 1
               </button>
               <button
                 type="button"
                 @click="traceForm.tower = '2'"
-                :class="traceForm.tower === '2' ? 'bg-emerald-600 text-white font-bold' : 'text-slate-400 hover:text-white'"
-                class="px-3 py-1 rounded text-xs transition-all cursor-pointer"
+                :class="traceForm.tower === '2' ? 'bg-[#4a2c1d] text-white font-bold shadow-2xs' : 'text-stone-600 hover:text-stone-900'"
+                class="px-3.5 py-1 rounded text-xs transition-all cursor-pointer"
               >
                 Tower 2
               </button>
@@ -636,30 +784,34 @@
               type="button"
               @click="doTrace"
               :disabled="tracing || !traceForm.noBatch"
-              class="w-full sm:w-auto px-5 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-lg text-xs shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shrink-0"
+              class="w-full sm:w-auto px-5 py-2.5 bg-[#4a2c1d] hover:bg-[#3c2415] text-white font-bold rounded-lg text-xs shadow-sm transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shrink-0 btn-action"
             >
-              <svg v-if="tracing" class="spin h-3.5 w-3.5" fill="none" viewBox="0 0 24 24">
+              <svg v-if="tracing" class="spin h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
               </svg>
-              <span>{{ tracing ? 'Menelusuri...' : 'Lacak Alur Produk ➔' }}</span>
+              <span>{{ tracing ? 'Menelusuri...' : 'Lacak Alur Produk' }}</span>
+              <svg v-if="!tracing" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
             </button>
           </div>
 
           <!-- Quick presets -->
-          <div class="flex items-center gap-2 mt-3 flex-wrap text-[11px] text-slate-400">
-            <span class="font-semibold text-slate-300">Contoh Cepat:</span>
+          <div class="flex items-center gap-2 mt-3 flex-wrap text-[11px] text-stone-500">
+            <span class="font-semibold text-stone-600">Contoh Cepat:</span>
             <button
               type="button"
               @click="traceForm.noBatch = 'A370/26'; traceForm.tower = '1'; doTrace();"
-              class="px-2.5 py-0.5 rounded bg-slate-800/80 hover:bg-slate-700 text-emerald-300 border border-slate-700 transition-colors cursor-pointer"
+              class="px-2.5 py-1 rounded-lg bg-coffee-50 hover:bg-coffee-100 text-coffee-800 border border-coffee-200 transition-colors cursor-pointer font-medium"
             >
               Batch A370/26 (Tower 1)
             </button>
             <button
               type="button"
               @click="traceForm.noBatch = '370'; traceForm.tower = '2'; doTrace();"
-              class="px-2.5 py-0.5 rounded bg-slate-800/80 hover:bg-slate-700 text-emerald-300 border border-slate-700 transition-colors cursor-pointer"
+              class="px-2.5 py-1 rounded-lg bg-coffee-50 hover:bg-coffee-100 text-coffee-800 border border-coffee-200 transition-colors cursor-pointer font-medium"
             >
               Batch 370 (Tower 2)
             </button>
@@ -668,159 +820,186 @@
       </div>
 
       <!-- ── BENTO GRID OVERVIEW ── -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-5">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-5 reveal-on-scroll">
 
         <!-- Bento Card 1: Peta Alur Pabrik (Col-span 8) -->
-        <div class="lg:col-span-8 glass-card rounded-2xl p-5 flex flex-col justify-between">
+        <div class="lg:col-span-8 glass-card rounded-2xl p-5 flex flex-col justify-between border border-stone-200 shadow-xs">
           <div class="flex items-center justify-between mb-4">
             <div>
-              <div class="text-xs font-bold uppercase tracking-wider text-emerald-400">Peta Alur Pabrik</div>
-              <h3 class="text-base font-bold text-white mt-0.5">7 Tahapan Proses Produksi &amp; Mutu Kopi</h3>
+              <div class="text-xs font-bold uppercase tracking-wider text-coffee-700">Peta Alur Pabrik</div>
+              <h3 class="text-base font-bold text-stone-900 mt-0.5">7 Tahapan Proses Produksi &amp; Mutu Kopi</h3>
             </div>
             <button
               @click="activeTab = 'pipeline'"
-              class="text-xs font-semibold text-slate-300 hover:text-white flex items-center gap-1 cursor-pointer"
+              class="text-xs font-semibold text-coffee-800 hover:text-coffee-950 flex items-center gap-1 cursor-pointer bg-coffee-50 px-2.5 py-1 rounded-lg border border-coffee-200"
             >
               <span>Buka Pipeline</span>
-              <span>↗</span>
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <path d="M7 17l9.2-9.2M17 17V8H8"></path>
+              </svg>
             </button>
           </div>
 
           <!-- Horizontal Interactive Pipeline Stepper -->
-          <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2 my-2">
+          <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2.5 my-2">
             <div
               v-for="stg in pipelineStages"
               :key="stg.key"
               @click="selectedPipelineStage = stg.key; activeTab = 'pipeline';"
-              class="glass-panel p-2.5 rounded-xl border border-slate-800 hover:border-emerald-500/50 hover:bg-slate-800/50 transition-all cursor-pointer text-center group"
+              class="p-3 rounded-xl border border-stone-200 bg-stone-50/70 hover:border-coffee-500 hover:bg-coffee-50/60 transition-all cursor-pointer text-center group"
             >
-              <div class="text-xl mb-1 group-hover:scale-110 transition-transform">{{ stg.icon }}</div>
-              <div class="text-[11px] font-bold text-white truncate">{{ stg.title }}</div>
-              <div class="text-[9.5px] text-slate-400 truncate">{{ stg.division }}</div>
+              <div class="flex items-center justify-center text-stone-700 group-hover:text-coffee-800 transition-transform mb-1.5" v-html="stg.iconSvg"></div>
+              <div class="text-[11px] font-bold text-stone-900 truncate">{{ stg.title }}</div>
+              <div class="text-[9.5px] text-stone-500 truncate">{{ stg.division }}</div>
             </div>
           </div>
 
-          <div class="pt-3 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
+          <div class="pt-3 border-t border-stone-200 flex items-center justify-between text-xs text-stone-500">
             <span>Pilih salah satu tahapan di atas untuk memeriksa parameter dan rekaman data di stasiun tersebut.</span>
-            <span class="text-emerald-400 font-mono text-[11px]">7 Stasiun Terhubung</span>
+            <span class="text-coffee-800 font-semibold text-[11px]">7 Stasiun Terhubung</span>
           </div>
         </div>
 
         <!-- Bento Card 2: Status Cloud Sync & Database (Col-span 4) -->
-        <div class="lg:col-span-4 glass-card rounded-2xl p-5 flex flex-col justify-between">
+        <div class="lg:col-span-4 glass-card rounded-2xl p-5 flex flex-col justify-between border border-stone-200 shadow-xs">
           <div>
             <div class="flex items-center justify-between mb-2">
-              <span class="text-xs font-bold uppercase tracking-wider text-sky-400">Live Cloud Sync</span>
-              <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
-                Terhubung
+              <span class="text-xs font-bold uppercase tracking-wider text-coffee-800">Live Cloud Sync</span>
+              <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 flex items-center gap-1">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                <span>Terhubung</span>
               </span>
             </div>
-            <h3 class="text-base font-bold text-white mb-3">Google Drive Enterprise</h3>
+            <h3 class="text-base font-bold text-stone-900 mb-3">Google Drive Enterprise</h3>
 
             <div class="space-y-2 text-xs">
-              <div class="flex items-center justify-between p-2 rounded bg-slate-950/60 border border-slate-800">
-                <span class="text-slate-300">Total Record QC:</span>
-                <span class="font-mono font-bold text-white">112.098 Baris</span>
+              <div class="flex items-center justify-between p-2.5 rounded-xl bg-stone-50 border border-stone-200">
+                <span class="text-stone-600">Total Record QC:</span>
+                <span class="font-mono font-bold text-stone-900">112.098 Baris</span>
               </div>
-              <div class="flex items-center justify-between p-2 rounded bg-slate-950/60 border border-slate-800">
-                <span class="text-slate-300">Spreadsheet Terhubung:</span>
-                <span class="font-mono font-bold text-emerald-400">Tower 1 &amp; Tower 2</span>
+              <div class="flex items-center justify-between p-2.5 rounded-xl bg-stone-50 border border-stone-200">
+                <span class="text-stone-600">Spreadsheet Terhubung:</span>
+                <span class="font-bold text-coffee-800">Tower 1 &amp; Tower 2</span>
               </div>
             </div>
           </div>
 
-          <div class="pt-4 border-t border-slate-800 flex items-center gap-2">
+          <div class="pt-4 border-t border-stone-200 flex items-center gap-2">
             <button
               @click="activeTab = 'sync'"
-              class="flex-1 px-3 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold transition-all text-center cursor-pointer shadow-sm"
+              class="flex-1 px-3 py-2 rounded-xl bg-[#4a2c1d] hover:bg-[#3c2415] text-white text-xs font-bold transition-all text-center cursor-pointer shadow-xs btn-action"
             >
-              Buka Hub Sinkronisasi ➔
+              Buka Hub Sinkronisasi
             </button>
             <a
               :href="gsheetStatus.folderUrl || 'https://drive.google.com/drive/folders/1hRgNzF2I5Q3AB22pd8xZDOexzoPUZP95'"
               target="_blank"
-              class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-colors"
+              class="p-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 border border-stone-200 transition-colors flex items-center justify-center"
               title="Buka Folder Google Drive"
             >
-              📁
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+              </svg>
             </a>
           </div>
         </div>
 
         <!-- Bento Card 3: Arsitektur 5 Divisi Pabrik (Col-span 6) -->
-        <div class="lg:col-span-6 glass-card rounded-2xl p-5">
+        <div class="lg:col-span-6 glass-card rounded-2xl p-5 border border-stone-200 shadow-xs">
           <div class="flex items-center justify-between mb-3">
             <div>
-              <div class="text-xs font-bold uppercase tracking-wider text-amber-400">Pusat Divisi Pabrik</div>
-              <h3 class="text-base font-bold text-white mt-0.5">Integrasi 5 Departemen Operasional</h3>
+              <div class="text-xs font-bold uppercase tracking-wider text-coffee-800">Pusat Divisi Pabrik</div>
+              <h3 class="text-base font-bold text-stone-900 mt-0.5">Integrasi 5 Departemen Operasional</h3>
             </div>
             <button
               @click="activeTab = 'pic'"
-              class="text-xs font-semibold text-slate-300 hover:text-white flex items-center gap-1 cursor-pointer"
+              class="text-xs font-semibold text-coffee-800 hover:text-coffee-950 flex items-center gap-1 cursor-pointer bg-coffee-50 px-2.5 py-1 rounded-lg border border-coffee-200"
             >
               <span>Jelajahi Database</span>
-              <span>↗</span>
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <path d="M7 17l9.2-9.2M17 17V8H8"></path>
+              </svg>
             </button>
           </div>
 
           <div class="space-y-2">
-            <div class="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800 flex items-center justify-between text-xs">
-              <div class="flex items-center gap-2.5">
-                <span class="text-base">⚙️</span>
+            <div class="p-2.5 rounded-xl bg-stone-50 border border-stone-200 flex items-center justify-between text-xs">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-coffee-100 border border-coffee-200 flex items-center justify-center text-coffee-800 shrink-0">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                  </svg>
+                </div>
                 <div>
-                  <div class="font-bold text-white">Divisi Produksi</div>
-                  <div class="text-[10px] text-slate-400">Roasting, Ekstraksi, Evaporasi, Dryer, Packing</div>
+                  <div class="font-bold text-stone-900">Divisi Produksi</div>
+                  <div class="text-[10px] text-stone-500">Roasting, Ekstraksi, Evaporasi, Dryer, Packing</div>
                 </div>
               </div>
-              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">9 Tabel Aktif</span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-coffee-100 text-coffee-800 border border-coffee-200">9 Tabel Aktif</span>
             </div>
 
-            <div class="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800 flex items-center justify-between text-xs">
-              <div class="flex items-center gap-2.5">
-                <span class="text-base">🔬</span>
+            <div class="p-2.5 rounded-xl bg-stone-50 border border-stone-200 flex items-center justify-between text-xs">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-800 shrink-0">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <path d="M10 2v7.527a2 2 0 0 1-.211.896L4.72 20.55a1 1 0 0 0 .9 1.45h12.76a1 1 0 0 0 .9-1.45l-5.069-10.127A2 2 0 0 1 14 9.527V2"></path>
+                  </svg>
+                </div>
                 <div>
-                  <div class="font-bold text-white">Divisi Quality Control (QC)</div>
-                  <div class="text-[10px] text-slate-400">11 Parameter Kualitas Tower 1 &amp; Tower 2</div>
+                  <div class="font-bold text-stone-900">Divisi Quality Control (QC)</div>
+                  <div class="text-[10px] text-stone-500">11 Parameter Kualitas Tower 1 &amp; Tower 2</div>
                 </div>
               </div>
-              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">22 Tabel Aktif</span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">22 Tabel Aktif</span>
             </div>
 
-            <div class="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800 flex items-center justify-between text-xs">
-              <div class="flex items-center gap-2.5">
-                <span class="text-base">🌱</span>
+            <div class="p-2.5 rounded-xl bg-stone-50 border border-stone-200 flex items-center justify-between text-xs">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-800 shrink-0">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                  </svg>
+                </div>
                 <div>
-                  <div class="font-bold text-white">Gudang Bahan Baku (RMW)</div>
-                  <div class="text-[10px] text-slate-400">Green Bean Lot &amp; Silo Penerimaan</div>
+                  <div class="font-bold text-stone-900">Gudang Bahan Baku (RMW)</div>
+                  <div class="text-[10px] text-stone-500">Green Bean Lot &amp; Silo Penerimaan</div>
                 </div>
               </div>
-              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">Tersambung</span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">Tersambung</span>
             </div>
 
-            <div class="p-2.5 rounded-xl bg-slate-950/40 border border-slate-800/60 flex items-center justify-between text-xs opacity-75">
-              <div class="flex items-center gap-2.5">
-                <span class="text-base">🚚</span>
+            <div class="p-2.5 rounded-xl bg-stone-50/60 border border-stone-200/70 flex items-center justify-between text-xs opacity-80">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-stone-100 border border-stone-200 flex items-center justify-center text-stone-600 shrink-0">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <rect x="1" y="3" width="15" height="13"></rect>
+                    <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+                    <circle cx="5.5" cy="18.5" r="2.5"></circle>
+                    <circle cx="18.5" cy="18.5" r="2.5"></circle>
+                  </svg>
+                </div>
                 <div>
-                  <div class="font-bold text-slate-300">Warehouse Finished Good &amp; Logistik</div>
-                  <div class="text-[10px] text-slate-500">Penyimpanan Box &amp; Distribusi Produk Jadi</div>
+                  <div class="font-bold text-stone-700">Warehouse Finished Good &amp; Logistik</div>
+                  <div class="text-[10px] text-stone-400">Penyimpanan Box &amp; Distribusi Produk Jadi</div>
                 </div>
               </div>
-              <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-800 text-slate-400 border border-slate-700">Siap Integrasi</span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-medium bg-stone-100 text-stone-600 border border-stone-200">Siap Integrasi</span>
             </div>
           </div>
         </div>
 
         <!-- Bento Card 4: Quick Preview Record Database (Col-span 6) -->
-        <div class="lg:col-span-6 glass-card rounded-2xl p-5 flex flex-col justify-between">
+        <div class="lg:col-span-6 glass-card rounded-2xl p-5 flex flex-col justify-between border border-stone-200 shadow-xs">
           <div>
             <div class="flex items-center justify-between mb-3">
               <div>
-                <div class="text-xs font-bold uppercase tracking-wider text-purple-400">Pratinjau Data Riil</div>
-                <h3 class="text-base font-bold text-white mt-0.5">Inspeksi Langsung Record Database</h3>
+                <div class="text-xs font-bold uppercase tracking-wider text-coffee-800">Pratinjau Data Riil</div>
+                <h3 class="text-base font-bold text-stone-900 mt-0.5">Inspeksi Langsung Record Database</h3>
               </div>
-              <span class="text-xs text-slate-400 font-mono">5 Baris Cuplikan</span>
+              <span class="text-xs text-stone-400 font-mono">5 Baris Cuplikan</span>
             </div>
-            <p class="text-xs text-slate-300 mb-4">
+            <p class="text-xs text-stone-600 mb-4">
               Pilih tabel proses di bawah ini untuk melihat contoh data riil yang ditarik dari pabrik tanpa harus mengunduh file:
             </p>
 
@@ -828,49 +1007,49 @@
               <button
                 type="button"
                 @click="openTablePreview('qc_dryer_t2', 'QC Dryer Tower 2')"
-                class="p-2.5 rounded-xl bg-slate-950/60 hover:bg-slate-800/80 border border-slate-800 hover:border-slate-600 transition-all text-left cursor-pointer group"
+                class="p-2.5 rounded-xl bg-stone-50 hover:bg-coffee-50/70 border border-stone-200 hover:border-coffee-300 transition-all text-left cursor-pointer group"
               >
-                <div class="text-[11px] font-bold text-white group-hover:text-emerald-400">qc_dryer_t2</div>
-                <div class="text-[10px] text-slate-400">Dryer Tower 2 &bull; 14.321 rows</div>
+                <div class="text-[11px] font-bold text-stone-900 group-hover:text-coffee-800">qc_dryer_t2</div>
+                <div class="text-[10px] text-stone-500">Dryer Tower 2 &bull; 14.321 rows</div>
               </button>
 
               <button
                 type="button"
                 @click="openTablePreview('qc_mesh_t2', 'QC Mesh Tower 2')"
-                class="p-2.5 rounded-xl bg-slate-950/60 hover:bg-slate-800/80 border border-slate-800 hover:border-slate-600 transition-all text-left cursor-pointer group"
+                class="p-2.5 rounded-xl bg-stone-50 hover:bg-coffee-50/70 border border-stone-200 hover:border-coffee-300 transition-all text-left cursor-pointer group"
               >
-                <div class="text-[11px] font-bold text-white group-hover:text-emerald-400">qc_mesh_t2</div>
-                <div class="text-[10px] text-slate-400">Particle Size T2 &bull; 2.884 rows</div>
+                <div class="text-[11px] font-bold text-stone-900 group-hover:text-coffee-800">qc_mesh_t2</div>
+                <div class="text-[10px] text-stone-500">Particle Size T2 &bull; 2.884 rows</div>
               </button>
 
               <button
                 type="button"
                 @click="openTablePreview('packing_tower_1', 'Packing Tower 1')"
-                class="p-2.5 rounded-xl bg-slate-950/60 hover:bg-slate-800/80 border border-slate-800 hover:border-slate-600 transition-all text-left cursor-pointer group"
+                class="p-2.5 rounded-xl bg-stone-50 hover:bg-coffee-50/70 border border-stone-200 hover:border-coffee-300 transition-all text-left cursor-pointer group"
               >
-                <div class="text-[11px] font-bold text-white group-hover:text-emerald-400">packing_tower_1</div>
-                <div class="text-[10px] text-slate-400">Produksi Packing &bull; Box FG</div>
+                <div class="text-[11px] font-bold text-stone-900 group-hover:text-coffee-800">packing_tower_1</div>
+                <div class="text-[10px] text-stone-500">Produksi Packing &bull; Box FG</div>
               </button>
 
               <button
                 type="button"
                 @click="openTablePreview('qc_aroma_t1', 'QC Aroma Tower 1')"
-                class="p-2.5 rounded-xl bg-slate-950/60 hover:bg-slate-800/80 border border-slate-800 hover:border-slate-600 transition-all text-left cursor-pointer group"
+                class="p-2.5 rounded-xl bg-stone-50 hover:bg-coffee-50/70 border border-stone-200 hover:border-coffee-300 transition-all text-left cursor-pointer group"
               >
-                <div class="text-[11px] font-bold text-white group-hover:text-emerald-400">qc_aroma_t1</div>
-                <div class="text-[10px] text-slate-400">Ekstraksi Aroma T1 &bull; 9.423 rows</div>
+                <div class="text-[11px] font-bold text-stone-900 group-hover:text-coffee-800">qc_aroma_t1</div>
+                <div class="text-[10px] text-stone-500">Ekstraksi Aroma T1 &bull; 9.423 rows</div>
               </button>
             </div>
           </div>
 
-          <div class="pt-4 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
+          <div class="pt-4 border-t border-stone-200 flex items-center justify-between text-xs text-stone-500">
             <span>Deduplikasi otomatis aktif menjaga database tetap bersih.</span>
             <button
               type="button"
               @click="activeTab = 'sync'"
-              class="text-emerald-400 hover:underline font-semibold cursor-pointer"
+              class="text-coffee-800 hover:underline font-semibold cursor-pointer"
             >
-              Lihat Semua Tabel ➔
+              Lihat Semua Tabel &rarr;
             </button>
           </div>
         </div>
@@ -884,21 +1063,22 @@
     <div v-if="activeTab === 'pipeline'" class="space-y-6 no-print">
 
       <!-- Pipeline Top Bar & Summary -->
-      <div class="glass-card rounded-2xl p-5">
+      <div class="glass-card rounded-2xl p-5 border border-stone-200 shadow-xs reveal-on-scroll">
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <div class="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-[11px] font-semibold mb-1">
-              <span>● Alur Penelusuran Aktif</span>
+            <div class="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-coffee-100 border border-coffee-200 text-coffee-800 text-[11px] font-semibold mb-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block"></span>
+              <span>Alur Penelusuran Aktif</span>
               <span>&bull;</span>
               <span>Tower {{ traceResult?.input?.tower || traceForm.tower }}</span>
             </div>
-            <h2 class="text-xl sm:text-2xl font-black text-white tracking-tight flex items-center gap-2">
+            <h2 class="text-xl sm:text-2xl font-black text-stone-900 tracking-tight flex items-center gap-2">
               <span>Batch {{ traceResult?.input?.noBatchFull || traceForm.noBatch || 'Belum Ada Batch' }}</span>
-              <span v-if="traceResult" class="text-xs px-2.5 py-1 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-mono">
+              <span v-if="traceResult" class="text-xs px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 font-semibold">
                 Lolos Verifikasi Mutu
               </span>
             </h2>
-            <p class="text-xs text-slate-400 mt-1">
+            <p class="text-xs text-stone-500 mt-1">
               Perjalanan rantai proses dari penerimaan bahan mentah hingga pengemasan produk jadi.
             </p>
           </div>
@@ -907,41 +1087,48 @@
           <div class="flex items-center gap-2">
             <button
               @click="activeTab = 'report'"
-              class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white font-bold text-xs shadow transition-all flex items-center gap-2 cursor-pointer"
+              class="px-4 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 border border-stone-300 text-stone-800 font-bold text-xs shadow-2xs transition-all flex items-center gap-2 cursor-pointer btn-action"
             >
-              <span>📄</span>
-              <span>Lihat Format Laporan Audit 12 Tahapan ↗</span>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+              </svg>
+              <span>Format Laporan Audit 12 Tahapan</span>
             </button>
             <button
               @click="printForm"
-              class="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow transition-all flex items-center gap-2 cursor-pointer"
+              class="px-4 py-2 rounded-xl bg-[#4a2c1d] hover:bg-[#3c2415] text-white font-bold text-xs shadow-sm transition-all flex items-center gap-2 cursor-pointer btn-action"
             >
-              <span>🖨️</span>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                <rect x="6" y="14" width="12" height="8"></rect>
+              </svg>
               <span>Cetak Form Resmi</span>
             </button>
           </div>
         </div>
 
         <!-- Quick Metrics Row -->
-        <div v-if="traceResult" class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4 pt-4 border-t border-slate-800">
-          <div class="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800">
-            <div class="text-[10px] text-slate-400 uppercase font-semibold">Produk Finished Good</div>
-            <div class="text-sm font-bold text-white mt-0.5 truncate">{{ headerNamaProduk || 'Instant Coffee SJA' }}</div>
+        <div v-if="traceResult" class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4 pt-4 border-t border-stone-200">
+          <div class="p-3 rounded-xl bg-stone-50 border border-stone-200">
+            <div class="text-[10px] text-stone-500 uppercase font-semibold">Produk Finished Good</div>
+            <div class="text-sm font-bold text-stone-900 mt-0.5 truncate">{{ headerNamaProduk || 'Instant Coffee SJA' }}</div>
           </div>
-          <div class="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800">
-            <div class="text-[10px] text-slate-400 uppercase font-semibold">Tanggal Produksi</div>
-            <div class="text-sm font-bold text-white mt-0.5 font-mono">{{ headerTanggalProduksi || '-' }}</div>
+          <div class="p-3 rounded-xl bg-stone-50 border border-stone-200">
+            <div class="text-[10px] text-stone-500 uppercase font-semibold">Tanggal Produksi</div>
+            <div class="text-sm font-bold text-stone-900 mt-0.5 font-mono">{{ headerTanggalProduksi || '-' }}</div>
           </div>
-          <div class="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800">
-            <div class="text-[10px] text-slate-400 uppercase font-semibold">Total Output (Yield)</div>
-            <div class="text-sm font-bold text-emerald-400 mt-0.5 font-mono">
+          <div class="p-3 rounded-xl bg-stone-50 border border-stone-200">
+            <div class="text-[10px] text-stone-500 uppercase font-semibold">Total Output (Yield)</div>
+            <div class="text-sm font-bold text-coffee-800 mt-0.5 font-mono">
               {{ traceResult.packing?.total_output_kg ? traceResult.packing.total_output_kg.toLocaleString() + ' kg' : '-' }}
               ({{ traceResult.calculations?.extractionYield || traceResult.mass_balance?.yield || '24.5%' }})
             </div>
           </div>
-          <div class="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800">
-            <div class="text-[10px] text-slate-400 uppercase font-semibold">Rasio Instant Coffee</div>
-            <div class="text-sm font-bold text-sky-400 mt-0.5 font-mono">
+          <div class="p-3 rounded-xl bg-stone-50 border border-stone-200">
+            <div class="text-[10px] text-stone-500 uppercase font-semibold">Rasio Instant Coffee</div>
+            <div class="text-sm font-bold text-amber-800 mt-0.5 font-mono">
               {{ traceResult.calculations?.icRatio || traceResult.mass_balance?.icRatio || '1 : 3.8' }}
             </div>
           </div>
@@ -949,8 +1136,8 @@
       </div>
 
       <!-- ── HORIZONTAL STEPPER PIPELINE ── -->
-      <div class="glass-card rounded-2xl p-5 overflow-x-auto">
-        <div class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">
+      <div class="glass-card rounded-2xl p-5 overflow-x-auto border border-stone-200 shadow-xs reveal-on-scroll">
+        <div class="text-xs font-bold uppercase tracking-wider text-stone-500 mb-3">
           Simpul Alur Proses (Pilih Tahapan untuk Melihat Parameter Rinci):
         </div>
 
@@ -964,22 +1151,22 @@
             <!-- Step Circle -->
             <div
               :class="selectedPipelineStage === stg.key
-                ? 'w-12 h-12 bg-emerald-500 text-slate-950 shadow-lg shadow-emerald-500/30 ring-4 ring-emerald-500/20'
-                : 'w-10 h-10 bg-slate-800 text-slate-300 border border-slate-700 hover:border-slate-500'"
+                ? 'w-12 h-12 bg-[#4a2c1d] text-white shadow-md ring-4 ring-coffee-200'
+                : 'w-10 h-10 bg-stone-100 text-stone-600 border border-stone-300 hover:border-coffee-500 hover:text-coffee-800'"
               class="rounded-full flex items-center justify-center font-bold text-lg transition-all duration-200"
             >
-              {{ stg.icon }}
+              <div class="flex items-center justify-center" v-html="stg.iconSvg"></div>
             </div>
 
             <!-- Title & Badge -->
             <div class="text-center mt-2.5">
               <div
-                :class="selectedPipelineStage === stg.key ? 'text-emerald-400 font-bold' : 'text-slate-300 font-medium'"
+                :class="selectedPipelineStage === stg.key ? 'text-coffee-900 font-bold' : 'text-stone-700 font-medium'"
                 class="text-xs truncate max-w-[100px]"
               >
                 {{ stg.title }}
               </div>
-              <div class="text-[10px] text-slate-500 mt-0.5">
+              <div class="text-[10px] text-stone-400 mt-0.5">
                 {{ getStageMetrics(stg.key).label }}
               </div>
             </div>
@@ -988,25 +1175,24 @@
       </div>
 
       <!-- ── ACTIVE STAGE DETAIL CARD ── -->
-      <div v-if="selectedPipelineStage" class="glass-card rounded-2xl p-6 space-y-4">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800">
+      <div v-if="selectedPipelineStage" class="glass-card rounded-2xl p-6 space-y-4 border border-stone-200 shadow-xs reveal-on-scroll">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-stone-200">
           <div class="flex items-center gap-3">
-            <span class="text-2xl">
-              {{ pipelineStages.find(s => s.key === selectedPipelineStage)?.icon }}
-            </span>
+            <div class="w-10 h-10 rounded-xl bg-coffee-100 border border-coffee-200 flex items-center justify-center text-coffee-800" v-html="pipelineStages.find(s => s.key === selectedPipelineStage)?.iconSvg">
+            </div>
             <div>
               <div class="flex items-center gap-2">
-                <h3 class="text-lg font-bold text-white">
+                <h3 class="text-lg font-bold text-stone-900">
                   {{ pipelineStages.find(s => s.key === selectedPipelineStage)?.title }}
                 </h3>
-                <span class="px-2 py-0.5 text-[10px] font-mono rounded bg-slate-800 text-slate-300 border border-slate-700">
+                <span class="px-2 py-0.5 text-[10px] font-mono rounded bg-stone-100 text-stone-700 border border-stone-200">
                   {{ pipelineStages.find(s => s.key === selectedPipelineStage)?.docNo }}
                 </span>
-                <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
                   Lolos Uji Kualitas
                 </span>
               </div>
-              <p class="text-xs text-slate-400 mt-0.5">
+              <p class="text-xs text-stone-500 mt-0.5">
                 {{ pipelineStages.find(s => s.key === selectedPipelineStage)?.subtitle }} &bull; Divisi {{ pipelineStages.find(s => s.key === selectedPipelineStage)?.division }}
               </p>
             </div>
@@ -1015,9 +1201,9 @@
           <div class="flex items-center gap-2">
             <button
               @click="activeTab = 'report'"
-              class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold cursor-pointer"
+              class="px-3 py-1.5 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-700 border border-stone-200 text-xs font-semibold cursor-pointer btn-action"
             >
-              Lihat di Tabel Laporan 12 Tahapan ↗
+              Lihat di Tabel Laporan 12 Tahapan &rarr;
             </button>
           </div>
         </div>
@@ -1027,10 +1213,10 @@
           <div
             v-for="(m, mIdx) in getStageMetrics(selectedPipelineStage).metrics"
             :key="mIdx"
-            class="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800"
+            class="p-3.5 rounded-xl bg-stone-50 border border-stone-200"
           >
-            <div class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">{{ m.name }}</div>
-            <div class="text-base font-extrabold text-white mt-1 font-mono">{{ m.value }}</div>
+            <div class="text-[10px] uppercase font-bold text-stone-500 tracking-wider">{{ m.name }}</div>
+            <div class="text-base font-extrabold text-stone-900 mt-1 font-mono">{{ m.value }}</div>
           </div>
         </div>
       </div>
@@ -1326,7 +1512,10 @@
                             class="no-print inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold border border-emerald-800 bg-emerald-800 text-white rounded hover:bg-emerald-700 transition-colors cursor-pointer shadow-xs"
                             title="Buka tabel di satu layar penuh"
                           >
-                            <span>⛶ Layar Penuh</span>
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                              <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"></path>
+                            </svg>
+                            <span>Layar Penuh</span>
                           </button>
                         </div>
                       </div>
@@ -1451,34 +1640,43 @@
       <!-- Header -->
       <div class="flex items-center justify-between">
         <div>
-          <h1 class="text-sm font-bold text-slate-100 uppercase tracking-tight">Data Hub — Live Cloud Sync &amp; Konversi SCADA</h1>
-          <p class="text-xs text-slate-400 mt-0.5">
+          <h1 class="text-base font-extrabold text-stone-900 uppercase tracking-tight">Data Hub — Live Cloud Sync &amp; Konversi SCADA</h1>
+          <p class="text-xs text-stone-500 mt-0.5">
             Kelola sinkronisasi otomatis Google Spreadsheet (Tower 1 &amp; Tower 2) atau unggah manual file Excel SCADA dengan auto-detection.
           </p>
         </div>
         <button
           @click="refreshAllCounts"
-          class="text-xs border border-slate-700 hover:bg-slate-800 text-slate-200 px-3.5 py-1.5 rounded font-bold transition-colors cursor-pointer"
+          class="text-xs border border-stone-300 hover:bg-stone-100 text-stone-700 px-3.5 py-1.5 rounded-lg font-bold transition-all cursor-pointer btn-action flex items-center gap-1.5"
         >
-          ↻ Refresh Data
+          <svg class="w-3.5 h-3.5 text-stone-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+            <polyline points="23 4 23 10 17 10"></polyline>
+            <polyline points="1 20 1 14 7 14"></polyline>
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+          </svg>
+          <span>Refresh Data</span>
         </button>
       </div>
 
       <!-- ── GOOGLE SPREADSHEET LIVE CLOUD SYNC PANEL ── -->
-      <div class="bg-slate-900 border border-slate-700 rounded-lg p-4 text-white shadow-sm space-y-3.5">
-        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
-          <div class="flex items-start sm:items-center gap-3">
-            <div class="w-10 h-10 rounded bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 font-bold text-lg shrink-0">
-              ⚡
+      <div class="glass-card border border-stone-200 rounded-2xl p-6 text-stone-900 shadow-xs space-y-4 reveal-on-scroll">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div class="flex items-start sm:items-center gap-3.5">
+            <div class="w-12 h-12 rounded-2xl bg-coffee-100 border border-coffee-200 flex items-center justify-center text-coffee-800 shrink-0">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <path d="M20 16.2A4.5 4.5 0 0 0 17.5 8h-1.8A7 7 0 1 0 4 14.9"></path>
+                <polyline points="12 12 12 18 16 14"></polyline>
+              </svg>
             </div>
             <div>
               <div class="flex items-center gap-2 flex-wrap">
-                <span class="text-xs font-bold uppercase tracking-wider text-white">Google Spreadsheet QC (Live Cloud)</span>
-                <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
-                  ● Tower 1 &amp; Tower 2 Terhubung
+                <span class="text-sm font-extrabold uppercase tracking-wider text-stone-900">Google Spreadsheet QC (Live Cloud)</span>
+                <span class="px-2.5 py-0.5 text-[10px] font-bold rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 flex items-center gap-1">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                  <span>Tower 1 &amp; Tower 2 Terhubung</span>
                 </span>
               </div>
-              <p class="text-[11px] text-slate-300 mt-0.5">
+              <p class="text-xs text-stone-500 mt-0.5">
                 Sinkronisasi otomatis spreadsheet perusahaan (Tower 1 &amp; Tower 2) langsung ke database MySQL tanpa unduh file manual.
               </p>
             </div>
@@ -1489,52 +1687,59 @@
             <a
               :href="gsheetStatus.folderUrl || 'https://drive.google.com/drive/folders/1hRgNzF2I5Q3AB22pd8xZDOexzoPUZP95'"
               target="_blank"
-              class="px-3 py-1.5 rounded text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 transition-colors flex items-center gap-1.5"
+              class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-stone-100 hover:bg-stone-200 text-stone-700 border border-stone-200 transition-all flex items-center gap-1.5 btn-action"
               title="Buka Folder Google Drive berisi spreadsheet Tower 1 & Tower 2"
             >
-              <span>📁 Folder GDrive ↗</span>
+              <svg class="w-4 h-4 text-stone-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+              </svg>
+              <span>Folder GDrive ↗</span>
             </a>
             <a
               :href="activeSheetUrl"
               target="_blank"
-              class="px-3 py-1.5 rounded text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 transition-colors flex items-center gap-1.5"
+              class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-coffee-50 hover:bg-coffee-100 text-coffee-800 border border-coffee-200 transition-all flex items-center gap-1.5 btn-action"
               :title="'Buka Spreadsheet ' + activeSheetTitle + ' di Google Sheets'"
             >
+              <svg class="w-4 h-4 text-coffee-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+              </svg>
               <span>Buka {{ activeSheetTitle }} ↗</span>
             </a>
           </div>
         </div>
 
         <!-- Tower Selector & Sync Action Row -->
-        <div class="pt-2 border-t border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div class="pt-3 border-t border-stone-200 flex flex-col md:flex-row md:items-center justify-between gap-3">
           <!-- Tower Tabs -->
           <div class="flex items-center gap-1.5 flex-wrap">
-            <span class="text-[11px] font-bold uppercase text-slate-400 mr-1">Target Sinkronisasi:</span>
+            <span class="text-[11px] font-bold uppercase text-stone-500 mr-1">Target Sinkronisasi:</span>
             <button
               type="button"
               @click="setGsheetTower('1')"
-              :class="gsheetTower === '1' ? 'bg-emerald-600 text-white font-bold border-emerald-500 shadow-xs' : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'"
-              class="px-3 py-1 rounded text-xs border transition-all cursor-pointer flex items-center gap-1.5"
+              :class="gsheetTower === '1' ? 'bg-[#4a2c1d] text-white font-bold border-coffee-800 shadow-2xs' : 'bg-stone-100 text-stone-700 border-stone-200 hover:bg-stone-200'"
+              class="px-3 py-1.5 rounded-lg text-xs border transition-all cursor-pointer flex items-center gap-1.5"
             >
-              <span class="w-1.5 h-1.5 rounded-full" :class="gsheetTower === '1' ? 'bg-white' : 'bg-emerald-400'"></span>
+              <span class="w-1.5 h-1.5 rounded-full" :class="gsheetTower === '1' ? 'bg-white' : 'bg-stone-400'"></span>
               <span>Tower 1 (11 Tabel)</span>
             </button>
             <button
               type="button"
               @click="setGsheetTower('2')"
-              :class="gsheetTower === '2' ? 'bg-emerald-600 text-white font-bold border-emerald-500 shadow-xs' : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'"
-              class="px-3 py-1 rounded text-xs border transition-all cursor-pointer flex items-center gap-1.5"
+              :class="gsheetTower === '2' ? 'bg-[#4a2c1d] text-white font-bold border-coffee-800 shadow-2xs' : 'bg-stone-100 text-stone-700 border-stone-200 hover:bg-stone-200'"
+              class="px-3 py-1.5 rounded-lg text-xs border transition-all cursor-pointer flex items-center gap-1.5"
             >
-              <span class="w-1.5 h-1.5 rounded-full" :class="gsheetTower === '2' ? 'bg-white' : 'bg-emerald-400'"></span>
+              <span class="w-1.5 h-1.5 rounded-full" :class="gsheetTower === '2' ? 'bg-white' : 'bg-stone-400'"></span>
               <span>Tower 2 (11 Tabel)</span>
             </button>
             <button
               type="button"
               @click="setGsheetTower('all')"
-              :class="gsheetTower === 'all' ? 'bg-emerald-600 text-white font-bold border-emerald-500 shadow-xs' : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'"
-              class="px-3 py-1 rounded text-xs border transition-all cursor-pointer flex items-center gap-1.5"
+              :class="gsheetTower === 'all' ? 'bg-[#4a2c1d] text-white font-bold border-coffee-800 shadow-2xs' : 'bg-stone-100 text-stone-700 border-stone-200 hover:bg-stone-200'"
+              class="px-3 py-1.5 rounded-lg text-xs border transition-all cursor-pointer flex items-center gap-1.5"
             >
-              <span class="w-1.5 h-1.5 rounded-full" :class="gsheetTower === 'all' ? 'bg-white' : 'bg-emerald-400'"></span>
+              <span class="w-1.5 h-1.5 rounded-full" :class="gsheetTower === 'all' ? 'bg-white' : 'bg-stone-400'"></span>
               <span>Semua Tower (22 Tabel)</span>
             </button>
           </div>
@@ -1545,16 +1750,20 @@
               type="button"
               @click="syncAllGoogleSheets()"
               :disabled="gsheetLoading"
-              class="w-full md:w-auto px-4 py-2 rounded text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+              class="w-full md:w-auto px-5 py-2 rounded-xl text-xs font-bold bg-[#4a2c1d] hover:bg-[#3c2415] text-white shadow-sm transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer btn-action"
             >
-              <svg v-if="gsheetLoading" class="spin h-3.5 w-3.5" fill="none" viewBox="0 0 24 24">
+              <svg v-if="gsheetLoading" class="spin h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
               </svg>
+              <svg v-if="!gsheetLoading" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <path d="M20 16.2A4.5 4.5 0 0 0 17.5 8h-1.8A7 7 0 1 0 4 14.9"></path>
+                <polyline points="12 12 12 18 16 14"></polyline>
+              </svg>
               <span>
                 {{ gsheetLoading ? 'Sedang Menyinkronkan dari Cloud...' : (
-                  gsheetTower === 'all' ? '⚡ Tarik Semua Data (Tower 1 & 2 - 22 Tabel)' :
-                  (gsheetTower === '2' ? '⚡ Tarik Data QC Tower 2 (11 Tabel)' : '⚡ Tarik Data QC Tower 1 (11 Tabel)')
+                  gsheetTower === 'all' ? 'Tarik Semua Data (Tower 1 & 2 - 22 Tabel)' :
+                  (gsheetTower === '2' ? 'Tarik Data QC Tower 2 (11 Tabel)' : 'Tarik Data QC Tower 1 (11 Tabel)')
                 ) }}
               </span>
             </button>
@@ -1562,50 +1771,71 @@
         </div>
 
         <!-- Sync Result Notification / Log -->
-        <div v-if="gsheetResult" class="bg-slate-950/70 border border-slate-700 rounded p-3 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div v-if="gsheetResult" class="bg-emerald-50 border border-emerald-200 rounded-xl p-3.5 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div class="flex items-center gap-2 flex-wrap">
-            <span class="text-emerald-400 font-bold">✓ Sinkronisasi Berhasil:</span>
-            <span class="text-white font-medium">{{ (gsheetResult.totalImported || 0).toLocaleString() }} baris baru diimpor,</span>
-            <span class="text-slate-300">{{ (gsheetResult.totalDuplicates || 0).toLocaleString() }} baris duplikat dilindungi.</span>
-            <span class="text-emerald-400 font-mono text-[11px]">({{ gsheetResult.totalTables }} tabel &bull; {{ gsheetResult.durationSeconds }})</span>
+            <span class="text-emerald-800 font-bold flex items-center gap-1">
+              <svg class="w-4 h-4 text-emerald-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+              Sinkronisasi Berhasil:
+            </span>
+            <span class="text-stone-900 font-medium">{{ (gsheetResult.totalImported || 0).toLocaleString() }} baris baru diimpor,</span>
+            <span class="text-stone-600">{{ (gsheetResult.totalDuplicates || 0).toLocaleString() }} baris duplikat dilindungi.</span>
+            <span class="text-coffee-800 font-mono text-[11px]">({{ gsheetResult.totalTables }} tabel &bull; {{ gsheetResult.durationSeconds }})</span>
           </div>
-          <span class="text-[10px] text-slate-400 font-mono">{{ formatSyncTime(gsheetResult.timestamp) }}</span>
+          <span class="text-[10px] text-stone-500 font-mono">{{ formatSyncTime(gsheetResult.timestamp) }}</span>
         </div>
 
         <!-- Data Breakdown & Preview Trigger Row -->
-        <div class="pt-3 border-t border-slate-800 flex items-center justify-between flex-wrap gap-2 text-xs">
+        <div class="pt-3 border-t border-stone-200 flex items-center justify-between flex-wrap gap-2 text-xs">
           <div class="flex items-center gap-2">
-            <span class="text-slate-400 font-semibold">Transparansi Data:</span>
-            <span class="text-slate-300">Intip 5 baris data aktual yang baru ditarik dari Google Sheets.</span>
+            <span class="text-stone-500 font-semibold">Transparansi Data:</span>
+            <span class="text-stone-600">Intip 5 baris data aktual yang baru ditarik dari Google Sheets.</span>
           </div>
           <div class="flex items-center gap-1.5 flex-wrap">
             <button
               type="button"
               @click="openTablePreview(gsheetTower === '2' ? 'qc_dryer_t2' : 'qc_dryer_t1', gsheetTower === '2' ? 'QC Dryer Tower 2' : 'QC Dryer Tower 1')"
-              class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-750 text-emerald-400 border border-slate-700 font-bold transition-all cursor-pointer flex items-center gap-1"
+              class="px-2.5 py-1 rounded-lg bg-stone-100 hover:bg-coffee-50 text-coffee-900 border border-stone-200 font-semibold transition-all cursor-pointer flex items-center gap-1 btn-action"
             >
-              <span>👁️ Pratinjau Dryer</span>
+              <svg class="w-3.5 h-3.5 text-coffee-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+              <span>Pratinjau Dryer</span>
             </button>
             <button
               type="button"
               @click="openTablePreview(gsheetTower === '2' ? 'qc_mesh_t2' : 'qc_mesh_t1', gsheetTower === '2' ? 'QC Mesh Tower 2' : 'QC Mesh Tower 1')"
-              class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-750 text-emerald-400 border border-slate-700 font-bold transition-all cursor-pointer flex items-center gap-1"
+              class="px-2.5 py-1 rounded-lg bg-stone-100 hover:bg-coffee-50 text-coffee-900 border border-stone-200 font-semibold transition-all cursor-pointer flex items-center gap-1 btn-action"
             >
-              <span>👁️ Pratinjau Mesh</span>
+              <svg class="w-3.5 h-3.5 text-coffee-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+              <span>Pratinjau Mesh</span>
             </button>
             <button
               type="button"
               @click="openTablePreview(gsheetTower === '2' ? 'qc_aroma_t2' : 'qc_aroma_t1', gsheetTower === '2' ? 'QC Aroma Tower 2' : 'QC Aroma Tower 1')"
-              class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-750 text-emerald-400 border border-slate-700 font-bold transition-all cursor-pointer flex items-center gap-1"
+              class="px-2.5 py-1 rounded-lg bg-stone-100 hover:bg-coffee-50 text-coffee-900 border border-stone-200 font-semibold transition-all cursor-pointer flex items-center gap-1 btn-action"
             >
-              <span>👁️ Pratinjau Aroma</span>
+              <svg class="w-3.5 h-3.5 text-coffee-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+              <span>Pratinjau Aroma</span>
             </button>
             <button
               type="button"
               @click="openTablePreview(gsheetTower === '2' ? 'qc_rework_t2' : 'qc_rework_t1', gsheetTower === '2' ? 'QC Rework Tower 2' : 'QC Rework Tower 1')"
-              class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-750 text-emerald-400 border border-slate-700 font-bold transition-all cursor-pointer flex items-center gap-1"
+              class="px-2.5 py-1 rounded-lg bg-stone-100 hover:bg-coffee-50 text-coffee-900 border border-stone-200 font-semibold transition-all cursor-pointer flex items-center gap-1 btn-action"
             >
-              <span>👁️ Pratinjau Rework</span>
+              <svg class="w-3.5 h-3.5 text-coffee-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+              <span>Pratinjau Rework</span>
             </button>
           </div>
         </div>
@@ -1700,8 +1930,9 @@
             <div class="text-[10px] text-slate-500 mt-1">
               File akan dianalisis secara otomatis untuk mencocokkan flow & tabel yang sesuai.
             </div>
-            <div v-if="inspectState.fileName" class="mt-2.5 inline-block bg-blue-50 border border-blue-300 text-blue-900 text-xs font-bold px-3 py-1 rounded">
-              📄 {{ inspectState.fileName }}
+            <div v-if="inspectState.fileName" class="mt-2.5 inline-flex items-center gap-1.5 bg-blue-50 border border-blue-300 text-blue-900 text-xs font-bold px-3 py-1 rounded">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+              <span>{{ inspectState.fileName }}</span>
             </div>
           </div>
 
@@ -1742,7 +1973,7 @@
               </div>
             </div>
             <span class="text-[11px] font-bold bg-white text-emerald-800 border border-emerald-300 px-2.5 py-1 rounded">
-              🎯 Cocok Otomatis (Score: {{ inspectState.data.score }})
+              ✓ Cocok Otomatis (Score: {{ inspectState.data.score }})
             </span>
           </div>
 
@@ -1767,7 +1998,7 @@
 
           <!-- Warning alert if any columns are missing -->
           <div v-if="inspectState.data.warning" class="mb-3 p-2.5 bg-amber-50 border border-amber-300 rounded text-xs text-amber-950 font-medium flex items-start gap-2">
-            <span>⚠️</span>
+            <svg class="w-4 h-4 text-amber-700 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
             <div>
               <div>{{ inspectState.data.warning }}</div>
               <div v-if="inspectState.data.missingColumns?.length" class="mt-1 flex flex-wrap gap-1 items-center">
@@ -1784,9 +2015,9 @@
             <button
               v-if="!importState.importing"
               @click="executeAutoImport"
-              class="flex-1 bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-bold py-2.5 px-4 rounded transition-colors shadow-sm flex items-center justify-center gap-2 cursor-pointer"
+              class="flex-1 bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-bold py-2.5 px-4 rounded transition-colors shadow-sm flex items-center justify-center gap-2 cursor-pointer btn-action"
             >
-              <span>🚀 Konversi &amp; Simpan ke Database ({{ inspectState.data.table }})</span>
+              <span>Konversi &amp; Simpan ke Database ({{ inspectState.data.table }})</span>
             </button>
             <div v-else class="flex-1 bg-slate-200 text-slate-700 text-xs font-bold py-2.5 px-4 rounded flex items-center justify-center gap-2">
               <svg class="spin h-4 w-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
@@ -1803,7 +2034,7 @@
 
         <!-- ── GAGAL DETEKSI / TIDAK COCOK ── -->
         <div v-if="inspectState.error" class="bg-red-50 border border-red-300 rounded p-3 text-xs text-red-900 flex items-start gap-2">
-          <span class="text-base leading-none">⚠️</span>
+          <svg class="w-4 h-4 text-red-700 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
           <div>
             <div class="font-bold">Struktur Kolom Tidak Cocok</div>
             <div class="mt-0.5">{{ inspectState.error }}</div>
@@ -1817,7 +2048,7 @@
           :class="importState.success ? 'bg-green-50 text-green-900 border-green-300' : 'bg-red-50 text-red-900 border-red-300'"
         >
           <div class="flex items-center gap-2">
-            <span>{{ importState.success ? '✅' : '❌' }}</span>
+            <span class="font-bold">{{ importState.success ? '✓' : '✕' }}</span>
             <span class="font-bold">{{ importState.message }}</span>
           </div>
           <button @click="importState.message = ''" class="text-xs text-slate-500 hover:text-slate-800 font-bold px-1.5 cursor-pointer">✕</button>
@@ -1895,7 +2126,7 @@
           @click="refreshAllCounts(); loadPicTable(picSelectedTable, 1);"
           class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded text-slate-800 text-xs font-bold transition-colors cursor-pointer"
         >
-          <span>🔄</span>
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
           <span>Refresh Data</span>
         </button>
       </div>
@@ -1976,7 +2207,7 @@
               :class="picSelectedTable === tbl.key ? 'bg-emerald-800 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'"
               class="text-[10px] font-bold px-2.5 py-1 rounded transition-colors"
             >
-              {{ picSelectedTable === tbl.key ? '✓ Sedang Dilihat' : '👁️ Buka Data' }}
+              {{ picSelectedTable === tbl.key ? '✓ Sedang Dilihat' : 'Buka Data' }}
             </span>
           </div>
         </div>
@@ -1986,19 +2217,19 @@
       </div>
 
       <!-- Live Data Viewer Panel -->
-      <div class="bg-white border-2 border-slate-800 rounded shadow-md overflow-hidden">
+      <div class="glass-card border border-stone-200 rounded-2xl shadow-sm overflow-hidden reveal-on-scroll">
         <!-- Panel Header -->
-        <div class="bg-slate-900 text-white px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div class="bg-stone-50 border-b border-stone-200 text-stone-900 px-5 py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div class="flex items-center gap-2.5">
-            <span class="w-3 h-3 bg-emerald-400 rounded-full inline-block"></span>
+            <span class="w-3 h-3 bg-emerald-500 rounded-full inline-block"></span>
             <div>
               <div class="font-bold text-xs uppercase tracking-wide flex items-center gap-2">
-                <span>Data Record: {{ getTableLabelByKey(picSelectedTable) }}</span>
-                <span class="bg-slate-800 text-emerald-300 font-mono text-[10px] px-2 py-0.5 rounded border border-slate-700">
+                <span class="text-stone-900 font-extrabold">Data Record: {{ getTableLabelByKey(picSelectedTable) }}</span>
+                <span class="bg-stone-100 text-stone-700 font-mono text-[10px] px-2.5 py-0.5 rounded-full border border-stone-200">
                   {{ picTableColumns.length }} kolom &bull; {{ Number(picTotalRows).toLocaleString() }} total baris
                 </span>
               </div>
-              <div class="text-[10px] text-slate-400 font-mono">
+              <div class="text-[10px] text-stone-500 font-mono mt-0.5">
                 SELECT * FROM `{{ picSelectedTable }}`
               </div>
             </div>
@@ -2012,19 +2243,19 @@
                 @keyup.enter="searchPicTable"
                 type="text"
                 placeholder="Cari Batch / Nama / Tanggal..."
-                class="w-full bg-slate-800 border border-slate-700 text-white placeholder-slate-400 text-xs rounded px-2.5 py-1 focus:outline-none focus:border-emerald-500"
+                class="w-full bg-white border border-stone-300 text-stone-900 placeholder-stone-400 text-xs rounded-lg px-3 py-1.5 focus:outline-none focus:border-coffee-700 shadow-2xs"
               />
             </div>
             <button
               @click="searchPicTable"
-              class="px-2.5 py-1 bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-bold rounded transition-colors cursor-pointer"
+              class="px-3.5 py-1.5 bg-[#4a2c1d] hover:bg-[#3c2415] text-white text-xs font-bold rounded-lg transition-all cursor-pointer btn-action shadow-2xs"
             >
               Cari
             </button>
             <button
               v-if="picSearchQuery"
               @click="picSearchQuery = ''; searchPicTable();"
-              class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs rounded transition-colors cursor-pointer"
+              class="px-2 py-1.5 bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs rounded-lg transition-colors cursor-pointer"
               title="Reset pencarian"
             >
               ✕
@@ -2069,7 +2300,7 @@
           </div>
 
           <div v-else class="p-12 text-center bg-white rounded border border-slate-300 text-xs text-slate-500">
-            <div class="text-base mb-1">📭</div>
+            <svg class="w-8 h-8 mx-auto mb-2 text-stone-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
             <div class="font-bold text-slate-700">Tidak ada data ditemukan</div>
             <div class="mt-1">Tabel {{ picSelectedTable }} kosong atau tidak ada data yang cocok dengan pencarian "{{ picSearchQuery }}".</div>
           </div>
@@ -2169,61 +2400,70 @@
     <!-- ── DATA EXTRACTION PREVIEW MODAL / DRAWER ── -->
     <div
       v-if="previewDrawerOpen"
-      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm transition-all"
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/50 backdrop-blur-xs transition-all no-print"
+      @click.self="closeTablePreview"
     >
-      <div class="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden text-white">
+      <div class="bg-white border border-stone-200 rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden text-stone-900">
         <!-- Drawer Header -->
-        <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between bg-slate-950/70">
+        <div class="px-5 py-4 border-b border-stone-200 flex items-center justify-between bg-stone-50">
           <div class="flex items-center gap-3">
-            <div class="w-8 h-8 rounded bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 font-bold text-sm">
-              📊
+            <div class="w-9 h-9 rounded-xl bg-coffee-100 border border-coffee-200 flex items-center justify-center text-coffee-800 shrink-0">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="3" y1="9" x2="21" y2="9"></line>
+                <line x1="9" y1="21" x2="9" y2="9"></line>
+              </svg>
             </div>
             <div>
               <div class="flex items-center gap-2">
-                <span class="text-sm font-bold text-white">{{ previewTableData.label || previewTableData.tableName }}</span>
-                <span class="px-2 py-0.5 text-[10px] font-mono bg-slate-800 text-slate-300 rounded border border-slate-700">
+                <span class="text-sm font-extrabold text-stone-900">{{ previewTableData.label || previewTableData.tableName }}</span>
+                <span class="px-2 py-0.5 text-[10px] font-mono bg-stone-100 text-stone-700 rounded border border-stone-200">
                   {{ previewTableData.tableName }}
                 </span>
-                <span class="px-2 py-0.5 text-[10px] font-bold bg-emerald-500/20 text-emerald-300 rounded border border-emerald-500/40">
+                <span class="px-2 py-0.5 text-[10px] font-bold bg-emerald-50 text-emerald-800 rounded-full border border-emerald-200">
                   {{ (previewTableData.totalRows || 0).toLocaleString() }} Record
                 </span>
               </div>
-              <p class="text-[11px] text-slate-400 mt-0.5">
+              <p class="text-[11px] text-stone-500 mt-0.5">
                 Pratinjau 5 baris data aktual yang tersimpan di database MySQL dari proses sinkronisasi.
               </p>
             </div>
           </div>
           <button
             @click="closeTablePreview"
-            class="text-slate-400 hover:text-white p-1.5 rounded-lg hover:bg-slate-800 transition-colors text-sm font-bold cursor-pointer"
+            class="text-stone-400 hover:text-stone-900 p-1.5 rounded-lg hover:bg-stone-200 transition-colors cursor-pointer"
+            title="Tutup Modal"
           >
-            ✕
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
           </button>
         </div>
 
         <!-- Drawer Content Table -->
-        <div class="p-4 flex-1 overflow-auto">
+        <div class="p-4 flex-1 overflow-auto bg-stone-50/40">
           <!-- Loading Skeleton -->
           <div v-if="previewTableData.loading" class="space-y-2">
-            <div class="h-8 skeleton-shimmer rounded"></div>
-            <div class="h-10 skeleton-shimmer rounded" v-for="i in 5" :key="i"></div>
+            <div class="h-8 skeleton-shimmer rounded-lg"></div>
+            <div class="h-10 skeleton-shimmer rounded-lg" v-for="i in 5" :key="i"></div>
           </div>
 
           <!-- Real Data Table -->
-          <div v-else-if="previewTableData.rows && previewTableData.rows.length" class="overflow-x-auto border border-slate-700 rounded-lg">
+          <div v-else-if="previewTableData.rows && previewTableData.rows.length" class="overflow-x-auto border border-stone-200 rounded-xl bg-white shadow-2xs">
             <table class="w-full text-xs text-left">
-              <thead class="bg-slate-950 text-slate-300 uppercase text-[10px] tracking-wider border-b border-slate-700">
+              <thead class="bg-stone-100 text-stone-700 uppercase text-[10px] tracking-wider border-b border-stone-200">
                 <tr>
-                  <th class="px-3 py-2 border-r border-slate-800 font-bold text-slate-400">#</th>
-                  <th v-for="col in previewTableData.columns" :key="col" class="px-3 py-2 border-r border-slate-800 whitespace-nowrap">
+                  <th class="px-3 py-2 border-r border-stone-200 font-bold text-stone-500">#</th>
+                  <th v-for="col in previewTableData.columns" :key="col" class="px-3 py-2 border-r border-stone-200 whitespace-nowrap">
                     {{ col }}
                   </th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-slate-800 font-mono text-[11px]">
-                <tr v-for="(row, rIdx) in previewTableData.rows" :key="rIdx" class="hover:bg-slate-800/50">
-                  <td class="px-3 py-2 text-slate-500 border-r border-slate-800">{{ rIdx + 1 }}</td>
-                  <td v-for="col in previewTableData.columns" :key="col" class="px-3 py-2 border-r border-slate-800 whitespace-nowrap text-slate-200">
+              <tbody class="divide-y divide-stone-200 font-mono text-[11px]">
+                <tr v-for="(row, rIdx) in previewTableData.rows" :key="rIdx" class="hover:bg-coffee-50/60 transition-colors">
+                  <td class="px-3 py-2 text-stone-400 border-r border-stone-200 font-sans">{{ rIdx + 1 }}</td>
+                  <td v-for="col in previewTableData.columns" :key="col" class="px-3 py-2 border-r border-stone-200 whitespace-nowrap text-stone-800">
                     {{ row[col] !== null && row[col] !== undefined && row[col] !== '' ? row[col] : '-' }}
                   </td>
                 </tr>
@@ -2231,17 +2471,17 @@
             </table>
           </div>
 
-          <div v-else class="text-center py-10 text-slate-500 text-xs">
+          <div v-else class="text-center py-10 text-stone-400 text-xs">
             Tidak ada data record yang ditemukan di tabel ini.
           </div>
         </div>
 
         <!-- Drawer Footer -->
-        <div class="px-5 py-3 border-t border-slate-800 bg-slate-950/70 flex items-center justify-between text-xs text-slate-400">
+        <div class="px-5 py-3 border-t border-stone-200 bg-stone-50 flex items-center justify-between text-xs text-stone-500">
           <span>Menampilkan 5 baris cuplikan pertama</span>
           <button
             @click="closeTablePreview"
-            class="px-4 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 transition-colors font-semibold cursor-pointer"
+            class="px-4 py-1.5 rounded-xl bg-[#4a2c1d] hover:bg-[#3c2415] text-white transition-all font-semibold cursor-pointer btn-action shadow-2xs"
           >
             Tutup Pratinjau
           </button>
@@ -2253,7 +2493,7 @@
 </div>
 
 <script>
-const { createApp, ref, reactive, computed, onMounted } = Vue;
+const { createApp, ref, reactive, computed, onMounted, watch } = Vue;
 
 createApp({
   setup() {
@@ -3042,10 +3282,17 @@ createApp({
       }
     }
 
-    // Auto-init on mount
+    // Auto-init on mount and scroll reveal
     onMounted(() => {
       loadGsheetStatus();
       refreshAllCounts();
+      if (window.initScrollReveal) window.initScrollReveal();
+    });
+
+    watch(activeTab, () => {
+      setTimeout(() => {
+        if (window.initScrollReveal) window.initScrollReveal();
+      }, 80);
     });
 
     return {
