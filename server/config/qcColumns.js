@@ -65,6 +65,23 @@ const QC_TABLE_COLUMNS_MAP = {
     '3350-<4000', '4000-<5600', '5600-<6300', '>6300', 'Kadar air (%)', 'Density (gr/L)',
     'RGA/RGB', 'Berat Mesh (gram)', 'Keterangan', 'TTD', 'Mesh <1000', 'Mesh >4000',
   ],
+
+  qc_mesh_t1: [
+    'Stamp', 'Produk', 'Tanggal', 'Jam', 'Batch', 'Nomor Box',
+    'Mesh Test (gram) > 600', 'Mesh Test (gram) 425-600', 'Mesh Test (gram) 300-425',
+    'Mesh Test (gram) 250-300', 'Mesh Test (gram) 212-250', 'Mesh Test (gram) 180-212',
+    'Mesh Test (gram) 150-180', 'Mesh Test (gram) <150', 'Keterangan', 'TTD',
+    'Mesh <180', 'Mesh 180 - 425', 'Mesh >425',
+  ],
+
+  qc_mesh_t2: [
+    'Stamp', 'Produk', 'Tanggal', 'Jam', 'Batch', 'Nomor Box',
+    'Mesh Test (gram) > 600', 'Mesh Test (gram) 425-600', 'Mesh Test (gram) 300-425',
+    'Mesh Test (gram) 250-300', 'Mesh Test (gram) 212-250', 'Mesh Test (gram) 180-212',
+    'Mesh Test (gram) 150-180', 'Mesh Test (gram) <150', 'Keterangan', 'TTD',
+    'Mesh <180', 'Mesh 180 - 425', 'Mesh >425',
+  ],
 };
 
 module.exports = { QC_TABLE_COLUMNS_MAP };
+

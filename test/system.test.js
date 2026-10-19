@@ -205,17 +205,18 @@ describe('Traceability System - Automated Monitoring & Validation', () => {
     const xlsx = require('xlsx');
     const { inspectExcelWorkbook } = require('../server/utils/inspectHelper');
 
-    // 1. Valid workbook for qc_rework_t1
-    const validHeaders = TABLE_COLUMNS_MAP.qc_rework_t1;
+    // 1. Valid workbook for dryer_tower_1 (Produksi Tower 1)
+    const validHeaders = TABLE_COLUMNS_MAP.dryer_tower_1;
+    const sampleRow = validHeaders.map((_, i) => `val_${i}`);
     const wb1 = xlsx.utils.book_new();
-    const ws1 = xlsx.utils.aoa_to_sheet([validHeaders, ['LOC-1', '1', 'B370', 'SIC 18 T']]);
-    xlsx.utils.book_append_sheet(wb1, ws1, 'QC REWORK');
+    const ws1 = xlsx.utils.aoa_to_sheet([validHeaders, sampleRow]);
+    xlsx.utils.book_append_sheet(wb1, ws1, 'DRYER T1');
     const validBuf = xlsx.write(wb1, { type: 'buffer', bookType: 'xlsx' });
 
-    const resValid = inspectExcelWorkbook(validBuf, 'QC', 'Tower 1');
+    const resValid = inspectExcelWorkbook(validBuf, 'Produksi', 'Tower 1');
     assert.strictEqual(resValid.detected, true, 'Harus terdeteksi sebagai tabel');
     assert.strictEqual(resValid.valid, true, 'File dengan kolom lengkap harus valid');
-    assert.strictEqual(resValid.table, 'qc_rework_t1');
+    assert.strictEqual(resValid.table, 'dryer_tower_1');
     assert.strictEqual(resValid.missingCount, 0, 'Tidak boleh ada kolom wajib yang kurang');
 
     // 2. Mismatched workbook (e.g. arbitrary non-matching columns)
@@ -225,18 +226,18 @@ describe('Traceability System - Automated Monitoring & Validation', () => {
     xlsx.utils.book_append_sheet(wb2, ws2, 'Data Siswa');
     const badBuf = xlsx.write(wb2, { type: 'buffer', bookType: 'xlsx' });
 
-    const resBad = inspectExcelWorkbook(badBuf, 'QC', 'Tower 1');
+    const resBad = inspectExcelWorkbook(badBuf, 'Produksi', 'Tower 1');
     assert.strictEqual(resBad.valid, false, 'File dengan kolom tidak cocok harus tidak valid (valid: false)');
     assert.ok(resBad.warning && resBad.warning.length > 0, 'Harus memberikan teks peringatan ketidakcocokan kolom');
 
     // 3. Partial columns (<40% match) -> should trigger mismatch warning
-    const partialHeaders = ['Lokasi Sampling', 'Masakan ke', 'Bahan Rework'];
+    const partialHeaders = ['Final Tank', 'Level Final Tank', 'TS Final Tank'];
     const wb3 = xlsx.utils.book_new();
-    const ws3 = xlsx.utils.aoa_to_sheet([partialHeaders, ['LOC-1', '1', 'Rework A']]);
-    xlsx.utils.book_append_sheet(wb3, ws3, 'QC REWORK');
+    const ws3 = xlsx.utils.aoa_to_sheet([partialHeaders, ['FT1', '50%', '30']]);
+    xlsx.utils.book_append_sheet(wb3, ws3, 'DRYER T1');
     const partialBuf = xlsx.write(wb3, { type: 'buffer', bookType: 'xlsx' });
 
-    const resPartial = inspectExcelWorkbook(partialBuf, 'QC', 'Tower 1');
+    const resPartial = inspectExcelWorkbook(partialBuf, 'Produksi', 'Tower 1');
     assert.strictEqual(resPartial.valid, false, 'Kesesuaian kolom < 40% harus ditolak');
     assert.ok(resPartial.warning.includes('Peringatan: Kolom tidak cocok'), 'Peringatan harus menginformasikan ketidakcocokan kolom');
     assert.ok(resPartial.missingColumns.length > 0, 'Daftar kolom yang hilang harus terisi');

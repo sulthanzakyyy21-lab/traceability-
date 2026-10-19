@@ -688,7 +688,7 @@
           </tr>
           <tr>
             <td style="color: #000000;">Nama Produk</td>
-            <td style="font-weight: bold;">SIC 18 T</td>
+            <td style="font-weight: bold;">{{ headerNamaProduk }}</td>
             <td style="color: #000000;">Nama Bahan / Proses</td>
             <td>-</td>
           </tr>
@@ -700,19 +700,19 @@
           </tr>
           <tr>
             <td style="color: #000000;">Tanggal Produksi</td>
-            <td>29 Agustus 2026</td>
+            <td>{{ headerTanggalProduksi }}</td>
             <td style="color: #000000;">Tgl Kedatangan / Tgl Proses</td>
             <td>-</td>
           </tr>
           <tr>
             <td style="color: #000000;">Best Before</td>
-            <td>29 Agustus 2028</td>
+            <td>{{ headerBestBefore }}</td>
             <td style="color: #000000;">Lokasi Bahan/Proses</td>
             <td>-</td>
           </tr>
           <tr>
             <td style="color: #000000;">PIN</td>
-            <td>122</td>
+            <td>{{ headerPin }}</td>
             <td colspan="2" rowspan="4" class="bg-slate-50 text-[10.5px] text-slate-700 p-2 align-top border border-black">
               <strong>Note:</strong><br>
               &bull; Semua data diisi sesuai keperluan dan disesuaikan dengan kondisi aktual di lapangan.<br>
@@ -721,7 +721,7 @@
           </tr>
           <tr>
             <td style="color: #000000;">Nomer Box</td>
-            <td>p.041- 245</td>
+            <td>{{ headerNomorBox }}</td>
           </tr>
           <tr>
             <td style="color: #000000;">Tower 1/2</td>
@@ -1054,8 +1054,23 @@
                 <span class="bg-emerald-700 text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase">Flow Terdeteksi</span>
                 <span class="text-sm font-bold text-slate-900 uppercase tracking-tight">{{ inspectState.data.flow }}</span>
               </div>
-              <div class="text-xs text-emerald-950 font-bold mt-1">
-                Tabel Target: <code class="bg-white border border-emerald-300 px-1.5 py-0.5 rounded text-emerald-900 font-mono text-[11px]">db_traceability_sja.{{ inspectState.data.table }}</code>
+              <div class="flex items-center gap-2 mt-2">
+                <span class="text-xs text-emerald-950 font-bold whitespace-nowrap">Tabel Target:</span>
+                <select
+                  v-model="inspectState.data.table"
+                  class="bg-white border border-emerald-400 font-mono text-xs text-emerald-950 font-bold rounded px-2 py-1 shadow-sm focus:outline-none focus:ring-1 focus:ring-emerald-600"
+                >
+                  <optgroup label="── PIC QC (Tower 1) ──">
+                    <option v-for="t in tables.filter(x => x.pic === 'QC')" :key="t.key" :value="t.key">
+                      db_traceability_sja.{{ t.key }} ({{ t.label }})
+                    </option>
+                  </optgroup>
+                  <optgroup label="── PIC Produksi ──">
+                    <option v-for="t in tables.filter(x => x.pic === 'Produksi')" :key="t.key" :value="t.key">
+                      db_traceability_sja.{{ t.key }} ({{ t.label }})
+                    </option>
+                  </optgroup>
+                </select>
               </div>
             </div>
             <span class="text-[11px] font-bold bg-white text-emerald-800 border border-emerald-300 px-2.5 py-1 rounded">
@@ -1512,10 +1527,60 @@ createApp({
       tower: '1',
     });
 
+    function formatIndoDate(val, addYears = 0) {
+      if (!val) return '-';
+      const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+      const dt = new Date(val);
+      if (isNaN(dt.getTime())) return String(val);
+      const day = dt.getDate();
+      const month = months[dt.getMonth()];
+      const year = dt.getFullYear() + addYears;
+      return `${day} ${month} ${year}`;
+    }
+
+    const headerNamaProduk = computed(() => {
+      const d = traceResult.value;
+      if (!d) return 'SIC 18 T';
+      return d.packing?.nama_produk || d.dryer?.nama_produk || 'SIC 18 T';
+    });
+
+    const headerTanggalProduksi = computed(() => {
+      const d = traceResult.value;
+      if (!d) return '29 Agustus 2026';
+      const raw = d.packing?.tanggal || d.dryer?.tanggal;
+      return raw ? formatIndoDate(raw) : '-';
+    });
+
+    const headerBestBefore = computed(() => {
+      const d = traceResult.value;
+      if (!d) return '29 Agustus 2028';
+      const raw = d.packing?.tanggal || d.dryer?.tanggal;
+      return raw ? formatIndoDate(raw, 2) : '-';
+    });
+
+    const headerPin = computed(() => {
+      const d = traceResult.value;
+      if (!d) return '122';
+      return d.packing?.pin || d.dryer?.pin || '-';
+    });
+
+    const headerNomorBox = computed(() => {
+      const d = traceResult.value;
+      if (!d) return 'p.041- 245';
+      if (d.packing?.ok_box && Number(d.packing.ok_box) > 0) {
+        const totalBox = Math.round(Number(d.packing.ok_box));
+        return `p.001 - ${String(totalBox).padStart(3, '0')}`;
+      }
+      return '-';
+    });
+
     function getItemValue(key) {
       if (!key) return '-';
       const d = traceResult.value;
       if (!d) return '-';
+
+      // ── QC Auto-Mapped Keys ──
+      if (d.qc && d.qc[key] !== undefined) return d.qc[key];
 
       // ── 0. PACKING (PIC Produksi) ──
       if (key === 'packing_waktu_proses') return d.packing?.waktu_proses || '-';
@@ -1568,9 +1633,6 @@ createApp({
       if (key === 'roast_abnormalitas') return d.roasting && !d.roasting.error ? 'tidak ada' : '-';
       if (key === 'roast_jenis_biji') return d.roasting?.jenis_biji_mentah || '-';
       if (key === 'roast_silocell') return d.roasting?.silo_cell_terpakai || '-';
-      if (key === 'roast_kopi_mentah') return d.roasting?.total_kopi_mentah_kg ? d.roasting.total_kopi_mentah_kg + ' kg' : '-';
-      if (key === 'roast_kopi_matang') return d.roasting?.total_kopi_matang_kg ? d.roasting.total_kopi_matang_kg + ' kg' : '-';
-      if (key === 'roast_yield') return d.roasting?.yield_roasting || '-';
 
       // ── 5. UPBM (PIC Produksi) ──
       if (key === 'upbm_waktu_inload') return d.upbm?.waktu_inload || '-';
@@ -1588,142 +1650,6 @@ createApp({
       if (key === 'mb_kopi_mentah') return d.mass_balance?.total_kopi_mentah || '-';
       if (key === 'mb_rasio_ic') return d.mass_balance?.rasio_ic || '-';
 
-      // ── 7. QC PACKING (qc_dryer_t1) ──
-      if (key === 'qc_pack_verifikasi_label') return d.qc?.dryer?.found ? 'Sesuai' : '-';
-      if (key === 'qc_pack_visual_kemasan') return d.qc?.dryer?.found ? 'Baik' : '-';
-      if (key === 'qc_pack_kadar_air') return d.qc?.dryer?.data?.['Kadar Air (%)'] ? d.qc.dryer.data['Kadar Air (%)'] + '%' : '-';
-      if (key === 'qc_pack_density') return d.qc?.dryer?.data?.['Density (g/L)'] ? d.qc.dryer.data['Density (g/L)'] + ' g/L' : '-';
-      if (key === 'qc_pack_fm') return d.qc?.dryer?.data?.['FM'] || '-';
-      if (key === 'qc_pack_visual') return d.qc?.dryer?.data?.['Vis'] || '-';
-      if (key === 'qc_pack_warna') return d.qc?.dryer?.data?.['Warna'] || '-';
-      if (key === 'qc_pack_brix') return d.qc?.dryer?.data?.['Brix (°brix)'] ? d.qc.dryer.data['Brix (°brix)'] + '°' : '-';
-      if (key === 'qc_pack_ph') return d.qc?.dryer?.data?.['pH'] || '-';
-      if (key === 'qc_pack_floating_particles') return d.qc?.dryer?.data?.['Floating Particles'] || '-';
-      if (key === 'qc_pack_fluidity') return d.qc?.dryer?.data?.['Fluidity'] || '-';
-      if (key === 'qc_pack_solubility') return d.qc?.dryer?.data?.['Solubility (s)'] ? d.qc.dryer.data['Solubility (s)'] + ' s' : '-';
-      if (key === 'qc_pack_cuptest_wangi') return d.qc?.dryer?.data?.['Cup Test Wangi'] || '-';
-      if (key === 'qc_pack_cuptest_pahit') return d.qc?.dryer?.data?.['Cup Test Pahit'] || '-';
-      if (key === 'qc_pack_cuptest_asam') return d.qc?.dryer?.data?.['Cup Test Asam'] || '-';
-      if (key === 'qc_pack_cuptest_body') return d.qc?.dryer?.data?.['Cup Test Body'] || '-';
-      if (key === 'qc_pack_cuptest_sepat') return d.qc?.dryer?.data?.['Cup Test Sepet'] || '-';
-      if (key === 'qc_pack_pic') return d.qc?.dryer?.data?.['TTD'] || '-';
-      if (key === 'qc_pack_status_ok') {
-        if (d.qc?.dryer?.raw_rows && d.qc.dryer.raw_rows.length > 0) {
-          const okRows = d.qc.dryer.raw_rows.filter(r => (r.Status || '').toUpperCase().includes('OK'));
-          return okRows.length > 0 ? okRows.length + ' Box' : (d.qc.dryer.data?.['Status'] || '-');
-        }
-        return d.qc?.dryer?.data?.['Status'] || '-';
-      }
-      if (key === 'qc_pack_status_bo') {
-        if (d.qc?.dryer?.raw_rows && d.qc.dryer.raw_rows.length > 0) {
-          const boRows = d.qc.dryer.raw_rows.filter(r => (r.Status || '').toUpperCase().includes('BO'));
-          return boRows.length + ' Box';
-        }
-        return '-';
-      }
-      if (key === 'qc_pack_status_pic') return d.qc?.dryer?.data?.['TTD'] || '-';
-
-      // ── 8. QC REWORK (qc_rework_t1) ──
-      if (key === 'qc_rework_verifikasi') return d.qc?.rework?.data?.['Verifikasi'] || (d.qc?.rework?.found ? 'Sesuai' : '-');
-      if (key === 'qc_rework_visual_fm') return d.qc?.rework?.data?.['Visual / Foreign Matter'] || '-';
-      if (key === 'qc_rework_brix_ts') return d.qc?.rework?.data?.['Brix (°brix) / TS (%)'] || '-';
-      if (key === 'qc_rework_viskositas') return d.qc?.rework?.data?.['Viscosity (cP)'] ? d.qc.rework.data['Viscosity (cP)'] + ' cP' : '-';
-      if (key === 'qc_rework_density') return d.qc?.rework?.data?.['Density (g/L)'] ? d.qc.rework.data['Density (g/L)'] + ' g/L' : '-';
-      if (key === 'qc_rework_screening') return d.qc?.rework?.data?.['Screening Test'] || '-';
-      if (key === 'qc_rework_cuptest_wangi') return d.qc?.rework?.data?.['Cuptest Wangi'] || '-';
-      if (key === 'qc_rework_cuptest_pahit') return d.qc?.rework?.data?.['Cuptest Pahit'] || '-';
-      if (key === 'qc_rework_cuptest_asam') return d.qc?.rework?.data?.['Cuptest Asam'] || '-';
-      if (key === 'qc_rework_status') return d.qc?.rework?.data?.['Status'] || '-';
-      if (key === 'qc_rework_pic') return d.qc?.rework?.data?.['Dianalisa Oleh'] || '-';
-
-      // ── 9. QC DRYER (qc_dryer_t1) ──
-      if (key === 'qc_dryer_kadar_air') return d.qc?.dryer?.data?.['Kadar Air (%)'] ? d.qc.dryer.data['Kadar Air (%)'] + '%' : '-';
-      if (key === 'qc_dryer_density') return d.qc?.dryer?.data?.['Density (g/L)'] ? d.qc.dryer.data['Density (g/L)'] + ' g/L' : '-';
-      if (key === 'qc_dryer_fm') return d.qc?.dryer?.data?.['FM'] || '-';
-      if (key === 'qc_dryer_visual') return d.qc?.dryer?.data?.['Vis'] || '-';
-      if (key === 'qc_dryer_warna') return d.qc?.dryer?.data?.['Warna'] || '-';
-      if (key === 'qc_dryer_brix') return d.qc?.dryer?.data?.['Brix (°brix)'] ? d.qc.dryer.data['Brix (°brix)'] + '°' : '-';
-      if (key === 'qc_dryer_ph') return d.qc?.dryer?.data?.['pH'] || '-';
-      if (key === 'qc_dryer_floating_particles') return d.qc?.dryer?.data?.['Floating Particles'] || '-';
-      if (key === 'qc_dryer_cuptest_wangi') return d.qc?.dryer?.data?.['Cup Test Wangi'] || '-';
-      if (key === 'qc_dryer_cuptest_pahit') return d.qc?.dryer?.data?.['Cup Test Pahit'] || '-';
-      if (key === 'qc_dryer_cuptest_asam') return d.qc?.dryer?.data?.['Cup Test Asam'] || '-';
-      if (key === 'qc_dryer_cuptest_body') return d.qc?.dryer?.data?.['Cup Test Body'] || '-';
-      if (key === 'qc_dryer_cuptest_sepat') return d.qc?.dryer?.data?.['Cup Test Sepet'] || '-';
-      if (key === 'qc_dryer_pic') return d.qc?.dryer?.data?.['TTD'] || '-';
-
-      // ── 10. QC EVAPORATION (qc_evaporasi_t1) ──
-      if (key === 'qc_evap_visual_fm') return d.qc?.evaporasi?.data?.['Vis/FM'] || '-';
-      if (key === 'qc_evap_brix_ts') return formatBrixTs(d.qc?.evaporasi?.data?.['Brix (°brix)'], d.qc?.evaporasi?.data?.['TS (%)']);
-      if (key === 'qc_evap_ph') return d.qc?.evaporasi?.data?.['pH'] || '-';
-      if (key === 'qc_evap_viskositas') return d.qc?.evaporasi?.data?.['Viskositas'] || '-';
-      if (key === 'qc_evap_density') return d.qc?.evaporasi?.data?.['Density (g/L)'] ? d.qc.evaporasi.data['Density (g/L)'] + ' g/L' : '-';
-      if (key === 'qc_evap_screening') return d.qc?.evaporasi?.data?.['Screening Test'] || '-';
-      if (key === 'qc_evap_cuptest_wangi') return d.qc?.evaporasi?.data?.['Cup Test Wangi'] || '-';
-      if (key === 'qc_evap_cuptest_pahit') return d.qc?.evaporasi?.data?.['Cup Test Pahit'] || '-';
-      if (key === 'qc_evap_cuptest_asam') return d.qc?.evaporasi?.data?.['Cup Test Asam'] || '-';
-      if (key === 'qc_evap_pic') return d.qc?.evaporasi?.data?.['TTD'] || '-';
-
-      // ── 11. QC FINAL TANK (qc_final_tank_t1) ──
-      if (key === 'qc_ft_nomor') return d.qc?.final_tank?.data?.['Final Tank'] ? 'FT C0' + d.qc.final_tank.data['Final Tank'] : '-';
-      if (key === 'qc_ft_pure_aroma') return d.qc?.final_tank?.data?.['Pure Aroma (kg)'] ? d.qc.final_tank.data['Pure Aroma (kg)'] + ' kg' : '-';
-      if (key === 'qc_ft_level') return d.qc?.final_tank?.data?.['Level'] ? d.qc.final_tank.data['Level'] + '%' : '-';
-      if (key === 'qc_ft_visual_fm') return d.qc?.final_tank?.data?.['Vis/FM'] || '-';
-      if (key === 'qc_ft_brix_ts') return formatBrixTs(d.qc?.final_tank?.data?.['Brix (°brix)'], d.qc?.final_tank?.data?.['TS (%)']);
-      if (key === 'qc_ft_ph') return d.qc?.final_tank?.data?.['pH'] || '-';
-      if (key === 'qc_ft_viskositas') return d.qc?.final_tank?.data?.['Viskositas cP'] ? d.qc.final_tank.data['Viskositas cP'] + ' cP' : '-';
-      if (key === 'qc_ft_density') return d.qc?.final_tank?.data?.['Density (g/L)'] ? d.qc.final_tank.data['Density (g/L)'] + ' g/L' : '-';
-      if (key === 'qc_ft_screening') return d.qc?.final_tank?.data?.['Screening Test'] || '-';
-      if (key === 'qc_ft_cuptest_wangi') return d.qc?.final_tank?.data?.['Cup Test Wangi'] || '-';
-      if (key === 'qc_ft_cuptest_pahit') return d.qc?.final_tank?.data?.['Cup Test Pahit'] || '-';
-      if (key === 'qc_ft_cuptest_asam') return d.qc?.final_tank?.data?.['Cup Test Asam'] || '-';
-      if (key === 'qc_ft_pic') return d.qc?.final_tank?.data?.['TTD'] || '-';
-
-      // ── 12. QC EXTRACTION: Grinding (qc_grinding_t1) ──
-      if (key === 'qc_grind_silo') return d.qc?.grinding?.data?.['Silo Degassing'] || '-';
-      if (key === 'qc_grind_rga_rgb') return d.qc?.grinding?.data?.['RGA/RGB'] || '-';
-      if (key === 'qc_grind_fm') return d.qc?.grinding?.data?.['FM'] || '-';
-      if (key === 'qc_grind_mesh_lt850') return d.qc?.grinding?.data?.['<850'] || '-';
-      if (key === 'qc_grind_mesh_850_1000') return d.qc?.grinding?.data?.['850-<1000'] || '-';
-      if (key === 'qc_grind_mesh_1000_2350') return d.qc?.grinding?.data?.['1000-<2350'] || '-';
-      if (key === 'qc_grind_mesh_2350_3350') return d.qc?.grinding?.data?.['2350-<3350'] || '-';
-      if (key === 'qc_grind_mesh_3350_4000') return d.qc?.grinding?.data?.['3350-<4000'] || '-';
-      if (key === 'qc_grind_mesh_4000_5600') return d.qc?.grinding?.data?.['4000-<5600'] || '-';
-      if (key === 'qc_grind_mesh_5600_6300') return d.qc?.grinding?.data?.['5600-<6300'] || '-';
-      if (key === 'qc_grind_mesh_gt6300') return d.qc?.grinding?.data?.['>6300'] || '-';
-      if (key === 'qc_grind_kadar_air') return d.qc?.grinding?.data?.['Kadar air (%)'] ? d.qc.grinding.data['Kadar air (%)'] + '%' : '-';
-      if (key === 'qc_grind_density') return d.qc?.grinding?.data?.['Density (gr/L)'] ? d.qc.grinding.data['Density (gr/L)'] + ' g/L' : '-';
-      if (key === 'qc_grind_pic') return d.qc?.grinding?.data?.['TTD'] || '-';
-
-      // ── 13. QC EXTRACTION: Aroma (qc_aroma_t1) ──
-      if (key === 'qc_aroma_silo') return d.qc?.aroma?.data?.['Silo degasing'] || '-';
-      if (key === 'qc_aroma_visual_fm') return d.qc?.aroma?.data?.['Vis/FM'] || '-';
-      if (key === 'qc_aroma_brix_ts') return formatBrixTs(d.qc?.aroma?.data?.['Brix (°brix)'], d.qc?.aroma?.data?.['TS (%)']);
-      if (key === 'qc_aroma_ph') return d.qc?.aroma?.data?.['pH'] || '-';
-      if (key === 'qc_aroma_suhu') return d.qc?.aroma?.data?.['T (°C)'] ? d.qc.aroma.data['T (°C)'] + '°C' : '-';
-      if (key === 'qc_aroma_cuptest_wangi') return d.qc?.aroma?.data?.['Cup Test Wangi'] || '-';
-      if (key === 'qc_aroma_cuptest_pahit') return d.qc?.aroma?.data?.['Cup Test Pahit'] || '-';
-      if (key === 'qc_aroma_cuptest_asam') return d.qc?.aroma?.data?.['Cup Test Asam'] || '-';
-      if (key === 'qc_aroma_pic') return d.qc?.aroma?.data?.['PIC'] || '-';
-
-      // ── 14. QC EXTRACTION: Hidrolise (qc_hydro_t1) ──
-      if (key === 'qc_hydro_silo') return d.qc?.hydro?.data?.['Silo Degassing'] || '-';
-      if (key === 'qc_hydro_visual_fm') return d.qc?.hydro?.data?.['Vis/FM'] || '-';
-      if (key === 'qc_hydro_brix_ts') return formatBrixTs(d.qc?.hydro?.data?.['Brix (°brix)'], d.qc?.hydro?.data?.['TS (%)']);
-      if (key === 'qc_hydro_ph') return d.qc?.hydro?.data?.['pH'] || '-';
-      if (key === 'qc_hydro_suhu') return d.qc?.hydro?.data?.['T (°C)'] ? d.qc.hydro.data['T (°C)'] + '°C' : '-';
-      if (key === 'qc_hydro_cuptest_wangi') return d.qc?.hydro?.data?.['Cup Test Wangi'] || '-';
-      if (key === 'qc_hydro_cuptest_pahit') return d.qc?.hydro?.data?.['Cup Test Pahit'] || '-';
-      if (key === 'qc_hydro_cuptest_asam') return d.qc?.hydro?.data?.['Cup Test Asam'] || '-';
-      if (key === 'qc_hydro_pic') return d.qc?.hydro?.data?.['TTD'] || '-';
-
-      return '-';
-    }
-
-    function formatBrixTs(brix, ts) {
-      if (brix && ts) return `${brix}° / ${ts}%`;
-      if (brix) return `${brix}°`;
-      if (ts) return `${ts}%`;
       return '-';
     }
 
@@ -1733,6 +1659,7 @@ createApp({
     const selectedTower = ref('Tower 1');
 
     const tables = reactive([
+      // Produksi
       { key: 'dryer_tower_1',      label: 'Dryer Tower 1',      flow: 'DRYER',       pic: 'Produksi', tower: 'Tower 1', count: null },
       { key: 'dryer_tower_2',      label: 'Dryer Tower 2',      flow: 'DRYER',       pic: 'Produksi', tower: 'Tower 2', count: null },
       { key: 'extraction_tower_1', label: 'Extraction Tower 1', flow: 'EXTRACTION',  pic: 'Produksi', tower: 'Tower 1', count: null },
@@ -1742,17 +1669,19 @@ createApp({
       { key: 'roasting_probat',    label: 'Roasting Probat',    flow: 'ROASTING',    pic: 'Produksi', tower: 'Non-Tower', count: null },
       { key: 'packing_tower_1',    label: 'Packing Tower 1',    flow: 'PACKING',     pic: 'Produksi', tower: 'Tower 1', count: null },
       { key: 'packing_tower_2',    label: 'Packing Tower 2',    flow: 'PACKING',     pic: 'Produksi', tower: 'Tower 2', count: null },
-      // ── QC Tower 1 Tables ──
-      { key: 'qc_rework_t1',       label: 'QC Rework T1',       flow: 'REWORK',      pic: 'QC', tower: 'Tower 1', count: null },
-      { key: 'qc_dryer_t1',        label: 'QC Dryer T1',        flow: 'DRYER',       pic: 'QC', tower: 'Tower 1', count: null },
-      { key: 'qc_feed_tank_t1',    label: 'QC Feed Tank T1',    flow: 'DRYER',       pic: 'QC', tower: 'Tower 1', count: null },
-      { key: 'qc_final_tank_t1',   label: 'QC Final Tank T1',   flow: 'EVAPORATION', pic: 'QC', tower: 'Tower 1', count: null },
-      { key: 'qc_evaporasi_t1',    label: 'QC Evaporasi T1',    flow: 'EVAPORATION', pic: 'QC', tower: 'Tower 1', count: null },
-      { key: 'qc_tank_system_t1',  label: 'QC Tank System T1',  flow: 'EXTRACTION',  pic: 'QC', tower: 'Tower 1', count: null },
-      { key: 'qc_pure_aroma_t1',   label: 'QC Pure Aroma T1',   flow: 'EXTRACTION',  pic: 'QC', tower: 'Tower 1', count: null },
-      { key: 'qc_hydro_t1',        label: 'QC Hydro T1',        flow: 'EXTRACTION',  pic: 'QC', tower: 'Tower 1', count: null },
-      { key: 'qc_aroma_t1',        label: 'QC Aroma T1',        flow: 'EXTRACTION',  pic: 'QC', tower: 'Tower 1', count: null },
-      { key: 'qc_grinding_t1',     label: 'QC Grinding T1',     flow: 'EXTRACTION',  pic: 'QC', tower: 'Tower 1', count: null },
+      // QC Tower 1
+      { key: 'qc_rework_t1',       label: 'QC Rework T1',            flow: 'REWORK',      pic: 'QC', tower: 'Tower 1', count: null },
+      { key: 'qc_dryer_t1',        label: 'QC Dryer T1',             flow: 'DRYER',       pic: 'QC', tower: 'Tower 1', count: null },
+      { key: 'qc_feed_tank_t1',    label: 'QC Feed Tank T1',         flow: 'DRYER',       pic: 'QC', tower: 'Tower 1', count: null },
+      { key: 'qc_final_tank_t1',   label: 'QC Final Tank T1',        flow: 'EVAPORATION', pic: 'QC', tower: 'Tower 1', count: null },
+      { key: 'qc_evaporasi_t1',    label: 'QC Evaporasi T1',         flow: 'EVAPORATION', pic: 'QC', tower: 'Tower 1', count: null },
+      { key: 'qc_tank_system_t1',  label: 'QC Tank System T1',       flow: 'EXTRACTION',  pic: 'QC', tower: 'Tower 1', count: null },
+      { key: 'qc_pure_aroma_t1',   label: 'QC Pure Aroma T1',        flow: 'EXTRACTION',  pic: 'QC', tower: 'Tower 1', count: null },
+      { key: 'qc_hydro_t1',        label: 'QC Hydro Extraction T1',  flow: 'EXTRACTION',  pic: 'QC', tower: 'Tower 1', count: null },
+      { key: 'qc_aroma_t1',        label: 'QC Aroma Extraction T1',  flow: 'EXTRACTION',  pic: 'QC', tower: 'Tower 1', count: null },
+      { key: 'qc_grinding_t1',     label: 'QC Grinding T1',          flow: 'EXTRACTION',  pic: 'QC', tower: 'Tower 1', count: null },
+      { key: 'qc_mesh_t1',         label: 'QC Mesh Test T1',         flow: 'PACKING',     pic: 'QC', tower: 'Tower 1', count: null },
+      { key: 'qc_mesh_t2',         label: 'QC Mesh Test T2',         flow: 'PACKING',     pic: 'QC', tower: 'Tower 2', count: null },
     ]);
 
     const filteredTables = computed(() => {
@@ -1964,11 +1893,17 @@ createApp({
         if (res.ok) {
           importState.success = true;
           const impCount = Number(data.imported || 0).toLocaleString();
-          let msg = `Berhasil! ${impCount} baris berhasil diimpor ke tabel ${targetTable}.`;
-          if (data.skipped > 0) {
-            msg += ` (${data.skipped.toLocaleString()} baris duplikat dilewati).`;
+          const dupCount = Number(data.duplicates || data.skipped || 0).toLocaleString();
+          let msg = '';
+          if (data.imported === 0 && (data.duplicates > 0 || data.skipped > 0)) {
+            msg = `Semua ${dupCount} baris data sudah ada di database (duplikat ditolak). Tidak ada data baru yang dimasukkan.`;
+          } else {
+            msg = `Berhasil! ${impCount} baris berhasil diimpor ke tabel ${targetTable}.`;
+            if (data.duplicates > 0 || data.skipped > 0) {
+              msg += ` (${dupCount} baris duplikat ditolak dan tidak dimasukkan ke database).`;
+            }
           }
-          importState.message = msg;
+          importState.message = data.message || msg;
           await fetchCount(targetTable);
           resetAutoInspect();
         } else {
@@ -2243,6 +2178,11 @@ createApp({
       dbConnected,
       today,
       traceForm,
+      headerNamaProduk,
+      headerTanggalProduksi,
+      headerBestBefore,
+      headerPin,
+      headerNomorBox,
       flowSections,
       tables,
       getItemValue,

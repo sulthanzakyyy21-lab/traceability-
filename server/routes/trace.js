@@ -8,6 +8,7 @@ const { getEvaporationFlow } = require('../services/evaporationService');
 const { getExtractionFlow } = require('../services/extractionService');
 const { getRoastingFlow } = require('../services/roastingService');
 const { getQcFlow } = require('../services/qcService');
+const { formatQcTrace } = require('../services/qcFormatter');
 
 /**
  * GET /api/trace
@@ -24,18 +25,37 @@ router.get('/', async (req, res) => {
   }
 
   const { noBatchFull, tower, tglProduksi, totalOutput } = parseResult.data;
-  const { batch, tahun } = parseBatch(noBatchFull);
+  let { batch, tahun } = parseBatch(noBatchFull);
 
-  if (!batch || !tahun) {
+  if (!batch) {
     return res.status(400).json({
       error: 'Format batch tidak valid. Harap gunakan format seperti A370/26 atau 370/26.',
     });
   }
 
+  const pool = require('../db');
+  if (!tahun) {
+    const packingTable = tower === '2' ? 'packing_tower_2' : 'packing_tower_1';
+    try {
+      const [pRows] = await pool.query(`SELECT YEAR(tanggal) as yr FROM \`${packingTable}\` WHERE batch = ? LIMIT 1`, [batch]);
+      if (pRows.length > 0 && pRows[0].yr) {
+        tahun = pRows[0].yr;
+      } else {
+        tahun = 2026;
+      }
+    } catch {
+      tahun = 2026;
+    }
+  }
+
+  const yr2 = String(tahun).slice(-2);
+  const normalizedBatchFull = noBatchFull.includes('/') ? noBatchFull : `A${String(batch).padStart(3, '0')}/${yr2}`;
+
   try {
     const result = {
       input: {
-        noBatchFull,
+        noBatchFull: normalizedBatchFull,
+        rawNoBatch: noBatchFull,
         tower,
         batch,
         tahun,
@@ -75,8 +95,10 @@ router.get('/', async (req, res) => {
     result.upbm = roastResult.upbm;
     result.mass_balance = roastResult.mass_balance;
 
-    // 5. Quality Control (QC) stage
-    result.qc = await getQcFlow(batch, tahun, tower, noBatchFull);
+    // 5. QC stage (Tower 1 & Tower 2)
+    const qcFlow = await getQcFlow(batch, tahun, tower, normalizedBatchFull);
+    result.qc = formatQcTrace(qcFlow, result.packing);
+    result.qc_raw = qcFlow;
 
     res.json(result);
   } catch (error) {

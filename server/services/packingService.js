@@ -57,6 +57,7 @@ async function getPackingFlow(batch, tahun, tower) {
     return {
       table: packingTable,
       totalRows: rows.length,
+      tanggal: first.tanggal || first.stamp || null,
       waktu_proses: `${formatDT(startDate, first.waktu)} - ${formatDT(endDate, last.waktu)}`,
       shift: uniqueJoin(rows.map((r) => r.shift)) || '-',
       team: uniqueJoin(rows.map((r) => r.team)) || '-',

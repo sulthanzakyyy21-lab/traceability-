@@ -60,6 +60,7 @@ async function bulkInsertExcelData(tableName, buffer) {
     return {
       imported: 0,
       duplicates: duplicateCount,
+      skipped: duplicateCount,
       table: tableName,
       message: `Semua ${duplicateCount.toLocaleString()} baris data sudah ada di database (duplikat ditolak). Tidak ada data baru yang diimpor.`,
     };
@@ -88,6 +89,7 @@ async function bulkInsertExcelData(tableName, buffer) {
     return {
       imported: newRows.length,
       duplicates: duplicateCount,
+      skipped: duplicateCount,
       table: tableName,
       message: msg,
     };

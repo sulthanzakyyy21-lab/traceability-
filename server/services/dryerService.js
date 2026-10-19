@@ -48,6 +48,8 @@ async function getDryerFlow(batch, tahun, tower) {
     return {
       table: dryerTable,
       totalRows: rows.length,
+      tanggal: first.Tanggal || first.Stamp || null,
+      nama_produk: rows[0]?.['Nama Produk'] || rows[0]?.['Produk'] || null,
       waktu_proses: `${formatDT(first.Tanggal, first.Waktu)} - ${formatDT(last.Tanggal, last.Waktu)}`,
       operator_produksi: uniqueJoin(rows.map((r) => r.Nama)) || '-',
       final_tank: finalTankNo,

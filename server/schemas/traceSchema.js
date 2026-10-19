@@ -5,17 +5,26 @@ const { z } = require('zod');
  * Guarantees type safety and rejects invalid or missing parameters.
  */
 const TraceQuerySchema = z.object({
-  noBatchFull: z
-    .string()
-    .min(1, 'Parameter noBatchFull wajib diisi.')
-    .regex(/^[A-Za-z0-9\/\-\.]+$/, 'Format noBatchFull tidak valid (contoh: A370/26, 370/26).'),
+  noBatchFull: z.string().optional(),
+  batch: z.string().optional(),
+  noBatch: z.string().optional(),
   tower: z.enum(['1', '2'], {
     errorMap: () => ({ message: 'Parameter tower harus bernilai 1 atau 2.' }),
   }),
   tglProduksi: z.string().optional().nullable(),
   totalOutput: z.coerce.number().positive('totalOutput harus angka positif.').optional().nullable(),
+}).transform(data => {
+  const full = data.noBatchFull || data.noBatch || data.batch || '';
+  return {
+    ...data,
+    noBatchFull: full.trim(),
+  };
+}).refine(data => data.noBatchFull.length > 0, {
+  message: 'Parameter noBatchFull / batch wajib diisi.',
+  path: ['noBatchFull'],
 });
 
 module.exports = {
   TraceQuerySchema,
 };
+

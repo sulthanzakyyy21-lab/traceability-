@@ -86,8 +86,5 @@ const TABLE_COLUMNS_MAP = {
   ],
 };
 
-const { QC_TABLE_COLUMNS_MAP } = require('./qcColumns');
-Object.assign(TABLE_COLUMNS_MAP, QC_TABLE_COLUMNS_MAP);
-
 module.exports = { TABLE_COLUMNS_MAP };
 

@@ -85,8 +85,5 @@ const TABLE_METADATA = {
   },
 };
 
-const { QC_TABLE_METADATA } = require('./qcMetadata');
-Object.assign(TABLE_METADATA, QC_TABLE_METADATA);
-
 module.exports = { TABLE_METADATA };
 

@@ -95,20 +95,12 @@ async function getRoastingFlow(siloNumbers, extractionStartStr, totalOutputVal, 
       raw_rows: roastRows,
     };
 
-    const transferKopiGoreng = 11607.8;
+    const transferKopiGoreng = totalKopiMatang > 0 ? parseFloat(totalKopiMatang.toFixed(1)) : 11607.8;
     const yieldPct = parseFloat(yieldRoastingStr) || 87.37;
-    const totalKopiMentahMb = (transferKopiGoreng / (yieldPct / 100)).toFixed(1);
+    const totalKopiMentahMb = totalKopiMentah > 0 ? totalKopiMentah.toFixed(1) : (transferKopiGoreng / (yieldPct / 100)).toFixed(1);
 
-    const upbm = {
-      waktu_inload: '25/08/2026 Shift 1 07:30 - 26/08/2026 Shift 1 11:25',
-      nomor_bstb: '73/BSTB/VIII/2026, 74/BSTB/VIII/2026, 76/BSTB/VIII/2026',
-      jenis_biji_kopi_mentah: jenisKopi.join(', ') || '018 SK',
-      silo_cell: siloCellDisplay || '8, 1, 2, 4, 5 & 6',
-      disposisi: '100%',
-      total_kopi_mentah_dipakai: `${transferKopiGoreng} kg`,
-      operator_produksi: 'Galih, Barry, Alfian, Baghas',
-      catatan_abnormalitas: 'tidak ada',
-    };
+    // UPBM data is unpopulated (no database table/connecting key yet)
+    const upbm = null;
 
     const finalOutput = totalOutputVal || packingOutputKg || null;
     const rasioIC = finalOutput ? (parseFloat(totalKopiMentahMb) / finalOutput).toFixed(2) : '2.16';

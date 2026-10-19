@@ -1,15 +1,6 @@
 const xlsx = require('xlsx');
 const { TABLE_COLUMNS_MAP, TABLE_METADATA } = require('../tableConfig');
-
-function normHeader(h) {
-  if (!h) return '';
-  return String(h)
-    .replace(/[\r\n\t]+/g, ' ')
-    .replace(/[°%()\/_.-]+/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim()
-    .toLowerCase();
-}
+const { normHeader, matchColumns1to1, scoreTableMatch } = require('./headerMatcher');
 
 function excelValueToString(val) {
   if (val === null || val === undefined || val === '') return null;
@@ -33,35 +24,32 @@ function findSheetAndColMapping(workbook, tableName, expectedCols) {
   let bestHeaderRow = 0;
   let bestColMapping = [];
   let bestMatchCount = -1;
+  const normExpected = expectedCols.map(normHeader);
 
-  for (const sName of workbook.SheetNames.slice(0, 5)) {
+  for (const sName of workbook.SheetNames) {
     const sheet = workbook.Sheets[sName];
     if (!sheet || !sheet['!ref']) continue;
     const range = xlsx.utils.decode_range(sheet['!ref']);
-    const maxR = Math.min(range.e.r, range.s.r + 10);
+    const maxR = Math.min(range.e.r, range.s.r + 15);
 
     for (let R = range.s.r; R <= maxR; R++) {
       const fileHeaders = [];
       for (let C = range.s.c; C <= range.e.c; C++) {
         const cell = sheet[xlsx.utils.encode_cell({ r: R, c: C })];
-        fileHeaders.push({ col: C, text: cell ? String(cell.v).trim() : '' });
+        fileHeaders.push({ col: C, norm: normHeader(cell ? String(cell.v).trim() : '') });
       }
 
-      const mapping = expectedCols.map((exp) => {
-        const expNorm = normHeader(exp);
-        const match = fileHeaders.find((fh) => {
-          const fNorm = normHeader(fh.text);
-          return fNorm === expNorm || (fNorm.length > 3 && (expNorm.includes(fNorm) || fNorm.includes(expNorm)));
-        });
-        return match ? match.col : -1;
-      });
+      const normFile = fileHeaders.map((h) => h.norm);
+      const { mapping, totalMatched } = matchColumns1to1(normExpected, normFile);
 
-      const matchedCount = mapping.filter((c) => c !== -1).length;
-      if (matchedCount > bestMatchCount) {
-        bestMatchCount = matchedCount;
+      // Translate file index back to absolute column C
+      const colMapping = mapping.map((fIdx) => (fIdx !== -1 ? fileHeaders[fIdx].col : -1));
+
+      if (totalMatched > bestMatchCount) {
+        bestMatchCount = totalMatched;
         bestSheet = sheet;
         bestHeaderRow = R;
-        bestColMapping = mapping;
+        bestColMapping = colMapping;
       }
     }
   }
@@ -70,20 +58,19 @@ function findSheetAndColMapping(workbook, tableName, expectedCols) {
 }
 
 function inspectExcelWorkbook(buffer, pic, tower) {
-  const workbook = xlsx.read(buffer, { type: 'buffer', sheetRows: 30, cellDates: true, cellNF: false, cellText: false });
+  const workbook = xlsx.read(buffer, { type: 'buffer', sheetRows: 40, cellDates: true, cellNF: false, cellText: false });
   const candidates = Object.values(TABLE_METADATA);
   const activePic = pic && pic !== 'Semua' ? String(pic).toLowerCase() : null;
   const activeTower = tower && tower !== 'Semua' && tower !== 'Non-Tower' && tower !== 'Non-Tower / Semua' ? String(tower).toLowerCase() : null;
 
-  let best = { table: null, score: -1, sheetName: '', headerRow: 0, rawHeaders: [], totalRows: 0 };
+  let best = { table: null, score: -999, sheetName: '', headerRow: 0, rawHeaders: [], totalRows: 0 };
 
-  for (const sName of workbook.SheetNames.slice(0, 5)) {
+  for (const sName of workbook.SheetNames) {
     const sheet = workbook.Sheets[sName];
     if (!sheet || !sheet['!ref']) continue;
     const range = xlsx.utils.decode_range(sheet['!ref']);
     const fullRange = sheet['!fullref'] ? xlsx.utils.decode_range(sheet['!fullref']) : range;
-    const sheetLower = sName.toLowerCase();
-    const maxR = Math.min(range.e.r, range.s.r + 10);
+    const maxR = Math.min(range.e.r, range.s.r + 15);
 
     for (let R = range.s.r; R <= maxR; R++) {
       const headers = [];
@@ -92,34 +79,30 @@ function inspectExcelWorkbook(buffer, pic, tower) {
         headers.push(cell ? String(cell.v).trim() : '');
       }
       const normHeaders = headers.map(normHeader);
-      const combined = normHeaders.join(' ');
+      if (normHeaders.filter(Boolean).length === 0) continue;
 
       for (const cand of candidates) {
-        let score = 0;
-        if (cand.sheetKeyword && sheetLower.includes(cand.sheetKeyword)) score += 6;
-        if (cand.tower === 'Tower 1' && (sheetLower.includes('t1') || sheetLower.includes('tower 1') || combined.includes('sapuan'))) score += 3;
-        if (cand.tower === 'Tower 2' && (sheetLower.includes('t2') || sheetLower.includes('tower 2') || combined.includes('over size'))) score += 3;
-        if (activePic && cand.pic.toLowerCase() === activePic) score += 2;
-        if (activeTower && cand.tower.toLowerCase() === activeTower) score += 2;
-
         const expectedCols = TABLE_COLUMNS_MAP[cand.key] || [];
-        let matched = 0;
-        for (const exp of expectedCols) {
-          const expNorm = normHeader(exp);
-          if (normHeaders.some((h) => h === expNorm || (h.length > 3 && (expNorm.includes(h) || h.includes(expNorm))))) {
-            matched++;
-          }
-        }
-        score += matched * 3;
+        const matchResult = scoreTableMatch(cand, expectedCols, normHeaders, sName, activePic, activeTower);
 
-        if (score > best.score) {
-          best = { table: cand, score, sheetName: sName, headerRow: R, rawHeaders: headers, totalRows: Math.max(0, fullRange.e.r - R) };
+        if (matchResult.score > best.score) {
+          best = {
+            table: cand,
+            score: matchResult.score,
+            matchPercentage: matchResult.matchPercentage,
+            matchedCount: matchResult.totalMatched,
+            missingCount: matchResult.missingCount,
+            sheetName: sName,
+            headerRow: R,
+            rawHeaders: headers,
+            totalRows: Math.max(0, fullRange.e.r - R),
+          };
         }
       }
     }
   }
 
-  if (!best.table || best.score < 8) {
+  if (!best.table || best.score < 10) {
     return {
       detected: false,
       valid: false,
@@ -133,15 +116,15 @@ function inspectExcelWorkbook(buffer, pic, tower) {
   }
 
   const expectedCols = TABLE_COLUMNS_MAP[best.table.key] || [];
+  const normExpected = expectedCols.map(normHeader);
   const normHeaders = best.rawHeaders.map(normHeader);
+  const { mapping } = matchColumns1to1(normExpected, normHeaders);
+
   const matchedCols = [];
   const missingCols = [];
-
-  for (const exp of expectedCols) {
-    const expNorm = normHeader(exp);
-    const found = normHeaders.some((h) => h === expNorm || (h.length > 3 && (expNorm.includes(h) || h.includes(expNorm))));
-    if (found) matchedCols.push(exp);
-    else missingCols.push(exp);
+  for (let i = 0; i < expectedCols.length; i++) {
+    if (mapping[i] !== -1) matchedCols.push(expectedCols[i]);
+    else missingCols.push(expectedCols[i]);
   }
 
   const matchPercentage = expectedCols.length > 0 ? Math.round((matchedCols.length / expectedCols.length) * 100) : 0;
