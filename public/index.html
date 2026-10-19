@@ -944,52 +944,109 @@
       </div>
 
       <!-- ── GOOGLE SPREADSHEET LIVE CLOUD SYNC PANEL ── -->
-      <div class="bg-slate-900 border border-slate-700 rounded-lg p-4 text-white shadow-sm space-y-3">
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 font-bold text-lg">
+      <div class="bg-slate-900 border border-slate-700 rounded-lg p-4 text-white shadow-sm space-y-3.5">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+          <div class="flex items-start sm:items-center gap-3">
+            <div class="w-10 h-10 rounded bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 font-bold text-lg shrink-0">
               ⚡
             </div>
             <div>
-              <div class="flex items-center gap-2">
-                <span class="text-xs font-bold uppercase tracking-wider text-white">Google Spreadsheet QC Tower 1 (Live Cloud)</span>
-                <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">Terhubung</span>
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="text-xs font-bold uppercase tracking-wider text-white">Google Spreadsheet QC (Live Cloud)</span>
+                <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                  ● Tower 1 &amp; Tower 2 Terhubung
+                </span>
               </div>
               <p class="text-[11px] text-slate-300 mt-0.5">
-                Sinkronisasi otomatis 11 tabel QC langsung dari Google Spreadsheet perusahaan tanpa download manual.
+                Sinkronisasi otomatis spreadsheet perusahaan (Tower 1 &amp; Tower 2) langsung ke database MySQL tanpa unduh file manual.
               </p>
             </div>
           </div>
 
+          <!-- Quick Links: GDrive Folder & Active Sheet -->
           <div class="flex items-center gap-2 flex-wrap">
             <a
-              :href="gsheetStatus.sheetUrl"
+              :href="gsheetStatus.folderUrl || 'https://drive.google.com/drive/folders/1hRgNzF2I5Q3AB22pd8xZDOexzoPUZP95'"
               target="_blank"
               class="px-3 py-1.5 rounded text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 transition-colors flex items-center gap-1.5"
+              title="Buka Folder Google Drive berisi spreadsheet Tower 1 & Tower 2"
             >
-              <span>Buka Google Sheet ↗</span>
+              <span>📁 Folder GDrive ↗</span>
             </a>
+            <a
+              :href="activeSheetUrl"
+              target="_blank"
+              class="px-3 py-1.5 rounded text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 transition-colors flex items-center gap-1.5"
+              :title="'Buka Spreadsheet ' + activeSheetTitle + ' di Google Sheets'"
+            >
+              <span>Buka {{ activeSheetTitle }} ↗</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Tower Selector & Sync Action Row -->
+        <div class="pt-2 border-t border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <!-- Tower Tabs -->
+          <div class="flex items-center gap-1.5 flex-wrap">
+            <span class="text-[11px] font-bold uppercase text-slate-400 mr-1">Target Sinkronisasi:</span>
             <button
-              @click="syncAllGoogleSheets"
+              type="button"
+              @click="setGsheetTower('1')"
+              :class="gsheetTower === '1' ? 'bg-emerald-600 text-white font-bold border-emerald-500 shadow-xs' : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'"
+              class="px-3 py-1 rounded text-xs border transition-all cursor-pointer flex items-center gap-1.5"
+            >
+              <span class="w-1.5 h-1.5 rounded-full" :class="gsheetTower === '1' ? 'bg-white' : 'bg-emerald-400'"></span>
+              <span>Tower 1 (11 Tabel)</span>
+            </button>
+            <button
+              type="button"
+              @click="setGsheetTower('2')"
+              :class="gsheetTower === '2' ? 'bg-emerald-600 text-white font-bold border-emerald-500 shadow-xs' : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'"
+              class="px-3 py-1 rounded text-xs border transition-all cursor-pointer flex items-center gap-1.5"
+            >
+              <span class="w-1.5 h-1.5 rounded-full" :class="gsheetTower === '2' ? 'bg-white' : 'bg-emerald-400'"></span>
+              <span>Tower 2 (11 Tabel)</span>
+            </button>
+            <button
+              type="button"
+              @click="setGsheetTower('all')"
+              :class="gsheetTower === 'all' ? 'bg-emerald-600 text-white font-bold border-emerald-500 shadow-xs' : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'"
+              class="px-3 py-1 rounded text-xs border transition-all cursor-pointer flex items-center gap-1.5"
+            >
+              <span class="w-1.5 h-1.5 rounded-full" :class="gsheetTower === 'all' ? 'bg-white' : 'bg-emerald-400'"></span>
+              <span>Semua Tower (22 Tabel)</span>
+            </button>
+          </div>
+
+          <!-- Trigger Sync Button -->
+          <div>
+            <button
+              type="button"
+              @click="syncAllGoogleSheets()"
               :disabled="gsheetLoading"
-              class="px-4 py-1.5 rounded text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+              class="w-full md:w-auto px-4 py-2 rounded text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
               <svg v-if="gsheetLoading" class="spin h-3.5 w-3.5" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
               </svg>
-              <span>{{ gsheetLoading ? 'Sedang Sinkronisasi 11 Tabel...' : '⚡ Tarik Semua Data QC (11 Tabel)' }}</span>
+              <span>
+                {{ gsheetLoading ? 'Sedang Menyinkronkan dari Cloud...' : (
+                  gsheetTower === 'all' ? '⚡ Tarik Semua Data (Tower 1 & 2 - 22 Tabel)' :
+                  (gsheetTower === '2' ? '⚡ Tarik Data QC Tower 2 (11 Tabel)' : '⚡ Tarik Data QC Tower 1 (11 Tabel)')
+                ) }}
+              </span>
             </button>
           </div>
         </div>
 
         <!-- Sync Result Notification / Log -->
         <div v-if="gsheetResult" class="bg-slate-950/70 border border-slate-700 rounded p-3 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <div class="flex items-center gap-2">
-            <span class="text-emerald-400 font-bold">✓ Status Terakhir:</span>
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="text-emerald-400 font-bold">✓ Sinkronisasi Berhasil:</span>
             <span class="text-white font-medium">{{ (gsheetResult.totalImported || 0).toLocaleString() }} baris baru diimpor,</span>
-            <span class="text-slate-300">{{ (gsheetResult.totalDuplicates || 0).toLocaleString() }} baris duplikat terlindungi (Deduplikasi).</span>
-            <span class="text-emerald-400 font-mono text-[11px]">Durasi: {{ gsheetResult.durationSeconds }}</span>
+            <span class="text-slate-300">{{ (gsheetResult.totalDuplicates || 0).toLocaleString() }} baris duplikat dilindungi.</span>
+            <span class="text-emerald-400 font-mono text-[11px]">({{ gsheetResult.totalTables }} tabel &bull; {{ gsheetResult.durationSeconds }})</span>
           </div>
           <span class="text-[10px] text-slate-400 font-mono">{{ formatSyncTime(gsheetResult.timestamp) }}</span>
         </div>
@@ -2206,15 +2263,48 @@ createApp({
 
     // ── Google Spreadsheet Live Sync ──
     const gsheetLoading = ref(false);
+    const gsheetTower = ref('1');
     const gsheetStatus = reactive({
+      folderUrl: 'https://drive.google.com/drive/folders/1hRgNzF2I5Q3AB22pd8xZDOexzoPUZP95',
       sheetId: '1rx6D5Iecd7-3UzZiixLbkko5m1YYfYrQpTdZ60uIKUA',
       sheetUrl: 'https://docs.google.com/spreadsheets/d/1rx6D5Iecd7-3UzZiixLbkko5m1YYfYrQpTdZ60uIKUA/edit',
+      towers: {
+        '1': {
+          tower: 'Tower 1',
+          sheetId: '1rx6D5Iecd7-3UzZiixLbkko5m1YYfYrQpTdZ60uIKUA',
+          sheetUrl: 'https://docs.google.com/spreadsheets/d/1rx6D5Iecd7-3UzZiixLbkko5m1YYfYrQpTdZ60uIKUA/edit',
+          tableCount: 11,
+        },
+        '2': {
+          tower: 'Tower 2',
+          sheetId: '1I_n0gmzWSZAkjZD-Hsdz-OVNmreo90dEwS3btq7KxY0',
+          sheetUrl: 'https://docs.google.com/spreadsheets/d/1I_n0gmzWSZAkjZD-Hsdz-OVNmreo90dEwS3btq7KxY0/edit',
+          tableCount: 11,
+        },
+      },
       isSyncing: false,
       lastSyncTime: null,
       lastSummary: null,
     });
     const gsheetResult = ref(null);
     const gsheetError = ref('');
+
+    const activeSheetUrl = computed(() => {
+      if (gsheetTower.value === '2') {
+        return gsheetStatus.towers?.['2']?.sheetUrl || 'https://docs.google.com/spreadsheets/d/1I_n0gmzWSZAkjZD-Hsdz-OVNmreo90dEwS3btq7KxY0/edit';
+      }
+      return gsheetStatus.towers?.['1']?.sheetUrl || gsheetStatus.sheetUrl || 'https://docs.google.com/spreadsheets/d/1rx6D5Iecd7-3UzZiixLbkko5m1YYfYrQpTdZ60uIKUA/edit';
+    });
+
+    const activeSheetTitle = computed(() => {
+      if (gsheetTower.value === '2') return 'Analisa Tower 2';
+      if (gsheetTower.value === 'all') return 'Analisa Tower 1 & 2';
+      return 'Analisa Tower 1';
+    });
+
+    function setGsheetTower(t) {
+      gsheetTower.value = t;
+    }
 
     function formatSyncTime(ts) {
       if (!ts) return '-';
@@ -2235,13 +2325,15 @@ createApp({
       }
     }
 
-    async function syncAllGoogleSheets() {
+    async function syncAllGoogleSheets(opt) {
+      const targetTower = opt || gsheetTower.value || '1';
       gsheetLoading.value = true;
       gsheetError.value = '';
       try {
         const res = await fetch('/api/gsheet/sync-all', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tower: targetTower }),
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Gagal sinkronisasi Google Spreadsheet');
@@ -2264,9 +2356,13 @@ createApp({
 
     return {
       gsheetLoading,
+      gsheetTower,
       gsheetStatus,
       gsheetResult,
       gsheetError,
+      activeSheetUrl,
+      activeSheetTitle,
+      setGsheetTower,
       formatSyncTime,
       syncAllGoogleSheets,
       sidebarOpen,

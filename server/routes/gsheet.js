@@ -6,6 +6,7 @@ const { syncAllQcTables, syncSingleTable, getSyncStatus } = require('../services
 
 const SyncBodySchema = z.object({
   sheetId: z.string().optional().nullable(),
+  tower: z.enum(['1', '2', 'all', 'both']).optional().default('1'),
 });
 
 router.get('/status', (req, res) => {
@@ -15,8 +16,9 @@ router.get('/status', (req, res) => {
 router.post('/sync-all', async (req, res) => {
   try {
     const bodyResult = SyncBodySchema.safeParse(req.body);
+    const tower = bodyResult.success && bodyResult.data.tower ? bodyResult.data.tower : '1';
     const sheetId = bodyResult.success ? bodyResult.data.sheetId : null;
-    const summary = await syncAllQcTables(sheetId);
+    const summary = await syncAllQcTables(tower, sheetId);
     res.json(summary);
   } catch (err) {
     console.error('Google Sheet Sync Error:', err);
