@@ -1841,7 +1841,7 @@ createApp({
     }
 
     async function refreshAllCounts() {
-      for (const t of tables) await fetchCount(t.key);
+      await Promise.all(tables.map((t) => fetchCount(t.key)));
     }
 
     function changePic(p) {
@@ -2199,6 +2199,11 @@ createApp({
       return [allCols];
     }
 
+    function getProcessColumnChunks(key) {
+      const p = getProcessKey(key);
+      return getProcessColumnChunksByKey(p);
+    }
+
     // ── Google Spreadsheet Live Sync ──
     const gsheetLoading = ref(false);
     const gsheetStatus = reactive({
@@ -2251,9 +2256,11 @@ createApp({
       }
     }
 
-    // Auto-init
-    loadGsheetStatus();
-    refreshAllCounts();
+    // Auto-init on mount
+    onMounted(() => {
+      loadGsheetStatus();
+      refreshAllCounts();
+    });
 
     return {
       gsheetLoading,
