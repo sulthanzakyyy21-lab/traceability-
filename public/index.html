@@ -467,10 +467,10 @@
     <!-- Navigation Menu Items -->
     <nav class="flex-1 py-4 px-2 space-y-1.5 overflow-y-auto overflow-x-hidden">
       <div v-show="sidebarOpen" class="px-2 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-stone-400">
-        Navigasi Sistem
+        Menu Utama
       </div>
 
-      <!-- Item 1: Dashboard Utama (Landing Page Bento Grid) -->
+      <!-- Item 1: Dashboard -->
       <div class="relative group">
         <button
           type="button"
@@ -488,18 +488,18 @@
             <rect x="3" y="14" width="7" height="7" rx="1.5"></rect>
           </svg>
           <div v-if="sidebarOpen" class="flex-1 min-w-0">
-            <div class="truncate">Dashboard Utama</div>
-            <div class="text-[10px] text-stone-500 sidebar-subtext font-normal truncate">Executive KPI &amp; Overview</div>
+            <div class="truncate">Dashboard</div>
+            <div class="text-[10px] text-stone-500 sidebar-subtext font-normal truncate">Ikhtisar Operasional</div>
           </div>
         </button>
         <!-- Gemini Tooltip -->
         <div v-if="!sidebarOpen" class="sidebar-gemini-tooltip">
-          <div class="font-bold text-xs text-white">Dashboard Utama</div>
-          <div class="text-[10px] text-stone-300 font-normal">Executive KPI &amp; Overview</div>
+          <div class="font-bold text-xs text-white">Dashboard</div>
+          <div class="text-[10px] text-stone-300 font-normal">Ikhtisar Operasional</div>
         </div>
       </div>
 
-      <!-- Item 2: Interactive Traceability Pipeline -->
+      <!-- Item 2: Penelusuran Batch -->
       <div class="relative group">
         <button
           type="button"
@@ -518,18 +518,18 @@
             <path d="M9 6h4a5 5 0 0 1 5 5v1"></path>
           </svg>
           <div v-if="sidebarOpen" class="flex-1 min-w-0">
-            <div class="truncate">Interactive Traceability</div>
-            <div class="text-[10px] text-stone-500 sidebar-subtext font-normal truncate">Visual Pipeline &amp; Genealogi</div>
+            <div class="truncate">Penelusuran Batch</div>
+            <div class="text-[10px] text-stone-500 sidebar-subtext font-normal truncate">Alur Rantai Proses</div>
           </div>
         </button>
         <!-- Gemini Tooltip -->
         <div v-if="!sidebarOpen" class="sidebar-gemini-tooltip">
-          <div class="font-bold text-xs text-white">Interactive Traceability</div>
-          <div class="text-[10px] text-stone-300 font-normal">Visual Pipeline &amp; Genealogi</div>
+          <div class="font-bold text-xs text-white">Penelusuran Batch</div>
+          <div class="text-[10px] text-stone-300 font-normal">Alur Rantai Proses</div>
         </div>
       </div>
 
-      <!-- Item 3: Dokumen Audit Resmi F/QC/01.030 -->
+      <!-- Item 3: Laporan Audit Mutu -->
       <div class="relative group">
         <button
           type="button"
@@ -548,22 +548,22 @@
             <polyline points="10 9 9 9 8 9"></polyline>
           </svg>
           <div v-if="sidebarOpen" class="flex-1 min-w-0">
-            <div class="truncate">Dokumen Audit Resmi</div>
-            <div class="text-[10px] text-stone-500 sidebar-subtext font-normal truncate">Format Cetak F/QC/01.030</div>
+            <div class="truncate">Laporan Audit Mutu</div>
+            <div class="text-[10px] text-stone-500 sidebar-subtext font-normal truncate">Form F/QC/01.030</div>
           </div>
         </button>
         <!-- Gemini Tooltip -->
         <div v-if="!sidebarOpen" class="sidebar-gemini-tooltip">
-          <div class="font-bold text-xs text-white">Dokumen Audit Resmi</div>
-          <div class="text-[10px] text-stone-300 font-normal">Format Cetak F/QC/01.030</div>
+          <div class="font-bold text-xs text-white">Laporan Audit Mutu</div>
+          <div class="text-[10px] text-stone-300 font-normal">Form F/QC/01.030</div>
         </div>
       </div>
 
       <div v-show="sidebarOpen" class="pt-3 px-2 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-stone-400">
-        Pusat Data Pabrik
+        Data Operasional
       </div>
 
-      <!-- Item 4: Data Divisi Pabrik (Explorer 5 Divisi) -->
+      <!-- Item 4: Database Operasional -->
       <div class="relative group">
         <button
           type="button"
@@ -580,18 +580,18 @@
             <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
           </svg>
           <div v-if="sidebarOpen" class="flex-1 min-w-0">
-            <div class="truncate">Data Divisi Pabrik</div>
-            <div class="text-[10px] text-stone-500 sidebar-subtext font-normal truncate">Explorer 5 Divisi (Produksi, QC, RMW)</div>
+            <div class="truncate">Database Operasional</div>
+            <div class="text-[10px] text-stone-500 sidebar-subtext font-normal truncate">Rekaman Produksi &amp; QC</div>
           </div>
         </button>
         <!-- Gemini Tooltip -->
         <div v-if="!sidebarOpen" class="sidebar-gemini-tooltip">
-          <div class="font-bold text-xs text-white">Data Divisi Pabrik</div>
-          <div class="text-[10px] text-stone-300 font-normal">Explorer 5 Divisi (Produksi, QC, RMW)</div>
+          <div class="font-bold text-xs text-white">Database Operasional</div>
+          <div class="text-[10px] text-stone-300 font-normal">Rekaman Produksi &amp; QC</div>
         </div>
       </div>
 
-      <!-- Item 5: Data Hub & Cloud Sync -->
+      <!-- Item 5: Sinkronisasi Cloud -->
       <div class="relative group">
         <button
           type="button"
@@ -607,14 +607,14 @@
             <polyline points="12 12 12 18 16 14"></polyline>
           </svg>
           <div v-if="sidebarOpen" class="flex-1 min-w-0">
-            <div class="truncate">Data Hub &amp; Cloud Sync</div>
-            <div class="text-[10px] text-stone-500 sidebar-subtext font-normal truncate">Live Google Sheets &amp; Preview</div>
+            <div class="truncate">Sinkronisasi Cloud</div>
+            <div class="text-[10px] text-stone-500 sidebar-subtext font-normal truncate">Integrasi Google Sheets</div>
           </div>
         </button>
         <!-- Gemini Tooltip -->
         <div v-if="!sidebarOpen" class="sidebar-gemini-tooltip">
-          <div class="font-bold text-xs text-white">Data Hub &amp; Cloud Sync</div>
-          <div class="text-[10px] text-stone-300 font-normal">Live Google Sheets &amp; Preview</div>
+          <div class="font-bold text-xs text-white">Sinkronisasi Cloud</div>
+          <div class="text-[10px] text-stone-300 font-normal">Integrasi Google Sheets</div>
         </div>
       </div>
     </nav>
@@ -663,19 +663,19 @@
         <div class="flex items-center gap-2">
           <span class="text-xs font-bold uppercase tracking-wider text-stone-900">
             {{
-              activeTab === 'dashboard' ? 'Dashboard Utama' :
-              activeTab === 'pipeline' ? 'Interactive Traceability' :
-              activeTab === 'report' ? 'Dokumen Audit Resmi' :
-              activeTab === 'pic' ? 'Data Divisi Pabrik' : 'Data Hub & Cloud Sync'
+              activeTab === 'dashboard' ? 'Dashboard' :
+              activeTab === 'pipeline' ? 'Penelusuran Batch' :
+              activeTab === 'report' ? 'Laporan Audit Mutu' :
+              activeTab === 'pic' ? 'Database Operasional' : 'Sinkronisasi Cloud'
             }}
           </span>
           <span class="text-stone-300">&bull;</span>
           <span class="text-xs text-stone-500 hidden sm:inline font-normal">
             {{
-              activeTab === 'dashboard' ? 'Executive Overview & Quick Batch Search' :
-              activeTab === 'pipeline' ? 'Visual Timeline Journey & Genealogi Kualitas' :
-              activeTab === 'report' ? 'Form F/QC/01.030 Resmi (Compliance Sheet)' :
-              activeTab === 'pic' ? 'Explorer 5 Divisi Operasional (Produksi, QC, RMW)' : 'Sinkronisasi Live Cloud & Pratinjau Data'
+              activeTab === 'dashboard' ? 'Ikhtisar Operasional & Pencarian Cepat Batch' :
+              activeTab === 'pipeline' ? 'Penelusuran Rantai Proses & Integritas Kualitas' :
+              activeTab === 'report' ? 'Dokumen Kepatuhan Audit Mutu Form F/QC/01.030' :
+              activeTab === 'pic' ? 'Rekaman Parameter Divisi Operasional (Produksi, QC, RMW)' : 'Integrasi Spreadsheet Google Cloud & Database'
             }}
           </span>
         </div>
@@ -691,7 +691,7 @@
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
             <polyline points="14 2 14 8 20 8"></polyline>
           </svg>
-          <span>Buka Dokumen Cetak</span>
+          <span>Buka Laporan Audit</span>
         </button>
 
         <button
@@ -917,7 +917,7 @@
               @click="activeTab = 'pipeline'"
               class="text-xs font-semibold text-coffee-800 hover:text-coffee-950 flex items-center gap-1 cursor-pointer bg-coffee-50 px-2.5 py-1 rounded-lg border border-coffee-200"
             >
-              <span>Buka Pipeline</span>
+              <span>Buka Penelusuran</span>
               <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                 <path d="M7 17l9.2-9.2M17 17V8H8"></path>
               </svg>
@@ -973,7 +973,7 @@
               @click="activeTab = 'sync'"
               class="flex-1 px-3 py-2 rounded-xl bg-[#4a2c1d] hover:bg-[#3c2415] text-white text-xs font-bold transition-all text-center cursor-pointer shadow-xs btn-action"
             >
-              Buka Hub Sinkronisasi
+              Buka Sinkronisasi Cloud
             </button>
             <a
               :href="gsheetStatus.folderUrl || 'https://drive.google.com/drive/folders/1hRgNzF2I5Q3AB22pd8xZDOexzoPUZP95'"
@@ -1723,7 +1723,7 @@
       <!-- Header -->
       <div class="flex items-center justify-between">
         <div>
-          <h1 class="text-base font-extrabold text-stone-900 uppercase tracking-tight">Data Hub — Live Cloud Sync &amp; Konversi SCADA</h1>
+          <h1 class="text-base font-extrabold text-stone-900 uppercase tracking-tight">Sinkronisasi Cloud — Integrasi Google Spreadsheet &amp; SCADA</h1>
           <p class="text-xs text-stone-500 mt-0.5">
             Kelola sinkronisasi otomatis Google Spreadsheet (Tower 1 &amp; Tower 2) atau unggah manual file Excel SCADA dengan auto-detection.
           </p>
@@ -2197,7 +2197,7 @@
               <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
               <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
             </span>
-            <h2 class="text-sm font-extrabold text-stone-900 uppercase tracking-tight">Penampil Data PIC &amp; Pratinjau Database</h2>
+            <h2 class="text-sm font-extrabold text-stone-900 uppercase tracking-tight">Database Operasional &amp; Pratinjau Rekaman Divisi</h2>
           </div>
           <p class="text-xs text-stone-600 mt-1">
             Pilih divisi PIC dan filter Tower untuk melihat seluruh tabel database, mengecek jumlah baris, dan menjelajahi baris rekaman secara interaktif.
