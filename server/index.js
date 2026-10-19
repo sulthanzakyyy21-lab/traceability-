@@ -24,6 +24,7 @@ app.use(express.static(path.join(__dirname, '../public')));
 // API Routes
 app.use('/api/import', require('./routes/import'));
 app.use('/api/trace', require('./routes/trace'));
+app.use('/api/gsheet', require('./routes/gsheet'));
 
 // Health check
 app.get('/api/health', (req, res) => {

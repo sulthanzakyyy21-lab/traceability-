@@ -943,6 +943,58 @@
         </button>
       </div>
 
+      <!-- ── GOOGLE SPREADSHEET LIVE CLOUD SYNC PANEL ── -->
+      <div class="bg-slate-900 border border-slate-700 rounded-lg p-4 text-white shadow-sm space-y-3">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 font-bold text-lg">
+              ⚡
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-bold uppercase tracking-wider text-white">Google Spreadsheet QC Tower 1 (Live Cloud)</span>
+                <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">Terhubung</span>
+              </div>
+              <p class="text-[11px] text-slate-300 mt-0.5">
+                Sinkronisasi otomatis 11 tabel QC langsung dari Google Spreadsheet perusahaan tanpa download manual.
+              </p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2 flex-wrap">
+            <a
+              :href="gsheetStatus.sheetUrl"
+              target="_blank"
+              class="px-3 py-1.5 rounded text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 transition-colors flex items-center gap-1.5"
+            >
+              <span>Buka Google Sheet ↗</span>
+            </a>
+            <button
+              @click="syncAllGoogleSheets"
+              :disabled="gsheetLoading"
+              class="px-4 py-1.5 rounded text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            >
+              <svg v-if="gsheetLoading" class="spin h-3.5 w-3.5" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+              </svg>
+              <span>{{ gsheetLoading ? 'Sedang Sinkronisasi 11 Tabel...' : '⚡ Tarik Semua Data QC (11 Tabel)' }}</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Sync Result Notification / Log -->
+        <div v-if="gsheetResult" class="bg-slate-950/70 border border-slate-700 rounded p-3 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div class="flex items-center gap-2">
+            <span class="text-emerald-400 font-bold">✓ Status Terakhir:</span>
+            <span class="text-white font-medium">{{ (gsheetResult.totalImported || 0).toLocaleString() }} baris baru diimpor,</span>
+            <span class="text-slate-300">{{ (gsheetResult.totalDuplicates || 0).toLocaleString() }} baris duplikat terlindungi (Deduplikasi).</span>
+            <span class="text-emerald-400 font-mono text-[11px]">Durasi: {{ gsheetResult.durationSeconds }}</span>
+          </div>
+          <span class="text-[10px] text-slate-400 font-mono">{{ formatSyncTime(gsheetResult.timestamp) }}</span>
+        </div>
+      </div>
+
       <!-- ── SELECTOR PIC & TOWER ── -->
       <div class="bg-white border border-slate-400 rounded p-4 space-y-3.5">
         <!-- 1. PILIH PIC -->
@@ -2147,12 +2199,69 @@ createApp({
       return [allCols];
     }
 
-    function getProcessColumnChunks(key) {
-      const p = getProcessKey(key);
-      return getProcessColumnChunksByKey(p);
+    // ── Google Spreadsheet Live Sync ──
+    const gsheetLoading = ref(false);
+    const gsheetStatus = reactive({
+      sheetId: '1rx6D5Iecd7-3UzZiixLbkko5m1YYfYrQpTdZ60uIKUA',
+      sheetUrl: 'https://docs.google.com/spreadsheets/d/1rx6D5Iecd7-3UzZiixLbkko5m1YYfYrQpTdZ60uIKUA/edit',
+      isSyncing: false,
+      lastSyncTime: null,
+      lastSummary: null,
+    });
+    const gsheetResult = ref(null);
+    const gsheetError = ref('');
+
+    function formatSyncTime(ts) {
+      if (!ts) return '-';
+      const d = new Date(ts);
+      return d.toLocaleDateString('id-ID') + ' ' + d.toLocaleTimeString('id-ID');
     }
 
+    async function loadGsheetStatus() {
+      try {
+        const res = await fetch('/api/gsheet/status');
+        if (res.ok) {
+          const d = await res.json();
+          Object.assign(gsheetStatus, d);
+          if (d.lastSummary) gsheetResult.value = d.lastSummary;
+        }
+      } catch (e) {
+        console.error('Failed to load gsheet status:', e);
+      }
+    }
+
+    async function syncAllGoogleSheets() {
+      gsheetLoading.value = true;
+      gsheetError.value = '';
+      try {
+        const res = await fetch('/api/gsheet/sync-all', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Gagal sinkronisasi Google Spreadsheet');
+        gsheetResult.value = data;
+        await refreshAllCounts();
+        if (loadPicTable) await loadPicTable();
+      } catch (err) {
+        gsheetError.value = err.message;
+        alert('Gagal Sinkronisasi Google Spreadsheet: ' + err.message);
+      } finally {
+        gsheetLoading.value = false;
+      }
+    }
+
+    // Auto-init
+    loadGsheetStatus();
+    refreshAllCounts();
+
     return {
+      gsheetLoading,
+      gsheetStatus,
+      gsheetResult,
+      gsheetError,
+      formatSyncTime,
+      syncAllGoogleSheets,
       sidebarOpen,
       picSelectedTable,
       picTableColumns,
