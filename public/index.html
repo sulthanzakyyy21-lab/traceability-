@@ -12,28 +12,33 @@
       theme: {
         extend: {
           fontFamily: {
-            sans: ['"Times New Roman"', 'Times', 'serif'],
+            sans: ['"Plus Jakarta Sans"', 'Inter', 'system-ui', 'sans-serif'],
             serif: ['"Times New Roman"', 'Times', 'serif'],
-            mono: ['"Times New Roman"', 'Times', 'serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
           },
         },
       },
     };
   </script>
+  <link rel="stylesheet" href="css/industrial-theme.css" />
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
   <script src="flowSections.js"></script>
+  <script src="js/pipelineData.js"></script>
 
   <style>
-    /* ── STRICT TIMES NEW ROMAN ENFORCEMENT ── */
-    *, *::before, *::after, body, input, button, select, textarea, table, th, td, span, div, p, h1, h2, h3 {
+    /* ── SCOPE TIMES NEW ROMAN EXCLUSIVELY TO OFFICIAL AUDIT PRINTABLE FORM ── */
+    #form-document,
+    #form-document *,
+    .doc-printable,
+    .doc-printable * {
       font-family: 'Times New Roman', Times, serif !important;
-      box-sizing: border-box;
     }
 
     body {
-      background: #f1f5f9;
-      color: #0f172a;
-      line-height: 1.35;
+      background: #0b1120;
+      color: #f8fafc;
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      line-height: 1.4;
     }
 
     /* ── SYSTEM TOP BAR (NAVBAR) ───────────── */
@@ -407,48 +412,82 @@
         Navigasi Sistem
       </div>
 
-      <!-- Item 1: Laporan Traceability -->
+      <!-- Item 1: Dashboard Utama (Landing Page Bento Grid) -->
       <button
         type="button"
-        @click="activeTab = 'trace'"
-        :class="activeTab === 'trace' ? 'active' : ''"
+        @click="activeTab = 'dashboard'"
+        :class="activeTab === 'dashboard' ? 'active' : ''"
         class="sidebar-item"
-        title="Laporan Traceability (Form F/QC/01.030)"
+        title="Dashboard Utama (Executive & Factory Overview)"
       >
-        <span class="text-base flex-shrink-0">📑</span>
+        <span class="text-base flex-shrink-0">🏠</span>
         <div v-show="sidebarOpen" class="flex-1 min-w-0">
-          <div class="truncate">Laporan Traceability</div>
-          <div class="text-[10px] text-slate-400 font-normal truncate">Form F/QC/01.030 Resmi</div>
+          <div class="truncate">Dashboard Utama</div>
+          <div class="text-[10px] text-slate-400 font-normal truncate">Executive KPI &amp; Overview</div>
         </div>
       </button>
 
-      <!-- Item 2: Penampil Data PIC -->
+      <!-- Item 2: Interactive Traceability Pipeline -->
+      <button
+        type="button"
+        @click="activeTab = 'pipeline'"
+        :class="activeTab === 'pipeline' ? 'active' : ''"
+        class="sidebar-item"
+        title="Interactive Traceability (Pipeline Journey & Genealogi)"
+      >
+        <span class="text-base flex-shrink-0">🔍</span>
+        <div v-show="sidebarOpen" class="flex-1 min-w-0">
+          <div class="truncate">Interactive Traceability</div>
+          <div class="text-[10px] text-slate-400 font-normal truncate">Visual Pipeline &amp; Genealogi</div>
+        </div>
+      </button>
+
+      <!-- Item 3: Dokumen Audit Resmi F/QC/01.030 -->
+      <button
+        type="button"
+        @click="activeTab = 'report'"
+        :class="activeTab === 'report' ? 'active' : ''"
+        class="sidebar-item"
+        title="Laporan Dokumen Audit (Form F/QC/01.030 Resmi)"
+      >
+        <span class="text-base flex-shrink-0">📑</span>
+        <div v-show="sidebarOpen" class="flex-1 min-w-0">
+          <div class="truncate">Dokumen Audit Resmi</div>
+          <div class="text-[10px] text-slate-400 font-normal truncate">Format Cetak F/QC/01.030</div>
+        </div>
+      </button>
+
+      <div v-show="sidebarOpen" class="pt-3 px-2.5 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+        Pusat Data Pabrik
+      </div>
+
+      <!-- Item 4: Data Divisi Pabrik (Explorer 5 Divisi) -->
       <button
         type="button"
         @click="activeTab = 'pic'; if (!picTableRows.length) loadPicTable(picSelectedTable, 1);"
         :class="activeTab === 'pic' ? 'active' : ''"
         class="sidebar-item"
-        title="Penampil Data PIC (Explorer Database)"
+        title="Data Divisi Pabrik (Explorer Database Multi-Divisi)"
       >
-        <span class="text-base flex-shrink-0">👥</span>
+        <span class="text-base flex-shrink-0">🏢</span>
         <div v-show="sidebarOpen" class="flex-1 min-w-0">
-          <div class="truncate">Penampil Data PIC</div>
-          <div class="text-[10px] text-slate-400 font-normal truncate">Preview Database PIC &amp; Tower</div>
+          <div class="truncate">Data Divisi Pabrik</div>
+          <div class="text-[10px] text-slate-400 font-normal truncate">Explorer 5 Divisi (Produksi, QC, RMW)</div>
         </div>
       </button>
 
-      <!-- Item 3: Convert Data -->
+      <!-- Item 5: Data Hub & Cloud Sync -->
       <button
         type="button"
-        @click="activeTab = 'convert'"
-        :class="activeTab === 'convert' ? 'active' : ''"
+        @click="activeTab = 'sync'"
+        :class="activeTab === 'sync' ? 'active' : ''"
         class="sidebar-item"
-        title="Convert Data (Spreadsheet SCADA to Database)"
+        title="Data Hub & Cloud Sync (Live Google Sheets & Preview)"
       >
-        <span class="text-base flex-shrink-0">🔄</span>
+        <span class="text-base flex-shrink-0">☁️</span>
         <div v-show="sidebarOpen" class="flex-1 min-w-0">
-          <div class="truncate">Convert Data</div>
-          <div class="text-[10px] text-slate-400 font-normal truncate">Import &amp; Auto-Detect SCADA</div>
+          <div class="truncate">Data Hub &amp; Cloud Sync</div>
+          <div class="text-[10px] text-slate-400 font-normal truncate">Live Google Sheets &amp; Preview</div>
         </div>
       </button>
     </nav>
@@ -477,38 +516,58 @@
   <div class="main-content-wrap flex-1 flex flex-col min-w-0 min-h-screen">
 
     <!-- Topbar Header -->
-    <header class="h-14 bg-white border-b border-slate-300 no-print flex items-center justify-between px-4 sm:px-6 z-20 shadow-xs flex-shrink-0">
+    <header class="h-14 bg-slate-900 border-b border-slate-800 text-white no-print flex items-center justify-between px-4 sm:px-6 z-20 shadow-xs flex-shrink-0">
       <div class="flex items-center gap-3">
         <button
           @click="sidebarOpen = !sidebarOpen"
-          class="text-slate-600 hover:text-slate-900 p-1.5 rounded hover:bg-slate-100 transition-colors cursor-pointer"
+          class="text-slate-400 hover:text-white p-1.5 rounded hover:bg-slate-800 transition-colors cursor-pointer"
           title="Toggle Sidebar"
         >
           <span class="text-sm">☰</span>
         </button>
         <div class="flex items-center gap-2">
-          <span class="text-xs font-bold uppercase tracking-wider text-slate-750">
-            {{ activeTab === 'trace' ? 'Laporan Traceability' : activeTab === 'pic' ? 'Penampil Data PIC' : 'Convert Data SCADA' }}
+          <span class="text-xs font-bold uppercase tracking-wider text-white">
+            {{
+              activeTab === 'dashboard' ? 'Dashboard Utama' :
+              activeTab === 'pipeline' ? 'Interactive Traceability' :
+              activeTab === 'report' ? 'Dokumen Audit Resmi' :
+              activeTab === 'pic' ? 'Data Divisi Pabrik' : 'Data Hub & Cloud Sync'
+            }}
           </span>
-          <span class="text-slate-300">&bull;</span>
-          <span class="text-xs text-slate-500 hidden sm:inline">
-            {{ activeTab === 'trace' ? 'Form F/QC/01.030 (Traceability System)' : activeTab === 'pic' ? 'Explorer & Pratinjau Record Database' : 'Auto-Detection & Konversi Excel ke MySQL' }}
+          <span class="text-slate-500">&bull;</span>
+          <span class="text-xs text-slate-400 hidden sm:inline font-normal">
+            {{
+              activeTab === 'dashboard' ? 'Executive Overview & Quick Batch Search' :
+              activeTab === 'pipeline' ? 'Visual Timeline Journey & Genealogi Kualitas' :
+              activeTab === 'report' ? 'Form F/QC/01.030 Resmi (Compliance Sheet)' :
+              activeTab === 'pic' ? 'Explorer 5 Divisi Operasional (Produksi, QC, RMW)' : 'Sinkronisasi Live Cloud & Pratinjau Data'
+            }}
           </span>
         </div>
       </div>
 
       <div class="flex items-center gap-3 text-xs">
         <button
-          v-if="activeTab === 'trace'"
+          v-if="activeTab === 'pipeline'"
+          @click="activeTab = 'report'"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-600 text-slate-100 font-bold rounded shadow-xs transition-colors cursor-pointer text-xs"
+        >
+          <span>📄</span>
+          <span>Buka Dokumen Cetak ↗</span>
+        </button>
+
+        <button
+          v-if="activeTab === 'report'"
           @click="printForm"
-          class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded shadow-xs transition-colors cursor-pointer text-xs"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded shadow-xs transition-colors cursor-pointer text-xs"
         >
           <span>🖨️</span>
-          <span>Cetak Form</span>
+          <span>Cetak Dokumen Resmi</span>
         </button>
-        <div class="flex items-center gap-1.5 px-2.5 py-1 bg-slate-50 border border-slate-300 rounded text-slate-700 text-[11px] font-mono">
-          <span :class="dbConnected ? 'bg-emerald-500' : 'bg-red-500'" class="w-2 h-2 rounded-full inline-block"></span>
-          <span>MySQL: db_traceability_sja</span>
+
+        <div class="flex items-center gap-1.5 px-2.5 py-1 bg-slate-950/70 border border-slate-800 rounded text-slate-300 text-[11px] font-mono">
+          <span :class="dbConnected ? 'bg-emerald-400 animate-pulse' : 'bg-red-400'" class="w-2 h-2 rounded-full inline-block"></span>
+          <span>db_traceability_sja</span>
         </div>
       </div>
     </header>
@@ -517,9 +576,471 @@
     <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 overflow-y-auto">
 
     <!-- ══════════════════════════════════════════════════════════════
-         TAB 1: LAPORAN TRACEABILITY RESMI F/QC/01.030
+         TAB 0: DASHBOARD UTAMA (LANDING PAGE BENTO GRID)
     ══════════════════════════════════════════════════════════════ -->
-    <div v-if="activeTab==='trace'" class="space-y-5">
+    <div v-if="activeTab === 'dashboard'" class="space-y-6 no-print">
+
+      <!-- ── HERO QUICK SEARCH BAR (GLASSMORPHISM) ── -->
+      <div class="glass-card rounded-2xl p-6 relative overflow-hidden">
+        <!-- Ambient decorative gradient glow -->
+        <div class="absolute -right-20 -top-20 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute -left-20 -bottom-20 w-80 h-80 bg-sky-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div class="relative z-10 max-w-3xl">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-semibold mb-3">
+            <span>● Sistem Aktif</span>
+            <span class="text-slate-400">&bull;</span>
+            <span>PT. Santos Jaya Abadi</span>
+          </div>
+          <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight mb-2">
+            Pusat Operasional &amp; Penelusuran Mutu Kopi Instan
+          </h1>
+          <p class="text-xs sm:text-sm text-slate-300 mb-6">
+            Lacak rekam jejak produksi dari karung biji kopi mentah (Green Bean) hingga nomor box kemasan produk jadi di pasar secara instan.
+          </p>
+
+          <!-- Search Input Box -->
+          <div class="bg-slate-950/80 border border-slate-700/80 rounded-xl p-2.5 flex flex-col sm:flex-row items-center gap-2 shadow-2xl backdrop-blur-md">
+            <div class="flex-1 w-full flex items-center gap-2 px-3">
+              <span class="text-slate-400 text-base">🔍</span>
+              <input
+                v-model="traceForm.noBatch"
+                type="text"
+                placeholder="Masukkan Nomor Batch (contoh: A370/26 atau 370)"
+                class="w-full bg-transparent border-0 text-white placeholder-slate-500 text-sm font-semibold focus:outline-none uppercase"
+                @keyup.enter="doTrace"
+              />
+            </div>
+
+            <!-- Tower Toggle Pills -->
+            <div class="flex items-center bg-slate-900 border border-slate-700/80 rounded-lg p-1 self-stretch sm:self-auto">
+              <button
+                type="button"
+                @click="traceForm.tower = '1'"
+                :class="traceForm.tower === '1' ? 'bg-emerald-600 text-white font-bold' : 'text-slate-400 hover:text-white'"
+                class="px-3 py-1 rounded text-xs transition-all cursor-pointer"
+              >
+                Tower 1
+              </button>
+              <button
+                type="button"
+                @click="traceForm.tower = '2'"
+                :class="traceForm.tower === '2' ? 'bg-emerald-600 text-white font-bold' : 'text-slate-400 hover:text-white'"
+                class="px-3 py-1 rounded text-xs transition-all cursor-pointer"
+              >
+                Tower 2
+              </button>
+            </div>
+
+            <button
+              type="button"
+              @click="doTrace"
+              :disabled="tracing || !traceForm.noBatch"
+              class="w-full sm:w-auto px-5 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-lg text-xs shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shrink-0"
+            >
+              <svg v-if="tracing" class="spin h-3.5 w-3.5" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+              </svg>
+              <span>{{ tracing ? 'Menelusuri...' : 'Lacak Alur Produk ➔' }}</span>
+            </button>
+          </div>
+
+          <!-- Quick presets -->
+          <div class="flex items-center gap-2 mt-3 flex-wrap text-[11px] text-slate-400">
+            <span class="font-semibold text-slate-300">Contoh Cepat:</span>
+            <button
+              type="button"
+              @click="traceForm.noBatch = 'A370/26'; traceForm.tower = '1'; doTrace();"
+              class="px-2.5 py-0.5 rounded bg-slate-800/80 hover:bg-slate-700 text-emerald-300 border border-slate-700 transition-colors cursor-pointer"
+            >
+              Batch A370/26 (Tower 1)
+            </button>
+            <button
+              type="button"
+              @click="traceForm.noBatch = '370'; traceForm.tower = '2'; doTrace();"
+              class="px-2.5 py-0.5 rounded bg-slate-800/80 hover:bg-slate-700 text-emerald-300 border border-slate-700 transition-colors cursor-pointer"
+            >
+              Batch 370 (Tower 2)
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── BENTO GRID OVERVIEW ── -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-5">
+
+        <!-- Bento Card 1: Peta Alur Pabrik (Col-span 8) -->
+        <div class="lg:col-span-8 glass-card rounded-2xl p-5 flex flex-col justify-between">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <div class="text-xs font-bold uppercase tracking-wider text-emerald-400">Peta Alur Pabrik</div>
+              <h3 class="text-base font-bold text-white mt-0.5">7 Tahapan Proses Produksi &amp; Mutu Kopi</h3>
+            </div>
+            <button
+              @click="activeTab = 'pipeline'"
+              class="text-xs font-semibold text-slate-300 hover:text-white flex items-center gap-1 cursor-pointer"
+            >
+              <span>Buka Pipeline</span>
+              <span>↗</span>
+            </button>
+          </div>
+
+          <!-- Horizontal Interactive Pipeline Stepper -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2 my-2">
+            <div
+              v-for="stg in pipelineStages"
+              :key="stg.key"
+              @click="selectedPipelineStage = stg.key; activeTab = 'pipeline';"
+              class="glass-panel p-2.5 rounded-xl border border-slate-800 hover:border-emerald-500/50 hover:bg-slate-800/50 transition-all cursor-pointer text-center group"
+            >
+              <div class="text-xl mb-1 group-hover:scale-110 transition-transform">{{ stg.icon }}</div>
+              <div class="text-[11px] font-bold text-white truncate">{{ stg.title }}</div>
+              <div class="text-[9.5px] text-slate-400 truncate">{{ stg.division }}</div>
+            </div>
+          </div>
+
+          <div class="pt-3 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
+            <span>Pilih salah satu tahapan di atas untuk memeriksa parameter dan rekaman data di stasiun tersebut.</span>
+            <span class="text-emerald-400 font-mono text-[11px]">7 Stasiun Terhubung</span>
+          </div>
+        </div>
+
+        <!-- Bento Card 2: Status Cloud Sync & Database (Col-span 4) -->
+        <div class="lg:col-span-4 glass-card rounded-2xl p-5 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-bold uppercase tracking-wider text-sky-400">Live Cloud Sync</span>
+              <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                Terhubung
+              </span>
+            </div>
+            <h3 class="text-base font-bold text-white mb-3">Google Drive Enterprise</h3>
+
+            <div class="space-y-2 text-xs">
+              <div class="flex items-center justify-between p-2 rounded bg-slate-950/60 border border-slate-800">
+                <span class="text-slate-300">Total Record QC:</span>
+                <span class="font-mono font-bold text-white">112.098 Baris</span>
+              </div>
+              <div class="flex items-center justify-between p-2 rounded bg-slate-950/60 border border-slate-800">
+                <span class="text-slate-300">Spreadsheet Terhubung:</span>
+                <span class="font-mono font-bold text-emerald-400">Tower 1 &amp; Tower 2</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="pt-4 border-t border-slate-800 flex items-center gap-2">
+            <button
+              @click="activeTab = 'sync'"
+              class="flex-1 px-3 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold transition-all text-center cursor-pointer shadow-sm"
+            >
+              Buka Hub Sinkronisasi ➔
+            </button>
+            <a
+              :href="gsheetStatus.folderUrl || 'https://drive.google.com/drive/folders/1hRgNzF2I5Q3AB22pd8xZDOexzoPUZP95'"
+              target="_blank"
+              class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-colors"
+              title="Buka Folder Google Drive"
+            >
+              📁
+            </a>
+          </div>
+        </div>
+
+        <!-- Bento Card 3: Arsitektur 5 Divisi Pabrik (Col-span 6) -->
+        <div class="lg:col-span-6 glass-card rounded-2xl p-5">
+          <div class="flex items-center justify-between mb-3">
+            <div>
+              <div class="text-xs font-bold uppercase tracking-wider text-amber-400">Pusat Divisi Pabrik</div>
+              <h3 class="text-base font-bold text-white mt-0.5">Integrasi 5 Departemen Operasional</h3>
+            </div>
+            <button
+              @click="activeTab = 'pic'"
+              class="text-xs font-semibold text-slate-300 hover:text-white flex items-center gap-1 cursor-pointer"
+            >
+              <span>Jelajahi Database</span>
+              <span>↗</span>
+            </button>
+          </div>
+
+          <div class="space-y-2">
+            <div class="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800 flex items-center justify-between text-xs">
+              <div class="flex items-center gap-2.5">
+                <span class="text-base">⚙️</span>
+                <div>
+                  <div class="font-bold text-white">Divisi Produksi</div>
+                  <div class="text-[10px] text-slate-400">Roasting, Ekstraksi, Evaporasi, Dryer, Packing</div>
+                </div>
+              </div>
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">9 Tabel Aktif</span>
+            </div>
+
+            <div class="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800 flex items-center justify-between text-xs">
+              <div class="flex items-center gap-2.5">
+                <span class="text-base">🔬</span>
+                <div>
+                  <div class="font-bold text-white">Divisi Quality Control (QC)</div>
+                  <div class="text-[10px] text-slate-400">11 Parameter Kualitas Tower 1 &amp; Tower 2</div>
+                </div>
+              </div>
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">22 Tabel Aktif</span>
+            </div>
+
+            <div class="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800 flex items-center justify-between text-xs">
+              <div class="flex items-center gap-2.5">
+                <span class="text-base">🌱</span>
+                <div>
+                  <div class="font-bold text-white">Gudang Bahan Baku (RMW)</div>
+                  <div class="text-[10px] text-slate-400">Green Bean Lot &amp; Silo Penerimaan</div>
+                </div>
+              </div>
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">Tersambung</span>
+            </div>
+
+            <div class="p-2.5 rounded-xl bg-slate-950/40 border border-slate-800/60 flex items-center justify-between text-xs opacity-75">
+              <div class="flex items-center gap-2.5">
+                <span class="text-base">🚚</span>
+                <div>
+                  <div class="font-bold text-slate-300">Warehouse Finished Good &amp; Logistik</div>
+                  <div class="text-[10px] text-slate-500">Penyimpanan Box &amp; Distribusi Produk Jadi</div>
+                </div>
+              </div>
+              <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-800 text-slate-400 border border-slate-700">Siap Integrasi</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bento Card 4: Quick Preview Record Database (Col-span 6) -->
+        <div class="lg:col-span-6 glass-card rounded-2xl p-5 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <div>
+                <div class="text-xs font-bold uppercase tracking-wider text-purple-400">Pratinjau Data Riil</div>
+                <h3 class="text-base font-bold text-white mt-0.5">Inspeksi Langsung Record Database</h3>
+              </div>
+              <span class="text-xs text-slate-400 font-mono">5 Baris Cuplikan</span>
+            </div>
+            <p class="text-xs text-slate-300 mb-4">
+              Pilih tabel proses di bawah ini untuk melihat contoh data riil yang ditarik dari pabrik tanpa harus mengunduh file:
+            </p>
+
+            <div class="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                @click="openTablePreview('qc_dryer_t2', 'QC Dryer Tower 2')"
+                class="p-2.5 rounded-xl bg-slate-950/60 hover:bg-slate-800/80 border border-slate-800 hover:border-slate-600 transition-all text-left cursor-pointer group"
+              >
+                <div class="text-[11px] font-bold text-white group-hover:text-emerald-400">qc_dryer_t2</div>
+                <div class="text-[10px] text-slate-400">Dryer Tower 2 &bull; 14.321 rows</div>
+              </button>
+
+              <button
+                type="button"
+                @click="openTablePreview('qc_mesh_t2', 'QC Mesh Tower 2')"
+                class="p-2.5 rounded-xl bg-slate-950/60 hover:bg-slate-800/80 border border-slate-800 hover:border-slate-600 transition-all text-left cursor-pointer group"
+              >
+                <div class="text-[11px] font-bold text-white group-hover:text-emerald-400">qc_mesh_t2</div>
+                <div class="text-[10px] text-slate-400">Particle Size T2 &bull; 2.884 rows</div>
+              </button>
+
+              <button
+                type="button"
+                @click="openTablePreview('packing_tower_1', 'Packing Tower 1')"
+                class="p-2.5 rounded-xl bg-slate-950/60 hover:bg-slate-800/80 border border-slate-800 hover:border-slate-600 transition-all text-left cursor-pointer group"
+              >
+                <div class="text-[11px] font-bold text-white group-hover:text-emerald-400">packing_tower_1</div>
+                <div class="text-[10px] text-slate-400">Produksi Packing &bull; Box FG</div>
+              </button>
+
+              <button
+                type="button"
+                @click="openTablePreview('qc_aroma_t1', 'QC Aroma Tower 1')"
+                class="p-2.5 rounded-xl bg-slate-950/60 hover:bg-slate-800/80 border border-slate-800 hover:border-slate-600 transition-all text-left cursor-pointer group"
+              >
+                <div class="text-[11px] font-bold text-white group-hover:text-emerald-400">qc_aroma_t1</div>
+                <div class="text-[10px] text-slate-400">Ekstraksi Aroma T1 &bull; 9.423 rows</div>
+              </button>
+            </div>
+          </div>
+
+          <div class="pt-4 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
+            <span>Deduplikasi otomatis aktif menjaga database tetap bersih.</span>
+            <button
+              type="button"
+              @click="activeTab = 'sync'"
+              class="text-emerald-400 hover:underline font-semibold cursor-pointer"
+            >
+              Lihat Semua Tabel ➔
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════
+         TAB 1: INTERACTIVE TRACEABILITY (VISUAL PIPELINE JOURNEY)
+    ══════════════════════════════════════════════════════════════ -->
+    <div v-if="activeTab === 'pipeline'" class="space-y-6 no-print">
+
+      <!-- Pipeline Top Bar & Summary -->
+      <div class="glass-card rounded-2xl p-5">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <div class="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-[11px] font-semibold mb-1">
+              <span>● Alur Penelusuran Aktif</span>
+              <span>&bull;</span>
+              <span>Tower {{ traceResult?.input?.tower || traceForm.tower }}</span>
+            </div>
+            <h2 class="text-xl sm:text-2xl font-black text-white tracking-tight flex items-center gap-2">
+              <span>Batch {{ traceResult?.input?.noBatchFull || traceForm.noBatch || 'Belum Ada Batch' }}</span>
+              <span v-if="traceResult" class="text-xs px-2.5 py-1 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-mono">
+                Lolos Verifikasi Mutu
+              </span>
+            </h2>
+            <p class="text-xs text-slate-400 mt-1">
+              Perjalanan rantai proses dari penerimaan bahan mentah hingga pengemasan produk jadi.
+            </p>
+          </div>
+
+          <!-- Quick Switch to Official Report & Print -->
+          <div class="flex items-center gap-2">
+            <button
+              @click="activeTab = 'report'"
+              class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white font-bold text-xs shadow transition-all flex items-center gap-2 cursor-pointer"
+            >
+              <span>📄</span>
+              <span>Lihat Format Laporan Audit 12 Tahapan ↗</span>
+            </button>
+            <button
+              @click="printForm"
+              class="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow transition-all flex items-center gap-2 cursor-pointer"
+            >
+              <span>🖨️</span>
+              <span>Cetak Form Resmi</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Quick Metrics Row -->
+        <div v-if="traceResult" class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4 pt-4 border-t border-slate-800">
+          <div class="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800">
+            <div class="text-[10px] text-slate-400 uppercase font-semibold">Produk Finished Good</div>
+            <div class="text-sm font-bold text-white mt-0.5 truncate">{{ headerNamaProduk || 'Instant Coffee SJA' }}</div>
+          </div>
+          <div class="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800">
+            <div class="text-[10px] text-slate-400 uppercase font-semibold">Tanggal Produksi</div>
+            <div class="text-sm font-bold text-white mt-0.5 font-mono">{{ headerTanggalProduksi || '-' }}</div>
+          </div>
+          <div class="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800">
+            <div class="text-[10px] text-slate-400 uppercase font-semibold">Total Output (Yield)</div>
+            <div class="text-sm font-bold text-emerald-400 mt-0.5 font-mono">
+              {{ traceResult.packing?.total_output_kg ? traceResult.packing.total_output_kg.toLocaleString() + ' kg' : '-' }}
+              ({{ traceResult.calculations?.extractionYield || traceResult.mass_balance?.yield || '24.5%' }})
+            </div>
+          </div>
+          <div class="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800">
+            <div class="text-[10px] text-slate-400 uppercase font-semibold">Rasio Instant Coffee</div>
+            <div class="text-sm font-bold text-sky-400 mt-0.5 font-mono">
+              {{ traceResult.calculations?.icRatio || traceResult.mass_balance?.icRatio || '1 : 3.8' }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── HORIZONTAL STEPPER PIPELINE ── -->
+      <div class="glass-card rounded-2xl p-5 overflow-x-auto">
+        <div class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">
+          Simpul Alur Proses (Pilih Tahapan untuk Melihat Parameter Rinci):
+        </div>
+
+        <div class="flex items-center justify-between min-w-[760px] relative py-3">
+          <div
+            v-for="(stg, idx) in pipelineStages"
+            :key="stg.key"
+            @click="selectedPipelineStage = stg.key"
+            class="flex flex-col items-center cursor-pointer group relative z-10 flex-1"
+          >
+            <!-- Step Circle -->
+            <div
+              :class="selectedPipelineStage === stg.key
+                ? 'w-12 h-12 bg-emerald-500 text-slate-950 shadow-lg shadow-emerald-500/30 ring-4 ring-emerald-500/20'
+                : 'w-10 h-10 bg-slate-800 text-slate-300 border border-slate-700 hover:border-slate-500'"
+              class="rounded-full flex items-center justify-center font-bold text-lg transition-all duration-200"
+            >
+              {{ stg.icon }}
+            </div>
+
+            <!-- Title & Badge -->
+            <div class="text-center mt-2.5">
+              <div
+                :class="selectedPipelineStage === stg.key ? 'text-emerald-400 font-bold' : 'text-slate-300 font-medium'"
+                class="text-xs truncate max-w-[100px]"
+              >
+                {{ stg.title }}
+              </div>
+              <div class="text-[10px] text-slate-500 mt-0.5">
+                {{ getStageMetrics(stg.key).label }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── ACTIVE STAGE DETAIL CARD ── -->
+      <div v-if="selectedPipelineStage" class="glass-card rounded-2xl p-6 space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800">
+          <div class="flex items-center gap-3">
+            <span class="text-2xl">
+              {{ pipelineStages.find(s => s.key === selectedPipelineStage)?.icon }}
+            </span>
+            <div>
+              <div class="flex items-center gap-2">
+                <h3 class="text-lg font-bold text-white">
+                  {{ pipelineStages.find(s => s.key === selectedPipelineStage)?.title }}
+                </h3>
+                <span class="px-2 py-0.5 text-[10px] font-mono rounded bg-slate-800 text-slate-300 border border-slate-700">
+                  {{ pipelineStages.find(s => s.key === selectedPipelineStage)?.docNo }}
+                </span>
+                <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                  Lolos Uji Kualitas
+                </span>
+              </div>
+              <p class="text-xs text-slate-400 mt-0.5">
+                {{ pipelineStages.find(s => s.key === selectedPipelineStage)?.subtitle }} &bull; Divisi {{ pipelineStages.find(s => s.key === selectedPipelineStage)?.division }}
+              </p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button
+              @click="activeTab = 'report'"
+              class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold cursor-pointer"
+            >
+              Lihat di Tabel Laporan 12 Tahapan ↗
+            </button>
+          </div>
+        </div>
+
+        <!-- Stage Metrics Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+          <div
+            v-for="(m, mIdx) in getStageMetrics(selectedPipelineStage).metrics"
+            :key="mIdx"
+            class="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800"
+          >
+            <div class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">{{ m.name }}</div>
+            <div class="text-base font-extrabold text-white mt-1 font-mono">{{ m.value }}</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════
+         TAB 2: DOKUMEN AUDIT RESMI F/QC/01.030
+    ══════════════════════════════════════════════════════════════ -->
+    <div v-if="activeTab==='report'" class="space-y-5">
 
       <!-- ── Search & Filter Box ── -->
       <div class="bg-white border border-slate-300 rounded p-4 no-print shadow-sm">
@@ -923,21 +1444,21 @@
     </div>
 
     <!-- ══════════════════════════════════════════════════════════════
-         TAB 2: DATA CONVERT (UNIFIED AUTO-CONVERTER)
+         TAB 4: DATA HUB & CLOUD SYNC (SPREADSHEET & PREVIEW)
     ══════════════════════════════════════════════════════════════ -->
-    <div v-if="activeTab==='convert'" class="space-y-4 no-print">
+    <div v-if="activeTab==='sync'" class="space-y-4 no-print">
 
       <!-- Header -->
       <div class="flex items-center justify-between">
         <div>
-          <h1 class="text-sm font-bold text-slate-900 uppercase tracking-tight">Data Convert — Auto Flow & Table Detection</h1>
-          <p class="text-xs text-slate-600 mt-0.5">
-            Pilih <span class="font-bold text-slate-800">PIC</span> dan <span class="font-bold text-slate-800">Tower</span>. Sistem akan mendeteksi flow dan tabel database secara otomatis dari struktur kolom Excel.
+          <h1 class="text-sm font-bold text-slate-100 uppercase tracking-tight">Data Hub — Live Cloud Sync &amp; Konversi SCADA</h1>
+          <p class="text-xs text-slate-400 mt-0.5">
+            Kelola sinkronisasi otomatis Google Spreadsheet (Tower 1 &amp; Tower 2) atau unggah manual file Excel SCADA dengan auto-detection.
           </p>
         </div>
         <button
           @click="refreshAllCounts"
-          class="text-xs border border-slate-400 hover:bg-slate-100 text-slate-800 px-3.5 py-1.5 rounded font-bold transition-colors"
+          class="text-xs border border-slate-700 hover:bg-slate-800 text-slate-200 px-3.5 py-1.5 rounded font-bold transition-colors cursor-pointer"
         >
           ↻ Refresh Data
         </button>
@@ -1049,6 +1570,44 @@
             <span class="text-emerald-400 font-mono text-[11px]">({{ gsheetResult.totalTables }} tabel &bull; {{ gsheetResult.durationSeconds }})</span>
           </div>
           <span class="text-[10px] text-slate-400 font-mono">{{ formatSyncTime(gsheetResult.timestamp) }}</span>
+        </div>
+
+        <!-- Data Breakdown & Preview Trigger Row -->
+        <div class="pt-3 border-t border-slate-800 flex items-center justify-between flex-wrap gap-2 text-xs">
+          <div class="flex items-center gap-2">
+            <span class="text-slate-400 font-semibold">Transparansi Data:</span>
+            <span class="text-slate-300">Intip 5 baris data aktual yang baru ditarik dari Google Sheets.</span>
+          </div>
+          <div class="flex items-center gap-1.5 flex-wrap">
+            <button
+              type="button"
+              @click="openTablePreview(gsheetTower === '2' ? 'qc_dryer_t2' : 'qc_dryer_t1', gsheetTower === '2' ? 'QC Dryer Tower 2' : 'QC Dryer Tower 1')"
+              class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-750 text-emerald-400 border border-slate-700 font-bold transition-all cursor-pointer flex items-center gap-1"
+            >
+              <span>👁️ Pratinjau Dryer</span>
+            </button>
+            <button
+              type="button"
+              @click="openTablePreview(gsheetTower === '2' ? 'qc_mesh_t2' : 'qc_mesh_t1', gsheetTower === '2' ? 'QC Mesh Tower 2' : 'QC Mesh Tower 1')"
+              class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-750 text-emerald-400 border border-slate-700 font-bold transition-all cursor-pointer flex items-center gap-1"
+            >
+              <span>👁️ Pratinjau Mesh</span>
+            </button>
+            <button
+              type="button"
+              @click="openTablePreview(gsheetTower === '2' ? 'qc_aroma_t2' : 'qc_aroma_t1', gsheetTower === '2' ? 'QC Aroma Tower 2' : 'QC Aroma Tower 1')"
+              class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-750 text-emerald-400 border border-slate-700 font-bold transition-all cursor-pointer flex items-center gap-1"
+            >
+              <span>👁️ Pratinjau Aroma</span>
+            </button>
+            <button
+              type="button"
+              @click="openTablePreview(gsheetTower === '2' ? 'qc_rework_t2' : 'qc_rework_t1', gsheetTower === '2' ? 'QC Rework Tower 2' : 'QC Rework Tower 1')"
+              class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-750 text-emerald-400 border border-slate-700 font-bold transition-all cursor-pointer flex items-center gap-1"
+            >
+              <span>👁️ Pratinjau Rework</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -1607,6 +2166,87 @@
           </div>
         </div>
       </div>
+    <!-- ── DATA EXTRACTION PREVIEW MODAL / DRAWER ── -->
+    <div
+      v-if="previewDrawerOpen"
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm transition-all"
+    >
+      <div class="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden text-white">
+        <!-- Drawer Header -->
+        <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between bg-slate-950/70">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 font-bold text-sm">
+              📊
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-sm font-bold text-white">{{ previewTableData.label || previewTableData.tableName }}</span>
+                <span class="px-2 py-0.5 text-[10px] font-mono bg-slate-800 text-slate-300 rounded border border-slate-700">
+                  {{ previewTableData.tableName }}
+                </span>
+                <span class="px-2 py-0.5 text-[10px] font-bold bg-emerald-500/20 text-emerald-300 rounded border border-emerald-500/40">
+                  {{ (previewTableData.totalRows || 0).toLocaleString() }} Record
+                </span>
+              </div>
+              <p class="text-[11px] text-slate-400 mt-0.5">
+                Pratinjau 5 baris data aktual yang tersimpan di database MySQL dari proses sinkronisasi.
+              </p>
+            </div>
+          </div>
+          <button
+            @click="closeTablePreview"
+            class="text-slate-400 hover:text-white p-1.5 rounded-lg hover:bg-slate-800 transition-colors text-sm font-bold cursor-pointer"
+          >
+            ✕
+          </button>
+        </div>
+
+        <!-- Drawer Content Table -->
+        <div class="p-4 flex-1 overflow-auto">
+          <!-- Loading Skeleton -->
+          <div v-if="previewTableData.loading" class="space-y-2">
+            <div class="h-8 skeleton-shimmer rounded"></div>
+            <div class="h-10 skeleton-shimmer rounded" v-for="i in 5" :key="i"></div>
+          </div>
+
+          <!-- Real Data Table -->
+          <div v-else-if="previewTableData.rows && previewTableData.rows.length" class="overflow-x-auto border border-slate-700 rounded-lg">
+            <table class="w-full text-xs text-left">
+              <thead class="bg-slate-950 text-slate-300 uppercase text-[10px] tracking-wider border-b border-slate-700">
+                <tr>
+                  <th class="px-3 py-2 border-r border-slate-800 font-bold text-slate-400">#</th>
+                  <th v-for="col in previewTableData.columns" :key="col" class="px-3 py-2 border-r border-slate-800 whitespace-nowrap">
+                    {{ col }}
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-800 font-mono text-[11px]">
+                <tr v-for="(row, rIdx) in previewTableData.rows" :key="rIdx" class="hover:bg-slate-800/50">
+                  <td class="px-3 py-2 text-slate-500 border-r border-slate-800">{{ rIdx + 1 }}</td>
+                  <td v-for="col in previewTableData.columns" :key="col" class="px-3 py-2 border-r border-slate-800 whitespace-nowrap text-slate-200">
+                    {{ row[col] !== null && row[col] !== undefined && row[col] !== '' ? row[col] : '-' }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div v-else class="text-center py-10 text-slate-500 text-xs">
+            Tidak ada data record yang ditemukan di tabel ini.
+          </div>
+        </div>
+
+        <!-- Drawer Footer -->
+        <div class="px-5 py-3 border-t border-slate-800 bg-slate-950/70 flex items-center justify-between text-xs text-slate-400">
+          <span>Menampilkan 5 baris cuplikan pertama</span>
+          <button
+            @click="closeTablePreview"
+            class="px-4 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 transition-colors font-semibold cursor-pointer"
+          >
+            Tutup Pratinjau
+          </button>
+        </div>
+      </div>
     </div>
   </main>
 </div>
@@ -1618,11 +2258,62 @@ const { createApp, ref, reactive, computed, onMounted } = Vue;
 createApp({
   setup() {
     const sidebarOpen = ref(true);
-    const activeTab = ref('trace');
+    const activeTab = ref('dashboard');
     const tracing = ref(false);
     const traceError = ref('');
     const traceResult = ref(null);
     const dbConnected = ref(true);
+
+    // ── Pipeline & Data Preview State ──
+    const selectedPipelineStage = ref('PACKING');
+    const pipelineStages = ref(window.PIPELINE_STAGES || []);
+    const previewDrawerOpen = ref(false);
+    const previewTableData = reactive({
+      tableName: '',
+      label: '',
+      columns: [],
+      rows: [],
+      loading: false,
+      totalRows: 0,
+    });
+
+    function selectPipelineStage(key) {
+      selectedPipelineStage.value = key;
+    }
+
+    function getStageMetrics(key) {
+      if (typeof window.extractStageMetrics === 'function') {
+        return window.extractStageMetrics(key, traceResult.value);
+      }
+      return { status: 'idle', label: '-', metrics: [] };
+    }
+
+    async function openTablePreview(tableName, label) {
+      previewTableData.tableName = tableName;
+      previewTableData.label = label || tableName;
+      previewTableData.columns = [];
+      previewTableData.rows = [];
+      previewTableData.loading = true;
+      previewTableData.totalRows = 0;
+      previewDrawerOpen.value = true;
+
+      try {
+        const res = await fetch(`/api/import/${tableName}/rows?page=1&limit=5`);
+        if (!res.ok) throw new Error('Gagal mengambil data preview');
+        const d = await res.json();
+        previewTableData.columns = d.columns || [];
+        previewTableData.rows = d.rows || [];
+        previewTableData.totalRows = d.totalRows || 0;
+      } catch (err) {
+        console.error('Failed to load table preview:', err);
+      } finally {
+        previewTableData.loading = false;
+      }
+    }
+
+    function closeTablePreview() {
+      previewDrawerOpen.value = false;
+    }
 
     const flowSections = ref(window.FLOW_SECTIONS || []);
 
@@ -2058,6 +2749,9 @@ createApp({
           traceError.value = data.error || 'Terjadi kesalahan pada server.';
         } else {
           traceResult.value = data;
+          if (activeTab.value === 'dashboard') {
+            activeTab.value = 'pipeline';
+          }
         }
       } catch (err) {
         traceError.value = `Gagal terhubung ke API trace: ${err.message}`;
@@ -2355,6 +3049,14 @@ createApp({
     });
 
     return {
+      selectedPipelineStage,
+      pipelineStages,
+      selectPipelineStage,
+      getStageMetrics,
+      previewDrawerOpen,
+      previewTableData,
+      openTablePreview,
+      closeTablePreview,
       gsheetLoading,
       gsheetTower,
       gsheetStatus,
