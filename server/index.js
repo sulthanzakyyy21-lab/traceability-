@@ -40,6 +40,17 @@ const server = app.listen(PORT, () => {
   console.log(`\n🏭 Traceability System - PT. Santos Jaya Abadi`);
   console.log(`📡 Server running at http://localhost:${PORT}`);
   console.log(`📊 Database: db_traceability_sja @ localhost\n`);
+
+  // Support both 3001 and 3000 so localhost:3000 also works seamlessly
+  if (Number(PORT) !== 3000) {
+    const http = require('http');
+    const altServer = http.createServer(app);
+    altServer.listen(3000, () => {
+      console.log(`📡 Server juga aktif di http://localhost:3000`);
+    }).on('error', () => {
+      // Port 3000 in use, ignore
+    });
+  }
 }).on('error', (err) => {
   if (err.code === 'EADDRINUSE') {
     console.error(`[ERROR] Port ${PORT} sudah digunakan. Coba port lain atau hentikan proses yang memakai port tersebut.`);

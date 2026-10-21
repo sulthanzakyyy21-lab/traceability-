@@ -6,7 +6,10 @@ function excelValueToString(val) {
   if (val === null || val === undefined || val === '') return null;
   if (val instanceof Date) {
     const pad = (n) => String(n).padStart(2, '0');
-    const y = val.getFullYear();
+    let y = val.getFullYear();
+    if (y > 2099 && String(y).startsWith('2020')) {
+      y = parseInt(String(y).replace(/^2020/, '202'), 10);
+    }
     const mo = pad(val.getMonth() + 1);
     const d = pad(val.getDate());
     const h = pad(val.getHours());
@@ -16,7 +19,11 @@ function excelValueToString(val) {
     if (h === 0 && mi === 0 && s === 0) return `${y}-${mo}-${d}`;
     return `${y}-${mo}-${d} ${pad(h)}:${pad(mi)}:${pad(s)}`;
   }
-  return String(val).trim();
+  let str = String(val).trim();
+  if (/^2020\d-/.test(str)) {
+    str = str.replace(/^2020(\d)-/, '202$1-');
+  }
+  return str;
 }
 
 function findSheetAndColMapping(workbook, tableName, expectedCols) {

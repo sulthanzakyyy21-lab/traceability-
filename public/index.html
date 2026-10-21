@@ -39,6 +39,7 @@
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
   <script src="flowSections.js"></script>
   <script src="js/pipelineData.js"></script>
+  <script src="js/clusterTraceStore.js"></script>
 
   <style>
     /* ── SCOPE TIMES NEW ROMAN EXCLUSIVELY TO OFFICIAL AUDIT PRINTABLE FORM ── */
@@ -349,10 +350,10 @@
     .sidebar-item {
       display: flex;
       align-items: center;
-      gap: 12px;
-      padding: 10px 12px;
-      border-radius: 12px;
-      font-size: 12.5px;
+      gap: 9px;
+      padding: 7px 10px;
+      border-radius: 10px;
+      font-size: 11.5px;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
@@ -362,13 +363,14 @@
       border: 1px solid transparent;
       position: relative;
     }
+    .sidebar-item svg { width: 15px; height: 15px; }
     .sidebar-item-collapsed {
-      width: 44px;
-      height: 44px;
+      width: 36px;
+      height: 36px;
       padding: 0 !important;
       margin: 0 auto !important;
       justify-content: center !important;
-      border-radius: 12px !important;
+      border-radius: 10px !important;
     }
     .sidebar-item:hover {
       background: #f4ede6;
@@ -377,7 +379,7 @@
     .sidebar-item.active {
       background: #4a2c1d;
       color: #ffffff;
-      box-shadow: 0 4px 14px -2px rgba(74, 44, 29, 0.25);
+      box-shadow: 0 2px 8px -2px rgba(74, 44, 29, 0.3);
     }
     .sidebar-item.active .sidebar-subtext {
       color: #d5c2ad !important;
@@ -411,235 +413,24 @@
 <body class="min-h-screen bg-[#fbfaf8] font-sans antialiased text-stone-900 ambient-pattern">
 <div id="app" class="min-h-screen flex flex-row">
 
-  <!-- ── SIDEBAR NAVIGATION (GEMINI STYLE - COLLAPSES TO CLEAN ICON RAIL WITH HOVER TOOLTIPS) ── -->
-  <aside
-    :class="sidebarOpen ? 'w-64' : 'w-20'"
-    class="app-sidebar no-print flex-shrink-0 flex flex-col sticky top-0 h-screen select-none z-30 transition-all duration-300 ease-in-out"
-  >
-    <!-- Brand / Toggle Header -->
-    <div
-      class="h-16 flex items-center border-b border-stone-200/80 bg-white transition-all duration-300"
-      :class="sidebarOpen ? 'justify-between px-4' : 'justify-center px-0'"
-    >
-      <!-- Expanded Brand Header -->
-      <template v-if="sidebarOpen">
-        <div class="flex items-center gap-2.5 overflow-hidden">
-          <div class="w-8 h-8 rounded-xl bg-[#4a2c1d] flex items-center justify-center font-black text-white text-xs shadow-xs flex-shrink-0">
-            SJA
-          </div>
-          <div class="whitespace-nowrap overflow-hidden leading-tight">
-            <div class="font-extrabold text-xs text-stone-900 tracking-tight">PT. Santos Jaya Abadi</div>
-            <div class="text-[10px] text-coffee-700 font-semibold">Traceability Platform</div>
-          </div>
-        </div>
-        <button
-          @click="sidebarOpen = false"
-          class="text-stone-400 hover:text-stone-800 p-1.5 rounded-lg hover:bg-stone-100 transition-all cursor-pointer flex-shrink-0"
-          title="Tutup Sidebar ke Mode Ikon"
-        >
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
-            <polyline points="15 18 9 12 15 6"></polyline>
-          </svg>
-        </button>
-      </template>
-
-      <!-- Collapsed Gemini-Style Toggle Button -->
-      <template v-else>
-        <button
-          @click="sidebarOpen = true"
-          class="w-10 h-10 rounded-xl bg-stone-50 hover:bg-[#4a2c1d] text-[#4a2c1d] hover:text-white flex items-center justify-center transition-all duration-200 cursor-pointer shadow-2xs group relative border border-stone-200"
-          title="Buka Navigasi"
-        >
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-            <line x1="3" y1="12" x2="21" y2="12"></line>
-            <line x1="3" y1="6" x2="21" y2="6"></line>
-            <line x1="3" y1="18" x2="21" y2="18"></line>
-          </svg>
-          <!-- Gemini-Style Floating Tooltip on Hover -->
-          <div class="sidebar-gemini-tooltip">
-            <div class="font-bold text-xs text-white">Buka Navigasi</div>
-            <div class="text-[10px] text-stone-300 font-normal">PT. Santos Jaya Abadi</div>
-          </div>
-        </button>
-      </template>
+  <!-- ── CLEAN SIDEBAR NAVIGATION ── -->
+  <aside class="clean-aside no-print">
+    <div class="brand">
+      <div class="logo">SJA</div>
+      <div class="leading-tight">
+        <div class="font-bold text-sm text-[var(--tx)]">Traceability</div>
+        <div class="text-[10px] text-[var(--mu)]">PT. Santos Jaya Abadi</div>
+      </div>
     </div>
-
-    <!-- Navigation Menu Items -->
-    <nav class="flex-1 py-4 px-2 space-y-1.5 overflow-y-auto overflow-x-hidden">
-      <div v-show="sidebarOpen" class="px-2 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-stone-400">
-        Menu Utama
-      </div>
-
-      <!-- Item 1: Dashboard -->
-      <div class="relative group">
-        <button
-          type="button"
-          @click="activeTab = 'dashboard'"
-          :class="[
-            activeTab === 'dashboard' ? 'active' : '',
-            !sidebarOpen ? 'sidebar-item-collapsed' : ''
-          ]"
-          class="sidebar-item"
-        >
-          <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-            <rect x="3" y="3" width="7" height="7" rx="1.5"></rect>
-            <rect x="14" y="3" width="7" height="7" rx="1.5"></rect>
-            <rect x="14" y="14" width="7" height="7" rx="1.5"></rect>
-            <rect x="3" y="14" width="7" height="7" rx="1.5"></rect>
-          </svg>
-          <div v-if="sidebarOpen" class="flex-1 min-w-0">
-            <div class="truncate">Dashboard</div>
-            <div class="text-[10px] text-stone-500 sidebar-subtext font-normal truncate">Ikhtisar Operasional</div>
-          </div>
-        </button>
-        <!-- Gemini Tooltip -->
-        <div v-if="!sidebarOpen" class="sidebar-gemini-tooltip">
-          <div class="font-bold text-xs text-white">Dashboard</div>
-          <div class="text-[10px] text-stone-300 font-normal">Ikhtisar Operasional</div>
-        </div>
-      </div>
-
-      <!-- Item 2: Penelusuran Batch -->
-      <div class="relative group">
-        <button
-          type="button"
-          @click="activeTab = 'pipeline'"
-          :class="[
-            activeTab === 'pipeline' ? 'active' : '',
-            !sidebarOpen ? 'sidebar-item-collapsed' : ''
-          ]"
-          class="sidebar-item"
-        >
-          <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-            <circle cx="6" cy="18" r="3"></circle>
-            <circle cx="6" cy="6" r="3"></circle>
-            <circle cx="18" cy="12" r="3"></circle>
-            <path d="M6 9v6"></path>
-            <path d="M9 6h4a5 5 0 0 1 5 5v1"></path>
-          </svg>
-          <div v-if="sidebarOpen" class="flex-1 min-w-0">
-            <div class="truncate">Penelusuran Batch</div>
-            <div class="text-[10px] text-stone-500 sidebar-subtext font-normal truncate">Alur Rantai Proses</div>
-          </div>
-        </button>
-        <!-- Gemini Tooltip -->
-        <div v-if="!sidebarOpen" class="sidebar-gemini-tooltip">
-          <div class="font-bold text-xs text-white">Penelusuran Batch</div>
-          <div class="text-[10px] text-stone-300 font-normal">Alur Rantai Proses</div>
-        </div>
-      </div>
-
-      <!-- Item 3: Laporan Audit Mutu -->
-      <div class="relative group">
-        <button
-          type="button"
-          @click="activeTab = 'report'"
-          :class="[
-            activeTab === 'report' ? 'active' : '',
-            !sidebarOpen ? 'sidebar-item-collapsed' : ''
-          ]"
-          class="sidebar-item"
-        >
-          <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-            <polyline points="14 2 14 8 20 8"></polyline>
-            <line x1="16" y1="13" x2="8" y2="13"></line>
-            <line x1="16" y1="17" x2="8" y2="17"></line>
-            <polyline points="10 9 9 9 8 9"></polyline>
-          </svg>
-          <div v-if="sidebarOpen" class="flex-1 min-w-0">
-            <div class="truncate">Laporan Audit Mutu</div>
-            <div class="text-[10px] text-stone-500 sidebar-subtext font-normal truncate">Form F/QC/01.030</div>
-          </div>
-        </button>
-        <!-- Gemini Tooltip -->
-        <div v-if="!sidebarOpen" class="sidebar-gemini-tooltip">
-          <div class="font-bold text-xs text-white">Laporan Audit Mutu</div>
-          <div class="text-[10px] text-stone-300 font-normal">Form F/QC/01.030</div>
-        </div>
-      </div>
-
-      <div v-show="sidebarOpen" class="pt-3 px-2 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-stone-400">
-        Data Operasional
-      </div>
-
-      <!-- Item 4: Database Operasional -->
-      <div class="relative group">
-        <button
-          type="button"
-          @click="activeTab = 'pic'; if (!picTableRows.length) loadPicTable(picSelectedTable, 1);"
-          :class="[
-            activeTab === 'pic' ? 'active' : '',
-            !sidebarOpen ? 'sidebar-item-collapsed' : ''
-          ]"
-          class="sidebar-item"
-        >
-          <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-            <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
-            <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
-            <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
-          </svg>
-          <div v-if="sidebarOpen" class="flex-1 min-w-0">
-            <div class="truncate">Database Operasional</div>
-            <div class="text-[10px] text-stone-500 sidebar-subtext font-normal truncate">Rekaman Produksi &amp; QC</div>
-          </div>
-        </button>
-        <!-- Gemini Tooltip -->
-        <div v-if="!sidebarOpen" class="sidebar-gemini-tooltip">
-          <div class="font-bold text-xs text-white">Database Operasional</div>
-          <div class="text-[10px] text-stone-300 font-normal">Rekaman Produksi &amp; QC</div>
-        </div>
-      </div>
-
-      <!-- Item 5: Sinkronisasi Cloud -->
-      <div class="relative group">
-        <button
-          type="button"
-          @click="activeTab = 'sync'"
-          :class="[
-            activeTab === 'sync' ? 'active' : '',
-            !sidebarOpen ? 'sidebar-item-collapsed' : ''
-          ]"
-          class="sidebar-item"
-        >
-          <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-            <path d="M20 16.2A4.5 4.5 0 0 0 17.5 8h-1.8A7 7 0 1 0 4 14.9"></path>
-            <polyline points="12 12 12 18 16 14"></polyline>
-          </svg>
-          <div v-if="sidebarOpen" class="flex-1 min-w-0">
-            <div class="truncate">Sinkronisasi Cloud</div>
-            <div class="text-[10px] text-stone-500 sidebar-subtext font-normal truncate">Integrasi Google Sheets</div>
-          </div>
-        </button>
-        <!-- Gemini Tooltip -->
-        <div v-if="!sidebarOpen" class="sidebar-gemini-tooltip">
-          <div class="font-bold text-xs text-white">Sinkronisasi Cloud</div>
-          <div class="text-[10px] text-stone-300 font-normal">Integrasi Google Sheets</div>
-        </div>
-      </div>
-    </nav>
-
-    <!-- Sidebar Bottom Status -->
-    <div class="p-3 border-t border-stone-200/80 bg-stone-50 text-[11px]">
-      <div v-if="sidebarOpen" class="space-y-1">
-        <div class="flex items-center justify-between text-stone-500 text-[10.5px]">
-          <span>Database MySQL:</span>
-          <span class="flex items-center gap-1.5 font-bold" :class="dbConnected ? 'text-emerald-700' : 'text-red-600'">
-            <span class="w-2 h-2 rounded-full inline-block" :class="dbConnected ? 'bg-emerald-500' : 'bg-red-500'"></span>
-            {{ dbConnected ? 'Aktif' : 'Offline' }}
-          </span>
-        </div>
-        <div class="text-[9.5px] text-stone-400 font-mono truncate">
-          db_traceability_sja
-        </div>
-      </div>
-      <div v-else class="relative group flex justify-center py-1">
-        <span class="w-2.5 h-2.5 rounded-full inline-block cursor-pointer shadow-xs" :class="dbConnected ? 'bg-emerald-500 ring-2 ring-emerald-500/20' : 'bg-red-500 ring-2 ring-red-500/20'"></span>
-        <div class="sidebar-gemini-tooltip">
-          <div class="font-bold text-xs text-white">Status Database: {{ dbConnected ? 'Aktif' : 'Offline' }}</div>
-          <div class="text-[10px] text-stone-300 font-normal font-mono">db_traceability_sja @ MySQL</div>
-        </div>
-      </div>
+    <div class="nav" :class="{ 'on': activeTab === 'dashboard' }" @click="activeTab = 'dashboard'">Dashboard</div>
+    <div class="nav" :class="{ 'on': activeTab === 'pipeline' }" @click="activeTab = 'pipeline'">Penelusuran Batch</div>
+    <div class="nav" :class="{ 'on': activeTab === 'report' }" @click="activeTab = 'report'">Laporan Audit Mutu</div>
+    <div class="nav" :class="{ 'on': activeTab === 'sync' }" @click="activeTab = 'sync'">Data Ingestion</div>
+    <div class="nav" :class="{ 'on': activeTab === 'pic' }" @click="activeTab = 'pic'; if (!picTableRows.length) loadPicTable(picSelectedTable, 1);">Data Explorer</div>
+    <div class="spacer"></div>
+    <div class="db">
+      <span class="dot" :style="{ background: dbConnected ? 'var(--ok)' : 'var(--er)' }"></span>
+      <span>MySQL {{ dbConnected ? 'aktif' : 'offline' }}</span>
     </div>
   </aside>
 
@@ -649,24 +440,13 @@
     <!-- Topbar Header -->
     <header class="h-16 bg-white/90 backdrop-blur-md border-b border-stone-200 text-stone-900 no-print flex items-center justify-between px-4 sm:px-6 z-20 shadow-xs flex-shrink-0">
       <div class="flex items-center gap-3">
-        <button
-          @click="sidebarOpen = !sidebarOpen"
-          class="text-stone-500 hover:text-stone-900 p-2 rounded-lg hover:bg-stone-100 transition-colors cursor-pointer flex items-center justify-center"
-          :title="sidebarOpen ? 'Kecilkan Sidebar ke Mode Icon Rail' : 'Perluas Sidebar'"
-        >
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-            <line x1="3" y1="12" x2="21" y2="12"></line>
-            <line x1="3" y1="6" x2="21" y2="6"></line>
-            <line x1="3" y1="18" x2="21" y2="18"></line>
-          </svg>
-        </button>
         <div class="flex items-center gap-2">
           <span class="text-xs font-bold uppercase tracking-wider text-stone-900">
             {{
               activeTab === 'dashboard' ? 'Dashboard' :
               activeTab === 'pipeline' ? 'Penelusuran Batch' :
               activeTab === 'report' ? 'Laporan Audit Mutu' :
-              activeTab === 'pic' ? 'Database Operasional' : 'Sinkronisasi Cloud'
+              activeTab === 'pic' ? 'Data Explorer' : 'Data Ingestion'
             }}
           </span>
           <span class="text-stone-300">&bull;</span>
@@ -675,7 +455,7 @@
               activeTab === 'dashboard' ? 'Ikhtisar Operasional & Pencarian Cepat Batch' :
               activeTab === 'pipeline' ? 'Penelusuran Rantai Proses & Integritas Kualitas' :
               activeTab === 'report' ? 'Dokumen Kepatuhan Audit Mutu Form F/QC/01.030' :
-              activeTab === 'pic' ? 'Rekaman Parameter Divisi Operasional (Produksi, QC, RMW)' : 'Integrasi Spreadsheet Google Cloud & Database'
+              activeTab === 'pic' ? 'Rekaman Parameter Divisi Operasional (Produksi, QC, RMW)' : 'Upload Excel, Live Sync Spreadsheet & Input Data'
             }}
           </span>
         </div>
@@ -718,591 +498,370 @@
     <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 overflow-y-auto">
 
     <!-- ══════════════════════════════════════════════════════════════
-         TAB 0: DASHBOARD UTAMA (LANDING PAGE BENTO GRID)
+         TAB 0: DASHBOARD UTAMA
     ══════════════════════════════════════════════════════════════ -->
-    <div v-if="activeTab === 'dashboard'" class="space-y-6 no-print slow-smooth-entrance">
+    <div v-if="activeTab === 'dashboard'" class="space-y-5 no-print slow-smooth-entrance">
 
-      <!-- ── TOP 4 BENTO KPI STAT CARDS (ENERPIZE STYLE) ── -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 reveal-on-scroll">
-        <!-- Stat 1: Total Records -->
-        <div class="glass-card rounded-2xl p-5 flex items-center justify-between glass-card-hover border border-stone-200/90 shadow-xs">
-          <div>
-            <div class="text-[11px] font-bold text-stone-500 uppercase tracking-wider">Total Record Mutu</div>
-            <div class="text-2xl sm:text-3xl font-extrabold text-stone-900 mt-1 font-mono">112.098</div>
-            <div class="inline-flex items-center gap-1.5 mt-2 text-[10.5px] font-semibold text-coffee-800 bg-coffee-100 px-2.5 py-0.5 rounded-full border border-coffee-200">
-              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
-                <polyline points="18 15 12 9 6 15"></polyline>
-              </svg>
-              <span>+100% Sinkron Cloud</span>
-            </div>
-          </div>
-          <div class="w-12 h-12 rounded-2xl bg-coffee-100 border border-coffee-200 flex items-center justify-center text-coffee-800 shrink-0">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-              <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
-              <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
-              <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
-            </svg>
-          </div>
-        </div>
-
-        <!-- Stat 2: Verifikasi Mutu Produk -->
-        <div class="glass-card rounded-2xl p-5 flex items-center justify-between glass-card-hover border border-stone-200/90 shadow-xs">
-          <div>
-            <div class="text-[11px] font-bold text-stone-500 uppercase tracking-wider">Integritas Standar Mutu</div>
-            <div class="text-2xl sm:text-3xl font-extrabold text-stone-900 mt-1">100% Valid</div>
-            <div class="inline-flex items-center gap-1.5 mt-2 text-[10.5px] font-semibold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
-              <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
-              <span>11 Parameter T1 &amp; T2</span>
-            </div>
-          </div>
-          <div class="w-12 h-12 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-700 shrink-0">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-              <polyline points="22 4 12 14.01 9 11.01"></polyline>
-            </svg>
-          </div>
-        </div>
-
-        <!-- Stat 3: Divisi Terintegrasi -->
-        <div class="glass-card rounded-2xl p-5 flex items-center justify-between glass-card-hover border border-stone-200/90 shadow-xs">
-          <div>
-            <div class="text-[11px] font-bold text-stone-500 uppercase tracking-wider">Divisi Terintegrasi</div>
-            <div class="text-2xl sm:text-3xl font-extrabold text-stone-900 mt-1">5 Divisi</div>
-            <div class="inline-flex items-center gap-1.5 mt-2 text-[10.5px] font-semibold text-amber-800 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200">
-              <span>Produksi, QC, RMW, FGW</span>
-            </div>
-          </div>
-          <div class="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-700 shrink-0">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-              <rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect>
-              <line x1="9" y1="22" x2="9" y2="22.01"></line>
-              <line x1="15" y1="22" x2="15" y2="22.01"></line>
-              <line x1="9" y1="6" x2="9" y2="6.01"></line>
-              <line x1="15" y1="6" x2="15" y2="6.01"></line>
-              <line x1="9" y1="10" x2="9" y2="10.01"></line>
-              <line x1="15" y1="10" x2="15" y2="10.01"></line>
-              <line x1="9" y1="14" x2="9" y2="14.01"></line>
-              <line x1="15" y1="14" x2="15" y2="14.01"></line>
-              <line x1="9" y1="18" x2="9" y2="18.01"></line>
-              <line x1="15" y1="18" x2="15" y2="18.01"></line>
-            </svg>
-          </div>
-        </div>
-
-        <!-- Stat 4: Live Cloud Sync Hub -->
-        <div class="glass-card rounded-2xl p-5 flex items-center justify-between glass-card-hover border border-stone-200/90 shadow-xs">
-          <div>
-            <div class="text-[11px] font-bold text-stone-500 uppercase tracking-wider">Cloud Data Hub</div>
-            <div class="text-2xl sm:text-3xl font-extrabold text-stone-900 mt-1">Tower 1 &amp; 2</div>
-            <div class="inline-flex items-center gap-1.5 mt-2 text-[10.5px] font-semibold text-coffee-800 bg-coffee-100 px-2.5 py-0.5 rounded-full border border-coffee-200">
-              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-              <span>Google Drive Enterprise</span>
-            </div>
-          </div>
-          <div class="w-12 h-12 rounded-2xl bg-coffee-100 border border-coffee-200 flex items-center justify-center text-coffee-800 shrink-0">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-              <path d="M20 16.2A4.5 4.5 0 0 0 17.5 8h-1.8A7 7 0 1 0 4 14.9"></path>
-              <polyline points="12 12 12 18 16 14"></polyline>
-            </svg>
-          </div>
-        </div>
-      </div>
-
-      <!-- ── HERO QUICK SEARCH BAR (LIGHT COFFEE INDUSTRIAL) ── -->
-      <div class="glass-card rounded-2xl p-6 sm:p-7 relative overflow-hidden border border-stone-200 shadow-sm reveal-on-scroll">
-        <!-- Ambient decorative warm glow -->
-        <div class="absolute -right-24 -top-24 w-96 h-96 bg-amber-100/60 rounded-full blur-3xl pointer-events-none"></div>
-        <div class="absolute -left-24 -bottom-24 w-96 h-96 bg-stone-200/50 rounded-full blur-3xl pointer-events-none"></div>
-
-        <div class="relative z-10 max-w-3xl">
-          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-coffee-100 border border-coffee-200 text-coffee-800 text-xs font-semibold mb-3">
+      <!-- ── HERO QUICK SEARCH BAR ── -->
+      <div class="glass-card rounded-2xl p-6 relative overflow-hidden border border-stone-200 shadow-sm reveal-on-scroll">
+        <div class="absolute -right-20 -top-20 w-80 h-80 bg-amber-100/40 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="relative z-10">
+          <div class="flex items-center gap-2 mb-1">
             <span class="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span>
-            <span>Sistem Operasional Aktif</span>
-            <span class="text-stone-300">&bull;</span>
-            <span>PT. Santos Jaya Abadi</span>
+            <span class="text-[11px] font-semibold text-stone-500 uppercase tracking-wider">Sistem Aktif · PT. Santos Jaya Abadi</span>
           </div>
-          <h1 class="text-2xl sm:text-3xl font-extrabold text-stone-900 tracking-tight mb-2">
-            Pusat Operasional &amp; Penelusuran Mutu Kopi Instan
-          </h1>
-          <p class="text-xs sm:text-sm text-stone-600 mb-6">
-            Lacak rekam jejak rantai proses produksi dari karung biji kopi mentah (Green Bean) hingga nomor box kemasan produk jadi di pasar secara instan.
-          </p>
+          <h1 class="text-xl font-extrabold text-stone-900 tracking-tight mb-1">Penelusuran Rantai Proses Produksi Kopi</h1>
+          <p class="text-xs text-stone-500 mb-5">Masukkan nomor batch untuk melacak seluruh rekam jejak dari bahan baku hingga produk jadi.</p>
 
-          <!-- Search Input Box -->
-          <div class="bg-white border-2 border-stone-200 focus-within:border-coffee-700 rounded-xl p-2 flex flex-col sm:flex-row items-center gap-2 shadow-sm transition-colors">
+          <!-- Search Input -->
+          <div class="bg-white border-2 border-stone-200 focus-within:border-[#4a2c1d] rounded-xl p-2 flex flex-col sm:flex-row items-center gap-2 shadow-sm transition-colors">
             <div class="flex-1 w-full flex items-center gap-2.5 px-3">
-              <svg class="w-5 h-5 text-stone-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                <circle cx="11" cy="11" r="8"></circle>
-                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-              </svg>
+              <svg class="w-4 h-4 text-stone-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
               <input
                 v-model="traceForm.noBatch"
                 type="text"
-                placeholder="Masukkan Nomor Batch (contoh: A370/26 atau 370)"
+                placeholder="Nomor Batch (contoh: A370/26 atau 370)"
                 class="w-full bg-transparent border-0 text-stone-900 placeholder-stone-400 text-sm font-semibold focus:outline-none uppercase"
                 @keyup.enter="doTrace"
               />
             </div>
-
-            <!-- Tower Toggle Pills -->
             <div class="flex items-center bg-stone-100 border border-stone-200 rounded-lg p-1 self-stretch sm:self-auto">
-              <button
-                type="button"
-                @click="traceForm.tower = '1'"
-                :class="traceForm.tower === '1' ? 'bg-[#4a2c1d] text-white font-bold shadow-2xs' : 'text-stone-600 hover:text-stone-900'"
-                class="px-3.5 py-1 rounded text-xs transition-all cursor-pointer"
-              >
-                Tower 1
-              </button>
-              <button
-                type="button"
-                @click="traceForm.tower = '2'"
-                :class="traceForm.tower === '2' ? 'bg-[#4a2c1d] text-white font-bold shadow-2xs' : 'text-stone-600 hover:text-stone-900'"
-                class="px-3.5 py-1 rounded text-xs transition-all cursor-pointer"
-              >
-                Tower 2
-              </button>
+              <button type="button" @click="traceForm.tower = '1'" :class="traceForm.tower === '1' ? 'bg-[#4a2c1d] text-white font-bold shadow-2xs' : 'text-stone-600 hover:text-stone-900'" class="px-3 py-1 rounded text-xs transition-all cursor-pointer">Tower 1</button>
+              <button type="button" @click="traceForm.tower = '2'" :class="traceForm.tower === '2' ? 'bg-[#4a2c1d] text-white font-bold shadow-2xs' : 'text-stone-600 hover:text-stone-900'" class="px-3 py-1 rounded text-xs transition-all cursor-pointer">Tower 2</button>
             </div>
-
-            <button
-              type="button"
-              @click="doTrace"
-              :disabled="tracing || !traceForm.noBatch"
-              class="w-full sm:w-auto px-5 py-2.5 bg-[#4a2c1d] hover:bg-[#3c2415] text-white font-bold rounded-lg text-xs shadow-sm transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shrink-0 btn-action"
-            >
-              <svg v-if="tracing" class="spin h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-              </svg>
+            <button type="button" @click="doTrace" :disabled="tracing || !traceForm.noBatch" class="w-full sm:w-auto px-5 py-2.5 bg-[#4a2c1d] hover:bg-[#3c2415] text-white font-bold rounded-lg text-xs shadow-sm transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shrink-0 btn-action">
+              <svg v-if="tracing" class="spin h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
               <span>{{ tracing ? 'Menelusuri...' : 'Lacak Alur Produk' }}</span>
-              <svg v-if="!tracing" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
-                <line x1="5" y1="12" x2="19" y2="12"></line>
-                <polyline points="12 5 19 12 12 19"></polyline>
-              </svg>
+              <svg v-if="!tracing" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
             </button>
           </div>
 
           <!-- Quick presets -->
           <div class="flex items-center gap-2 mt-3 flex-wrap text-[11px] text-stone-500">
-            <span class="font-semibold text-stone-600">Contoh Cepat:</span>
-            <button
-              type="button"
-              @click="traceForm.noBatch = 'A370/26'; traceForm.tower = '1'; doTrace();"
-              class="px-2.5 py-1 rounded-lg bg-coffee-50 hover:bg-coffee-100 text-coffee-800 border border-coffee-200 transition-colors cursor-pointer font-medium"
-            >
-              Batch A370/26 (Tower 1)
-            </button>
-            <button
-              type="button"
-              @click="traceForm.noBatch = '370'; traceForm.tower = '2'; doTrace();"
-              class="px-2.5 py-1 rounded-lg bg-coffee-50 hover:bg-coffee-100 text-coffee-800 border border-coffee-200 transition-colors cursor-pointer font-medium"
-            >
-              Batch 370 (Tower 2)
-            </button>
+            <span class="font-semibold text-stone-500">Cepat:</span>
+            <button type="button" @click="traceForm.noBatch = 'A370/26'; traceForm.tower = '1'; doTrace();" class="px-2.5 py-1 rounded-lg bg-coffee-50 hover:bg-coffee-100 text-coffee-800 border border-coffee-200 transition-colors cursor-pointer font-medium">A370/26 · Tower 1</button>
+            <button type="button" @click="traceForm.noBatch = '370'; traceForm.tower = '2'; doTrace();" class="px-2.5 py-1 rounded-lg bg-coffee-50 hover:bg-coffee-100 text-coffee-800 border border-coffee-200 transition-colors cursor-pointer font-medium">370 · Tower 2</button>
           </div>
         </div>
       </div>
 
-      <!-- ── BENTO GRID OVERVIEW ── -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-5 reveal-on-scroll">
-
-        <!-- Bento Card 1: Peta Alur Pabrik (Col-span 8) -->
-        <div class="lg:col-span-8 glass-card rounded-2xl p-5 flex flex-col justify-between border border-stone-200 shadow-xs">
-          <div class="flex items-center justify-between mb-4">
-            <div>
-              <div class="text-xs font-bold uppercase tracking-wider text-coffee-700">Peta Alur Pabrik</div>
-              <h3 class="text-base font-bold text-stone-900 mt-0.5">7 Tahapan Proses Produksi &amp; Mutu Kopi</h3>
-            </div>
-            <button
-              @click="activeTab = 'pipeline'"
-              class="text-xs font-semibold text-coffee-800 hover:text-coffee-950 flex items-center gap-1 cursor-pointer bg-coffee-50 px-2.5 py-1 rounded-lg border border-coffee-200"
-            >
-              <span>Buka Penelusuran</span>
-              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                <path d="M7 17l9.2-9.2M17 17V8H8"></path>
-              </svg>
-            </button>
+      <!-- ── 4 STAT CARDS ── -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 reveal-on-scroll stagger-1">
+        <div class="glass-card rounded-xl p-4 flex items-center gap-3 border border-stone-200 shadow-xs">
+          <div class="w-9 h-9 rounded-xl bg-coffee-100 border border-coffee-200 flex items-center justify-center text-coffee-800 shrink-0">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
           </div>
-
-          <!-- Horizontal Interactive Pipeline Stepper -->
-          <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2.5 my-2">
-            <div
-              v-for="stg in pipelineStages"
-              :key="stg.key"
-              @click="selectedPipelineStage = stg.key; activeTab = 'pipeline';"
-              class="p-3 rounded-xl border border-stone-200 bg-stone-50/70 hover:border-coffee-500 hover:bg-coffee-50/60 transition-all cursor-pointer text-center group"
-            >
-              <div class="flex items-center justify-center text-stone-700 group-hover:text-coffee-800 transition-transform mb-1.5" v-html="stg.iconSvg"></div>
-              <div class="text-[11px] font-bold text-stone-900 truncate">{{ stg.title }}</div>
-              <div class="text-[9.5px] text-stone-500 truncate">{{ stg.division }}</div>
-            </div>
-          </div>
-
-          <div class="pt-3 border-t border-stone-200 flex items-center justify-between text-xs text-stone-500">
-            <span>Pilih salah satu tahapan di atas untuk memeriksa parameter dan rekaman data di stasiun tersebut.</span>
-            <span class="text-coffee-800 font-semibold text-[11px]">7 Stasiun Terhubung</span>
-          </div>
-        </div>
-
-        <!-- Bento Card 2: Status Cloud Sync & Database (Col-span 4) -->
-        <div class="lg:col-span-4 glass-card rounded-2xl p-5 flex flex-col justify-between border border-stone-200 shadow-xs">
           <div>
-            <div class="flex items-center justify-between mb-2">
-              <span class="text-xs font-bold uppercase tracking-wider text-coffee-800">Live Cloud Sync</span>
-              <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 flex items-center gap-1">
-                <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
-                <span>Terhubung</span>
-              </span>
-            </div>
-            <h3 class="text-base font-bold text-stone-900 mb-3">Google Drive Enterprise</h3>
-
-            <div class="space-y-2 text-xs">
-              <div class="flex items-center justify-between p-2.5 rounded-xl bg-stone-50 border border-stone-200">
-                <span class="text-stone-600">Total Record QC:</span>
-                <span class="font-mono font-bold text-stone-900">112.098 Baris</span>
-              </div>
-              <div class="flex items-center justify-between p-2.5 rounded-xl bg-stone-50 border border-stone-200">
-                <span class="text-stone-600">Spreadsheet Terhubung:</span>
-                <span class="font-bold text-coffee-800">Tower 1 &amp; Tower 2</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="pt-4 border-t border-stone-200 flex items-center gap-2">
-            <button
-              @click="activeTab = 'sync'"
-              class="flex-1 px-3 py-2 rounded-xl bg-[#4a2c1d] hover:bg-[#3c2415] text-white text-xs font-bold transition-all text-center cursor-pointer shadow-xs btn-action"
-            >
-              Buka Sinkronisasi Cloud
-            </button>
-            <a
-              :href="gsheetStatus.folderUrl || 'https://drive.google.com/drive/folders/1hRgNzF2I5Q3AB22pd8xZDOexzoPUZP95'"
-              target="_blank"
-              class="p-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 border border-stone-200 transition-colors flex items-center justify-center"
-              title="Buka Folder Google Drive"
-            >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
-              </svg>
-            </a>
+            <div class="text-[10px] font-bold text-stone-400 uppercase tracking-wider">Total Record</div>
+            <div class="text-lg font-extrabold text-stone-900 font-mono leading-tight">112.098</div>
+            <div class="text-[9.5px] text-coffee-700 font-semibold">Tower 1 &amp; Tower 2</div>
           </div>
         </div>
-
-        <!-- Bento Card 3: Arsitektur 5 Divisi Pabrik (Col-span 6) -->
-        <div class="lg:col-span-6 glass-card rounded-2xl p-5 border border-stone-200 shadow-xs">
-          <div class="flex items-center justify-between mb-3">
-            <div>
-              <div class="text-xs font-bold uppercase tracking-wider text-coffee-800">Pusat Divisi Pabrik</div>
-              <h3 class="text-base font-bold text-stone-900 mt-0.5">Integrasi 5 Departemen Operasional</h3>
-            </div>
-            <button
-              @click="activeTab = 'pic'"
-              class="text-xs font-semibold text-coffee-800 hover:text-coffee-950 flex items-center gap-1 cursor-pointer bg-coffee-50 px-2.5 py-1 rounded-lg border border-coffee-200"
-            >
-              <span>Jelajahi Database</span>
-              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                <path d="M7 17l9.2-9.2M17 17V8H8"></path>
-              </svg>
-            </button>
+        <div class="glass-card rounded-xl p-4 flex items-center gap-3 border border-stone-200 shadow-xs">
+          <div class="w-9 h-9 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-700 shrink-0">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
           </div>
-
-          <div class="space-y-2">
-            <div class="p-2.5 rounded-xl bg-stone-50 border border-stone-200 flex items-center justify-between text-xs">
-              <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-lg bg-coffee-100 border border-coffee-200 flex items-center justify-center text-coffee-800 shrink-0">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                    <circle cx="12" cy="12" r="3"></circle>
-                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-                  </svg>
-                </div>
-                <div>
-                  <div class="font-bold text-stone-900">Divisi Produksi</div>
-                  <div class="text-[10px] text-stone-500">Roasting, Ekstraksi, Evaporasi, Dryer, Packing</div>
-                </div>
-              </div>
-              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-coffee-100 text-coffee-800 border border-coffee-200">9 Tabel Aktif</span>
-            </div>
-
-            <div class="p-2.5 rounded-xl bg-stone-50 border border-stone-200 flex items-center justify-between text-xs">
-              <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-800 shrink-0">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                    <path d="M10 2v7.527a2 2 0 0 1-.211.896L4.72 20.55a1 1 0 0 0 .9 1.45h12.76a1 1 0 0 0 .9-1.45l-5.069-10.127A2 2 0 0 1 14 9.527V2"></path>
-                  </svg>
-                </div>
-                <div>
-                  <div class="font-bold text-stone-900">Divisi Quality Control (QC)</div>
-                  <div class="text-[10px] text-stone-500">11 Parameter Kualitas Tower 1 &amp; Tower 2</div>
-                </div>
-              </div>
-              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">22 Tabel Aktif</span>
-            </div>
-
-            <div class="p-2.5 rounded-xl bg-stone-50 border border-stone-200 flex items-center justify-between text-xs">
-              <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-lg bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-800 shrink-0">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-                  </svg>
-                </div>
-                <div>
-                  <div class="font-bold text-stone-900">Gudang Bahan Baku (RMW)</div>
-                  <div class="text-[10px] text-stone-500">Green Bean Lot &amp; Silo Penerimaan</div>
-                </div>
-              </div>
-              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">Tersambung</span>
-            </div>
-
-            <div class="p-2.5 rounded-xl bg-stone-50/60 border border-stone-200/70 flex items-center justify-between text-xs opacity-80">
-              <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-lg bg-stone-100 border border-stone-200 flex items-center justify-center text-stone-600 shrink-0">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                    <rect x="1" y="3" width="15" height="13"></rect>
-                    <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
-                    <circle cx="5.5" cy="18.5" r="2.5"></circle>
-                    <circle cx="18.5" cy="18.5" r="2.5"></circle>
-                  </svg>
-                </div>
-                <div>
-                  <div class="font-bold text-stone-700">Warehouse Finished Good &amp; Logistik</div>
-                  <div class="text-[10px] text-stone-400">Penyimpanan Box &amp; Distribusi Produk Jadi</div>
-                </div>
-              </div>
-              <span class="px-2 py-0.5 rounded text-[10px] font-medium bg-stone-100 text-stone-600 border border-stone-200">Siap Integrasi</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Bento Card 4: Quick Preview Record Database (Col-span 6) -->
-        <div class="lg:col-span-6 glass-card rounded-2xl p-5 flex flex-col justify-between border border-stone-200 shadow-xs">
           <div>
-            <div class="flex items-center justify-between mb-3">
-              <div>
-                <div class="text-xs font-bold uppercase tracking-wider text-coffee-800">Pratinjau Data Riil</div>
-                <h3 class="text-base font-bold text-stone-900 mt-0.5">Inspeksi Langsung Record Database</h3>
-              </div>
-              <span class="text-xs text-stone-400 font-mono">5 Baris Cuplikan</span>
-            </div>
-            <p class="text-xs text-stone-600 mb-4">
-              Pilih tabel proses di bawah ini untuk melihat contoh data riil yang ditarik dari pabrik tanpa harus mengunduh file:
-            </p>
-
-            <div class="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                @click="openTablePreview('qc_dryer_t2', 'QC Dryer Tower 2')"
-                class="p-2.5 rounded-xl bg-stone-50 hover:bg-coffee-50/70 border border-stone-200 hover:border-coffee-300 transition-all text-left cursor-pointer group"
-              >
-                <div class="text-[11px] font-bold text-stone-900 group-hover:text-coffee-800">qc_dryer_t2</div>
-                <div class="text-[10px] text-stone-500">Dryer Tower 2 &bull; 14.321 rows</div>
-              </button>
-
-              <button
-                type="button"
-                @click="openTablePreview('qc_mesh_t2', 'QC Mesh Tower 2')"
-                class="p-2.5 rounded-xl bg-stone-50 hover:bg-coffee-50/70 border border-stone-200 hover:border-coffee-300 transition-all text-left cursor-pointer group"
-              >
-                <div class="text-[11px] font-bold text-stone-900 group-hover:text-coffee-800">qc_mesh_t2</div>
-                <div class="text-[10px] text-stone-500">Particle Size T2 &bull; 2.884 rows</div>
-              </button>
-
-              <button
-                type="button"
-                @click="openTablePreview('packing_tower_1', 'Packing Tower 1')"
-                class="p-2.5 rounded-xl bg-stone-50 hover:bg-coffee-50/70 border border-stone-200 hover:border-coffee-300 transition-all text-left cursor-pointer group"
-              >
-                <div class="text-[11px] font-bold text-stone-900 group-hover:text-coffee-800">packing_tower_1</div>
-                <div class="text-[10px] text-stone-500">Produksi Packing &bull; Box FG</div>
-              </button>
-
-              <button
-                type="button"
-                @click="openTablePreview('qc_aroma_t1', 'QC Aroma Tower 1')"
-                class="p-2.5 rounded-xl bg-stone-50 hover:bg-coffee-50/70 border border-stone-200 hover:border-coffee-300 transition-all text-left cursor-pointer group"
-              >
-                <div class="text-[11px] font-bold text-stone-900 group-hover:text-coffee-800">qc_aroma_t1</div>
-                <div class="text-[10px] text-stone-500">Ekstraksi Aroma T1 &bull; 9.423 rows</div>
-              </button>
-            </div>
-          </div>
-
-          <div class="pt-4 border-t border-stone-200 flex items-center justify-between text-xs text-stone-500">
-            <span>Deduplikasi otomatis aktif menjaga database tetap bersih.</span>
-            <button
-              type="button"
-              @click="activeTab = 'sync'"
-              class="text-coffee-800 hover:underline font-semibold cursor-pointer"
-            >
-              Lihat Semua Tabel &rarr;
-            </button>
+            <div class="text-[10px] font-bold text-stone-400 uppercase tracking-wider">Status Mutu</div>
+            <div class="text-lg font-extrabold text-stone-900 leading-tight">Valid</div>
+            <div class="text-[9.5px] text-emerald-700 font-semibold">22 Parameter QC Aktif</div>
           </div>
         </div>
+        <div class="glass-card rounded-xl p-4 flex items-center gap-3 border border-stone-200 shadow-xs">
+          <div class="w-9 h-9 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-700 shrink-0">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M20 16.2A4.5 4.5 0 0 0 17.5 8h-1.8A7 7 0 1 0 4 14.9"></path><polyline points="12 12 12 18 16 14"></polyline></svg>
+          </div>
+          <div>
+            <div class="text-[10px] font-bold text-stone-400 uppercase tracking-wider">Cloud Sync</div>
+            <div class="text-lg font-extrabold text-stone-900 leading-tight">Aktif</div>
+            <div class="text-[9.5px] text-amber-700 font-semibold">Google Drive Enterprise</div>
+          </div>
+        </div>
+        <div class="glass-card rounded-xl p-4 flex items-center gap-3 border border-stone-200 shadow-xs">
+          <div class="w-9 h-9 rounded-xl" :class="dbConnected ? 'bg-emerald-50 border border-emerald-200' : 'bg-red-50 border border-red-200'">
+            <div class="w-full h-full flex items-center justify-center" :class="dbConnected ? 'text-emerald-700' : 'text-red-600'">
+              <span class="w-3 h-3 rounded-full inline-block" :class="dbConnected ? 'bg-emerald-500' : 'bg-red-500'"></span>
+            </div>
+          </div>
+          <div>
+            <div class="text-[10px] font-bold text-stone-400 uppercase tracking-wider">Database MySQL</div>
+            <div class="text-lg font-extrabold leading-tight" :class="dbConnected ? 'text-emerald-700' : 'text-red-600'">{{ dbConnected ? 'Terhubung' : 'Offline' }}</div>
+            <div class="text-[9.5px] text-stone-400 font-mono">db_traceability_sja</div>
+          </div>
+        </div>
+      </div>
 
+      <!-- ── SHORTCUT NAVIGASI ── -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 reveal-on-scroll stagger-2">
+        <button @click="activeTab = 'pipeline'" class="glass-card rounded-xl p-5 flex items-start gap-3.5 border border-stone-200 shadow-xs hover:border-coffee-400 hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer text-left group btn-action">
+          <div class="w-10 h-10 rounded-xl bg-coffee-100 border border-coffee-200 flex items-center justify-center text-coffee-800 shrink-0 group-hover:bg-coffee-800 group-hover:text-white transition-all">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><circle cx="6" cy="18" r="3"></circle><circle cx="6" cy="6" r="3"></circle><circle cx="18" cy="12" r="3"></circle><path d="M6 9v6"></path><path d="M9 6h4a5 5 0 0 1 5 5v1"></path></svg>
+          </div>
+          <div>
+            <div class="font-bold text-sm text-stone-900">Penelusuran Batch</div>
+            <div class="text-[11px] text-stone-500 mt-0.5">Lacak alur rantai proses produksi secara visual per stasiun</div>
+          </div>
+        </button>
+        <button @click="activeTab = 'report'" class="glass-card rounded-xl p-5 flex items-start gap-3.5 border border-stone-200 shadow-xs hover:border-coffee-400 hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer text-left group btn-action">
+          <div class="w-10 h-10 rounded-xl bg-stone-100 border border-stone-200 flex items-center justify-center text-stone-700 shrink-0 group-hover:bg-coffee-800 group-hover:text-white transition-all">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+          </div>
+          <div>
+            <div class="font-bold text-sm text-stone-900">Laporan Audit Mutu</div>
+            <div class="text-[11px] text-stone-500 mt-0.5">Cetak dokumen resmi Form F/QC/01.030 untuk audit</div>
+          </div>
+        </button>
+        <button @click="activeTab = 'pic'" class="glass-card rounded-xl p-5 flex items-start gap-3.5 border border-stone-200 shadow-xs hover:border-coffee-400 hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer text-left group btn-action">
+          <div class="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-700 shrink-0 group-hover:bg-coffee-800 group-hover:text-white transition-all">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
+          </div>
+          <div>
+            <div class="font-bold text-sm text-stone-900">Database Operasional</div>
+            <div class="text-[11px] text-stone-500 mt-0.5">Jelajahi & input data rekaman seluruh divisi pabrik</div>
+          </div>
+        </button>
+        <button @click="activeTab = 'sync'" class="glass-card rounded-xl p-5 flex items-start gap-3.5 border border-stone-200 shadow-xs hover:border-coffee-400 hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer text-left group btn-action">
+          <div class="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-700 shrink-0 group-hover:bg-coffee-800 group-hover:text-white transition-all">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M20 16.2A4.5 4.5 0 0 0 17.5 8h-1.8A7 7 0 1 0 4 14.9"></path><polyline points="12 12 12 18 16 14"></polyline></svg>
+          </div>
+          <div>
+            <div class="font-bold text-sm text-stone-900">Sinkronisasi Cloud</div>
+            <div class="text-[11px] text-stone-500 mt-0.5">Sinkronkan data ke Google Spreadsheet &amp; Drive</div>
+          </div>
+        </button>
       </div>
     </div>
 
     <!-- ══════════════════════════════════════════════════════════════
-         TAB 1: INTERACTIVE TRACEABILITY (VISUAL PIPELINE JOURNEY)
+         TAB 1: PENELUSURAN BATCH (7 SIMPUL ALUR PROSES INDUSTRIAL)
     ══════════════════════════════════════════════════════════════ -->
-    <div v-if="activeTab === 'pipeline'" class="space-y-6 no-print slow-smooth-entrance">
+    <div v-if="activeTab === 'pipeline'" class="space-y-4 slow-smooth-entrance">
 
-      <!-- Pipeline Top Bar & Summary -->
-      <div class="glass-card rounded-2xl p-5 border border-stone-200 shadow-xs reveal-on-scroll">
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <!-- ── CLEAN HEADER BATCH RINGKAS ── -->
+      <div class="clean-card mb-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[var(--bd)]">
           <div>
-            <div class="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-coffee-100 border border-coffee-200 text-coffee-800 text-[11px] font-semibold mb-1">
-              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block"></span>
-              <span>Alur Penelusuran Aktif</span>
-              <span>&bull;</span>
-              <span>Tower {{ traceResult?.input?.tower || traceForm.tower }}</span>
+            <div class="flex items-center gap-2">
+              <span class="clean-pill p-ok">Tower {{ traceResult?.input?.tower || traceForm.tower || '1' }} &bull; Lolos Verifikasi Mutu</span>
             </div>
-            <h2 class="text-xl sm:text-2xl font-black text-stone-900 tracking-tight flex items-center gap-2">
-              <span>Batch {{ traceResult?.input?.noBatchFull || traceForm.noBatch || 'Belum Ada Batch' }}</span>
-              <span v-if="traceResult" class="text-xs px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 font-semibold">
-                Lolos Verifikasi Mutu
-              </span>
+            <h2 class="text-xl sm:text-2xl font-bold text-[var(--tx)] mt-1.5 tracking-tight">
+              Batch {{ traceResult?.input?.noBatchFull || traceForm.noBatch || 'A372/26' }} &mdash; {{ headerNamaProduk || 'SIC 18 T' }}
             </h2>
-            <p class="text-xs text-stone-500 mt-1">
-              Perjalanan rantai proses dari penerimaan bahan mentah hingga pengemasan produk jadi.
-            </p>
+            <p class="clean-hint mt-0.5">Rantai proses penelusuran batch dari biji kopi mentah hingga pengemasan finished good.</p>
           </div>
 
-          <!-- Quick Switch to Official Report & Print -->
           <div class="flex items-center gap-2">
             <button
               @click="activeTab = 'report'"
-              class="px-4 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 border border-stone-300 text-stone-800 font-bold text-xs shadow-2xs transition-all flex items-center gap-2 cursor-pointer btn-action"
+              class="clean-btn g text-xs py-2 px-3.5"
             >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                <polyline points="14 2 14 8 20 8"></polyline>
-              </svg>
-              <span>Format Laporan Audit 12 Tahapan</span>
+              Buka Laporan Audit
             </button>
             <button
               @click="printForm"
-              class="px-4 py-2 rounded-xl bg-[#4a2c1d] hover:bg-[#3c2415] text-white font-bold text-xs shadow-sm transition-all flex items-center gap-2 cursor-pointer btn-action"
+              class="clean-btn text-xs py-2 px-4"
             >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                <polyline points="6 9 6 2 18 2 18 9"></polyline>
-                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
-                <rect x="6" y="14" width="12" height="8"></rect>
-              </svg>
-              <span>Cetak Form Resmi</span>
+              Cetak Form
             </button>
           </div>
         </div>
 
-        <!-- Quick Metrics Row -->
-        <div v-if="traceResult" class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4 pt-4 border-t border-stone-200">
-          <div class="p-3 rounded-xl bg-stone-50 border border-stone-200">
-            <div class="text-[10px] text-stone-500 uppercase font-semibold">Produk Finished Good</div>
-            <div class="text-sm font-bold text-stone-900 mt-0.5 truncate">{{ headerNamaProduk || 'Instant Coffee SJA' }}</div>
+        <!-- 4 Angka Utama -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
+          <div class="p-3 rounded-xl bg-[var(--dp)] border border-[var(--bd)]">
+            <span class="clean-lbl">Produk Finished Good</span>
+            <span class="block text-sm font-bold text-[var(--tx)] mt-0.5 truncate">{{ headerNamaProduk || 'SIC 18 T' }} <span class="text-xs text-[var(--mu)] font-normal">(PIN {{ headerPin || '122' }})</span></span>
           </div>
-          <div class="p-3 rounded-xl bg-stone-50 border border-stone-200">
-            <div class="text-[10px] text-stone-500 uppercase font-semibold">Tanggal Produksi</div>
-            <div class="text-sm font-bold text-stone-900 mt-0.5 font-mono">{{ headerTanggalProduksi || '-' }}</div>
+          <div class="p-3 rounded-xl bg-[var(--dp)] border border-[var(--bd)]">
+            <span class="clean-lbl">Tanggal Produksi</span>
+            <span class="block text-sm font-bold text-[var(--tx)] mt-0.5 font-mono">{{ headerTanggalProduksi || '29 Agustus 2026' }}</span>
           </div>
-          <div class="p-3 rounded-xl bg-stone-50 border border-stone-200">
-            <div class="text-[10px] text-stone-500 uppercase font-semibold">Total Output (Yield)</div>
-            <div class="text-sm font-bold text-coffee-800 mt-0.5 font-mono">
-              {{ traceResult.packing?.total_output_kg ? traceResult.packing.total_output_kg.toLocaleString() + ' kg' : '-' }}
-              ({{ traceResult.calculations?.extractionYield || traceResult.mass_balance?.yield || '24.5%' }})
-            </div>
+          <div class="p-3 rounded-xl bg-[var(--dp)] border border-[var(--bd)]">
+            <span class="clean-lbl">Total Output</span>
+            <span class="block text-sm font-bold text-[var(--tx)] mt-0.5 font-mono">
+              {{ counterOutputKg.toLocaleString('id-ID') }} kg
+              <span class="text-xs text-[var(--ok)] font-semibold">({{ counterBox.toLocaleString('id-ID') }} Box)</span>
+            </span>
           </div>
-          <div class="p-3 rounded-xl bg-stone-50 border border-stone-200">
-            <div class="text-[10px] text-stone-500 uppercase font-semibold">Rasio Instant Coffee</div>
-            <div class="text-sm font-bold text-amber-800 mt-0.5 font-mono">
-              {{ traceResult.calculations?.icRatio || traceResult.mass_balance?.icRatio || '1 : 3.8' }}
-            </div>
+          <div class="p-3 rounded-xl bg-[var(--dp)] border border-[var(--bd)]">
+            <span class="clean-lbl">Yield / Rasio IC</span>
+            <span class="block text-sm font-bold text-[var(--tx)] mt-0.5 font-mono">
+              {{ counterYield.toFixed(2).replace('.', ',') }}%
+              <span class="text-xs text-[var(--mu)] font-normal">| Rasio {{ traceResult?.calculations?.icRatio || traceResult?.mass_balance?.icRatio || '1 : 3.8' }}</span>
+            </span>
           </div>
         </div>
       </div>
 
-      <!-- ── HORIZONTAL STEPPER PIPELINE ── -->
-      <div class="glass-card rounded-2xl p-5 overflow-x-auto border border-stone-200 shadow-xs reveal-on-scroll">
-        <div class="text-xs font-bold uppercase tracking-wider text-stone-500 mb-3">
-          Simpul Alur Proses (Pilih Tahapan untuk Melihat Parameter Rinci):
+      <!-- ── BARIS 7 TAHAPAN PROSES (SIMPUL ALUR BERSIH) ── -->
+      <div class="clean-card mb-4">
+        <div class="flex items-center justify-between mb-3">
+          <span class="clean-lbl" style="margin-bottom:0">Simpul Alur Proses (Klik tahapan untuk melihat parameter rinci):</span>
+          <span class="text-xs text-[var(--mu)]">7 Tahapan</span>
         </div>
 
-        <div class="flex items-center justify-between min-w-[760px] relative py-3">
-          <div
-            v-for="(stg, idx) in pipelineStages"
-            :key="stg.key"
-            @click="selectedPipelineStage = stg.key"
-            class="flex flex-col items-center cursor-pointer group relative z-10 flex-1"
+        <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2.5">
+          <button
+            v-for="(cfg, cIdx) in clusterConfigList"
+            :key="cfg.key"
+            @click="selectCluster(cfg.key)"
+            :title="cfg.name"
+            :class="selectedClusterKey === cfg.key
+              ? 'bg-[var(--ac)] text-[var(--acx)] border-[var(--ac)] shadow-sm'
+              : 'bg-[var(--bg)] text-[var(--tx)] border-[var(--bd)] hover:border-[var(--ac)]'"
+            class="flex flex-col items-center text-center p-3 rounded-xl border cursor-pointer select-none transition-all duration-200"
           >
-            <!-- Step Circle -->
             <div
-              :class="selectedPipelineStage === stg.key
-                ? 'w-12 h-12 bg-[#4a2c1d] text-white shadow-md ring-4 ring-coffee-200'
-                : 'w-10 h-10 bg-stone-100 text-stone-600 border border-stone-300 hover:border-coffee-500 hover:text-coffee-800'"
-              class="rounded-full flex items-center justify-center font-bold text-lg transition-all duration-200"
-            >
-              <div class="flex items-center justify-center" v-html="stg.iconSvg"></div>
-            </div>
-
-            <!-- Title & Badge -->
-            <div class="text-center mt-2.5">
-              <div
-                :class="selectedPipelineStage === stg.key ? 'text-coffee-900 font-bold' : 'text-stone-700 font-medium'"
-                class="text-xs truncate max-w-[100px]"
-              >
-                {{ stg.title }}
-              </div>
-              <div class="text-[10px] text-stone-400 mt-0.5">
-                {{ getStageMetrics(stg.key).label }}
-              </div>
-            </div>
-          </div>
+              :class="selectedClusterKey === cfg.key ? 'text-[var(--acx)]' : 'text-[var(--mu)]'"
+              class="w-8 h-8 flex items-center justify-center transition-colors"
+              v-html="cfg.iconSvg"
+            ></div>
+            <span class="text-xs mt-1.5 font-semibold line-clamp-1 truncate w-full px-1">{{ cfg.name }}</span>
+            <span class="text-[10px] opacity-75 mt-0.5">{{ cfg.flows.join(' & ') }}</span>
+          </button>
         </div>
       </div>
 
-      <!-- ── ACTIVE STAGE DETAIL CARD ── -->
-      <div v-if="selectedPipelineStage" class="glass-card rounded-2xl p-6 space-y-4 border border-stone-200 shadow-xs reveal-on-scroll">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-stone-200">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-coffee-100 border border-coffee-200 flex items-center justify-center text-coffee-800" v-html="pipelineStages.find(s => s.key === selectedPipelineStage)?.iconSvg">
+      <!-- ── DETAIL PANEL CONTAINER (DIPERKUAT DENGAN VUE TRANSITION MODE=OUT-IN) ── -->
+      <div id="flow-detail-panel" class="transition-all duration-300">
+        <Transition name="cluster-fade" mode="out-in">
+          <div :key="selectedClusterKey" class="space-y-5">
+            <!-- Banner Klaster Atas -->
+            <div v-if="activeCluster" class="cluster-coffee-bg text-white rounded-2xl p-5 sm:p-6 shadow-md flex items-center justify-between gap-4 animate-step-1 border border-amber-900/40 relative overflow-hidden">
+              <div class="flex items-center gap-4 relative z-10">
+                <div class="w-12 h-12 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center shrink-0" v-html="activeCluster.iconSvg"></div>
+                <div>
+                  <span class="text-[10px] font-mono uppercase tracking-wider text-amber-300 font-semibold">{{ activeCluster.clusterBadge }}</span>
+                  <h3 class="text-lg sm:text-xl font-bold tracking-tight mt-0.5">{{ activeCluster.name }}</h3>
+                  <p class="text-xs text-amber-100/70 mt-0.5">Menampilkan data operasional dan pengujian mutu untuk {{ activeCluster.subflows?.length || 0 }} tahapan alur penelusuran.</p>
+                </div>
+              </div>
+              <span class="hidden sm:inline-flex px-3 py-1.5 rounded-xl bg-white/10 text-xs font-semibold text-white/90 border border-white/15 backdrop-blur-md relative z-10">
+                {{ activeCluster.subflows?.length || 0 }} Flow Tergabung
+              </span>
             </div>
-            <div>
-              <div class="flex items-center gap-2">
-                <h3 class="text-lg font-bold text-stone-900">
-                  {{ pipelineStages.find(s => s.key === selectedPipelineStage)?.title }}
-                </h3>
-                <span class="px-2 py-0.5 text-[10px] font-mono rounded bg-stone-100 text-stone-700 border border-stone-200">
-                  {{ pipelineStages.find(s => s.key === selectedPipelineStage)?.docNo }}
+
+            <!-- Kartu Sub-Flows -->
+            <div
+              v-for="(flow, flowIdx) in (activeCluster?.subflows || [])"
+              :key="flowIdx"
+              class="bg-white/95 backdrop-blur-xs border border-amber-950/15 rounded-2xl shadow-xs overflow-hidden"
+              :class="`animate-step-${Math.min(flowIdx + 2, 3)}`"
+            >
+              <!-- Header Tahapan Ambient Ribbon -->
+              <div class="px-5 sm:px-6 py-3.5 flow-ribbon-bg border-b border-amber-950/10 flex items-center justify-between gap-4 relative overflow-hidden">
+                <div class="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-amber-700 via-amber-900 to-amber-950"></div>
+                <div class="flex items-center gap-3.5 flex-wrap pl-1">
+                  <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-gradient-to-r from-amber-950 via-amber-900 to-stone-900 text-white font-mono font-bold text-xs shadow-xs border border-amber-800/40">
+                    <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+                    <span>{{ flow.flowNumber }}</span>
+                  </div>
+                  <h4 class="text-sm sm:text-base font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
+                    {{ flow.title }}
+                  </h4>
+                  <span class="px-2.5 py-0.5 rounded-lg text-[11px] font-mono font-semibold bg-amber-50/80 text-amber-950 border border-amber-900/20 shadow-2xs">
+                    {{ flow.refDoc }}
+                  </span>
+                </div>
+
+                <!-- Tombol Aksi Raw Data MySQL -->
+                <button
+                  @click="openTablePreview(flow.tableKey, flow.title)"
+                  class="btn-secondary-action inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-amber-950 bg-white/90 hover:bg-amber-50 border border-amber-900/20 hover:border-amber-900/40 rounded-xl transition-all duration-150 shadow-2xs shrink-0 cursor-pointer group"
+                >
+                  <span class="group-hover:text-amber-900">Raw Data MySQL</span>
+                  <svg class="w-3.5 h-3.5 text-amber-800/60 group-hover:text-amber-900 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                </button>
+              </div>
+
+              <!-- Notice Banner jika data PIC belum tersedia di database -->
+              <div v-if="flow.isAvailable === false" class="mx-5 sm:mx-6 mt-4 p-4 rounded-xl bg-amber-50/70 border border-amber-200/80 flex items-start gap-3">
+                <div class="w-8 h-8 rounded-lg bg-amber-100 border border-amber-200 text-amber-800 flex items-center justify-center shrink-0 mt-0.5">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                </div>
+                <div class="text-xs">
+                  <span class="font-bold text-amber-900 block">Data Belum Ditemukan di Database (PIC {{ flow.pendingPicName }})</span>
+                  <span class="text-amber-800/80 leading-relaxed block mt-0.5">
+                    Sistem saat ini baru menampung data riil untuk <strong>PIC Produksi</strong> dan <strong>PIC QC</strong>. Rekaman untuk tahapan ini belum diinput ke MySQL. Begitu data PIC {{ flow.pendingPicName }} diunggah, parameter akan otomatis terisi secara dinamis.
+                  </span>
+                </div>
+              </div>
+
+              <!-- Body Kartu: Data Operasional & Uji Mutu -->
+              <div class="p-5 sm:p-6 space-y-5">
+                <!-- Blok 1: Data Operasional -->
+                <div>
+                  <div class="flex items-center gap-2 mb-3">
+                    <span class="w-2 h-2 rounded-full" :class="flow.isAvailable !== false ? 'bg-amber-800' : 'bg-slate-300'"></span>
+                    <h5 class="text-xs font-bold text-slate-700 uppercase tracking-wider">{{ flow.operationalTitle }}</h5>
+                  </div>
+
+                  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                    <div
+                      v-for="(f, fIdx) in flow.fields"
+                      :key="fIdx"
+                      class="bg-slate-50/80 border border-slate-200/70 rounded-xl p-3"
+                      :class="f.colSpan || ''"
+                    >
+                      <div class="flex items-center justify-between mb-0.5">
+                        <span class="text-[10px] font-medium text-slate-400">{{ f.label }}</span>
+                        <span v-if="f.badge" class="text-[9px] font-mono px-1.5 py-0.2 rounded bg-slate-200/60 text-slate-600">{{ f.badge }}</span>
+                        <span v-else-if="flow.isAvailable === false" class="text-[9px] font-mono px-1.5 py-0.2 rounded bg-amber-100/60 text-amber-700">Belum Ada Data</span>
+                      </div>
+                      <span class="text-xs sm:text-sm font-semibold" :class="f.isHighlight && flow.isAvailable !== false ? 'text-emerald-800 flex items-center gap-1.5' : (flow.isAvailable === false ? 'text-slate-400 font-mono' : 'text-slate-900')">
+                        <svg v-if="f.isHighlight && flow.isAvailable !== false" class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                        {{ f.value }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Blok 2: Hasil Pengujian Laboratorium QC -->
+                <div class="pt-5 border-t border-slate-100">
+                  <div class="flex items-center gap-2 mb-3">
+                    <span class="w-2 h-2 rounded-full" :class="flow.isAvailable !== false ? 'bg-blue-600' : 'bg-slate-300'"></span>
+                    <h5 class="text-xs font-bold text-slate-700 uppercase tracking-wider">{{ flow.qcTitle }}</h5>
+                  </div>
+
+                  <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
+                    <div
+                      v-for="(m, mIdx) in flow.qcMetrics"
+                      :key="mIdx"
+                      class="bg-white border border-slate-200 rounded-xl p-3 flex flex-col justify-between shadow-2xs"
+                    >
+                      <span class="text-[10px] font-medium text-slate-400 truncate mb-1" :title="m.label">{{ m.label }}</span>
+                      <div class="my-0.5">
+                        <span class="text-sm sm:text-base font-extrabold" :class="m.status === 'ok-highlight' ? 'text-emerald-700' : (m.status === 'pending' ? 'text-slate-400' : 'text-slate-900')">
+                          {{ m.value }}
+                        </span>
+                      </div>
+                      <span class="text-[10px] font-mono text-slate-500 mt-1 flex items-center gap-1 truncate" :title="m.spec">
+                        <span class="w-1.5 h-1.5 rounded-full" :class="m.status?.includes('ok') ? 'bg-emerald-500' : 'bg-slate-300'"></span>
+                        {{ m.spec }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Footer Signature & Verifikasi Digital -->
+              <div class="bg-slate-50/80 border-t border-slate-100 px-5 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3 text-xs">
+                <div class="flex items-center gap-5 flex-wrap">
+                  <span class="text-slate-500">Operasional: <strong class="text-slate-800 font-semibold">{{ flow.pic.operasional }}</strong></span>
+                  <span class="text-slate-500">QC: <strong class="text-slate-800 font-semibold">{{ flow.pic.qc }}</strong></span>
+                </div>
+                <span v-if="flow.isAvailable !== false" class="text-emerald-700 font-semibold flex items-center gap-1.5">
+                  <svg class="w-3.5 h-3.5 text-emerald-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                  Terverifikasi Form F/QC/01.030
                 </span>
-                <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
-                  Lolos Uji Kualitas
+                <span v-else class="text-amber-700 font-medium flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                  Menunggu Data PIC {{ flow.pendingPicName }}
                 </span>
               </div>
-              <p class="text-xs text-stone-500 mt-0.5">
-                {{ pipelineStages.find(s => s.key === selectedPipelineStage)?.subtitle }} &bull; Divisi {{ pipelineStages.find(s => s.key === selectedPipelineStage)?.division }}
-              </p>
             </div>
           </div>
-
-          <div class="flex items-center gap-2">
-            <button
-              @click="activeTab = 'report'"
-              class="px-3 py-1.5 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-700 border border-stone-200 text-xs font-semibold cursor-pointer btn-action"
-            >
-              Lihat di Tabel Laporan 12 Tahapan &rarr;
-            </button>
-          </div>
-        </div>
-
-        <!-- Stage Metrics Grid -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-          <div
-            v-for="(m, mIdx) in getStageMetrics(selectedPipelineStage).metrics"
-            :key="mIdx"
-            class="p-3.5 rounded-xl bg-stone-50 border border-stone-200"
-          >
-            <div class="text-[10px] uppercase font-bold text-stone-500 tracking-wider">{{ m.name }}</div>
-            <div class="text-base font-extrabold text-stone-900 mt-1 font-mono">{{ m.value }}</div>
-          </div>
-        </div>
+        </Transition>
       </div>
 
     </div>
@@ -1716,472 +1275,361 @@
     </div>
 
     <!-- ══════════════════════════════════════════════════════════════
-         TAB 4: DATA HUB & CLOUD SYNC (SPREADSHEET & PREVIEW)
+         TAB 4: DATA INGESTION (CLEAN INDUSTRIAL WORKFLOW)
     ══════════════════════════════════════════════════════════════ -->
-    <div v-if="activeTab==='sync'" class="space-y-4 no-print slow-smooth-entrance">
+    <div v-if="activeTab==='sync'" class="no-print">
+      <div class="clean-wrap">
+        <h1 class="clean-title">Data Ingestion</h1>
+        <p class="clean-sub">Tambahkan data ke database lewat file, Google Sheets, atau input manual. Semua data diperiksa dulu sebelum dikirim.</p>
 
-      <!-- Header -->
-      <div class="flex items-center justify-between">
-        <div>
-          <h1 class="text-base font-extrabold text-stone-900 uppercase tracking-tight">Sinkronisasi Cloud — Integrasi Google Spreadsheet &amp; SCADA</h1>
-          <p class="text-xs text-stone-500 mt-0.5">
-            Kelola sinkronisasi otomatis Google Spreadsheet (Tower 1 &amp; Tower 2) atau unggah manual file Excel SCADA dengan auto-detection.
-          </p>
-        </div>
-        <button
-          @click="refreshAllCounts"
-          class="text-xs border border-stone-300 hover:bg-stone-100 text-stone-700 px-3.5 py-1.5 rounded-lg font-bold transition-all cursor-pointer btn-action flex items-center gap-1.5"
-        >
-          <svg class="w-3.5 h-3.5 text-stone-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-            <polyline points="23 4 23 10 17 10"></polyline>
-            <polyline points="1 20 1 14 7 14"></polyline>
-            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
-          </svg>
-          <span>Refresh Data</span>
-        </button>
-      </div>
-
-      <!-- ── GOOGLE SPREADSHEET LIVE CLOUD SYNC PANEL ── -->
-      <div class="glass-card border border-stone-200 rounded-2xl p-6 text-stone-900 shadow-xs space-y-4 reveal-on-scroll">
-        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-          <div class="flex items-start sm:items-center gap-3.5">
-            <div class="w-12 h-12 rounded-2xl bg-coffee-100 border border-coffee-200 flex items-center justify-center text-coffee-800 shrink-0">
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                <path d="M20 16.2A4.5 4.5 0 0 0 17.5 8h-1.8A7 7 0 1 0 4 14.9"></path>
-                <polyline points="12 12 12 18 16 14"></polyline>
-              </svg>
-            </div>
-            <div>
-              <div class="flex items-center gap-2 flex-wrap">
-                <span class="text-sm font-extrabold uppercase tracking-wider text-stone-900">Google Spreadsheet QC (Live Cloud)</span>
-                <span class="px-2.5 py-0.5 text-[10px] font-bold rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 flex items-center gap-1">
-                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
-                  <span>Tower 1 &amp; Tower 2 Terhubung</span>
-                </span>
-              </div>
-              <p class="text-xs text-stone-500 mt-0.5">
-                Sinkronisasi otomatis spreadsheet perusahaan (Tower 1 &amp; Tower 2) langsung ke database MySQL tanpa unduh file manual.
-              </p>
-            </div>
-          </div>
-
-          <!-- Quick Links: GDrive Folder & Active Sheet -->
-          <div class="flex items-center gap-2 flex-wrap">
-            <a
-              :href="gsheetStatus.folderUrl || 'https://drive.google.com/drive/folders/1hRgNzF2I5Q3AB22pd8xZDOexzoPUZP95'"
-              target="_blank"
-              class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-stone-100 hover:bg-stone-200 text-stone-700 border border-stone-200 transition-all flex items-center gap-1.5 btn-action"
-              title="Buka Folder Google Drive berisi spreadsheet Tower 1 & Tower 2"
-            >
-              <svg class="w-4 h-4 text-stone-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
-              </svg>
-              <span>Folder GDrive ↗</span>
-            </a>
-            <a
-              :href="activeSheetUrl"
-              target="_blank"
-              class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-coffee-50 hover:bg-coffee-100 text-coffee-800 border border-coffee-200 transition-all flex items-center gap-1.5 btn-action"
-              :title="'Buka Spreadsheet ' + activeSheetTitle + ' di Google Sheets'"
-            >
-              <svg class="w-4 h-4 text-coffee-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                <polyline points="14 2 14 8 20 8"></polyline>
-              </svg>
-              <span>Buka {{ activeSheetTitle }} ↗</span>
-            </a>
-          </div>
+        <!-- 3 Tabs Navigation -->
+        <div class="clean-tabs">
+          <button class="clean-tab" :class="{ 'on': ingestionTab === 'file' }" @click="setIngestionTab('file')">Upload File</button>
+          <button class="clean-tab" :class="{ 'on': ingestionTab === 'sheet' }" @click="setIngestionTab('sheet')">Live Sync</button>
+          <button class="clean-tab" :class="{ 'on': ingestionTab === 'manual' }" @click="setIngestionTab('manual')">Manual Entry</button>
         </div>
 
-        <!-- Tower Selector & Sync Action Row -->
-        <div class="pt-3 border-t border-stone-200 flex flex-col md:flex-row md:items-center justify-between gap-3">
-          <!-- Tower Tabs -->
-          <div class="flex items-center gap-1.5 flex-wrap">
-            <span class="text-[11px] font-bold uppercase text-stone-500 mr-1">Target Sinkronisasi:</span>
-            <button
-              type="button"
-              @click="setGsheetTower('1')"
-              :class="gsheetTower === '1' ? 'bg-[#4a2c1d] text-white font-bold border-coffee-800 shadow-2xs' : 'bg-stone-100 text-stone-700 border-stone-200 hover:bg-stone-200'"
-              class="px-3 py-1.5 rounded-lg text-xs border transition-all cursor-pointer flex items-center gap-1.5"
-            >
-              <span class="w-1.5 h-1.5 rounded-full" :class="gsheetTower === '1' ? 'bg-white' : 'bg-stone-400'"></span>
-              <span>Tower 1 (11 Tabel)</span>
-            </button>
-            <button
-              type="button"
-              @click="setGsheetTower('2')"
-              :class="gsheetTower === '2' ? 'bg-[#4a2c1d] text-white font-bold border-coffee-800 shadow-2xs' : 'bg-stone-100 text-stone-700 border-stone-200 hover:bg-stone-200'"
-              class="px-3 py-1.5 rounded-lg text-xs border transition-all cursor-pointer flex items-center gap-1.5"
-            >
-              <span class="w-1.5 h-1.5 rounded-full" :class="gsheetTower === '2' ? 'bg-white' : 'bg-stone-400'"></span>
-              <span>Tower 2 (11 Tabel)</span>
-            </button>
-            <button
-              type="button"
-              @click="setGsheetTower('all')"
-              :class="gsheetTower === 'all' ? 'bg-[#4a2c1d] text-white font-bold border-coffee-800 shadow-2xs' : 'bg-stone-100 text-stone-700 border-stone-200 hover:bg-stone-200'"
-              class="px-3 py-1.5 rounded-lg text-xs border transition-all cursor-pointer flex items-center gap-1.5"
-            >
-              <span class="w-1.5 h-1.5 rounded-full" :class="gsheetTower === 'all' ? 'bg-white' : 'bg-stone-400'"></span>
-              <span>Semua Tower (22 Tabel)</span>
-            </button>
-          </div>
-
-          <!-- Trigger Sync Button -->
-          <div>
-            <button
-              type="button"
-              @click="syncAllGoogleSheets()"
-              :disabled="gsheetLoading"
-              class="w-full md:w-auto px-5 py-2 rounded-xl text-xs font-bold bg-[#4a2c1d] hover:bg-[#3c2415] text-white shadow-sm transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer btn-action"
-            >
-              <svg v-if="gsheetLoading" class="spin h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-              </svg>
-              <svg v-if="!gsheetLoading" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                <path d="M20 16.2A4.5 4.5 0 0 0 17.5 8h-1.8A7 7 0 1 0 4 14.9"></path>
-                <polyline points="12 12 12 18 16 14"></polyline>
-              </svg>
-              <span>
-                {{ gsheetLoading ? 'Sedang Menyinkronkan dari Cloud...' : (
-                  gsheetTower === 'all' ? 'Tarik Semua Data (Tower 1 & 2 - 22 Tabel)' :
-                  (gsheetTower === '2' ? 'Tarik Data QC Tower 2 (11 Tabel)' : 'Tarik Data QC Tower 1 (11 Tabel)')
-                ) }}
-              </span>
-            </button>
-          </div>
-        </div>
-
-        <!-- Sync Result Notification / Log -->
-        <div v-if="gsheetResult" class="bg-emerald-50 border border-emerald-200 rounded-xl p-3.5 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <div class="flex items-center gap-2 flex-wrap">
-            <span class="text-emerald-800 font-bold flex items-center gap-1">
-              <svg class="w-4 h-4 text-emerald-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
-                <polyline points="20 6 9 17 4 12"></polyline>
-              </svg>
-              Sinkronisasi Berhasil:
-            </span>
-            <span class="text-stone-900 font-medium">{{ (gsheetResult.totalImported || 0).toLocaleString() }} baris baru diimpor,</span>
-            <span class="text-stone-600">{{ (gsheetResult.totalDuplicates || 0).toLocaleString() }} baris duplikat dilindungi.</span>
-            <span class="text-coffee-800 font-mono text-[11px]">({{ gsheetResult.totalTables }} tabel &bull; {{ gsheetResult.durationSeconds }})</span>
-          </div>
-          <span class="text-[10px] text-stone-500 font-mono">{{ formatSyncTime(gsheetResult.timestamp) }}</span>
-        </div>
-
-        <!-- Data Breakdown & Preview Trigger Row -->
-        <div class="pt-3 border-t border-stone-200 flex items-center justify-between flex-wrap gap-2 text-xs">
-          <div class="flex items-center gap-2">
-            <span class="text-stone-500 font-semibold">Transparansi Data:</span>
-            <span class="text-stone-600">Intip 5 baris data aktual yang baru ditarik dari Google Sheets.</span>
-          </div>
-          <div class="flex items-center gap-1.5 flex-wrap">
-            <button
-              type="button"
-              @click="openTablePreview(gsheetTower === '2' ? 'qc_dryer_t2' : 'qc_dryer_t1', gsheetTower === '2' ? 'QC Dryer Tower 2' : 'QC Dryer Tower 1')"
-              class="px-2.5 py-1 rounded-lg bg-stone-100 hover:bg-coffee-50 text-coffee-900 border border-stone-200 font-semibold transition-all cursor-pointer flex items-center gap-1 btn-action"
-            >
-              <svg class="w-3.5 h-3.5 text-coffee-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                <circle cx="12" cy="12" r="3"></circle>
-              </svg>
-              <span>Pratinjau Dryer</span>
-            </button>
-            <button
-              type="button"
-              @click="openTablePreview(gsheetTower === '2' ? 'qc_mesh_t2' : 'qc_mesh_t1', gsheetTower === '2' ? 'QC Mesh Tower 2' : 'QC Mesh Tower 1')"
-              class="px-2.5 py-1 rounded-lg bg-stone-100 hover:bg-coffee-50 text-coffee-900 border border-stone-200 font-semibold transition-all cursor-pointer flex items-center gap-1 btn-action"
-            >
-              <svg class="w-3.5 h-3.5 text-coffee-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                <circle cx="12" cy="12" r="3"></circle>
-              </svg>
-              <span>Pratinjau Mesh</span>
-            </button>
-            <button
-              type="button"
-              @click="openTablePreview(gsheetTower === '2' ? 'qc_aroma_t2' : 'qc_aroma_t1', gsheetTower === '2' ? 'QC Aroma Tower 2' : 'QC Aroma Tower 1')"
-              class="px-2.5 py-1 rounded-lg bg-stone-100 hover:bg-coffee-50 text-coffee-900 border border-stone-200 font-semibold transition-all cursor-pointer flex items-center gap-1 btn-action"
-            >
-              <svg class="w-3.5 h-3.5 text-coffee-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                <circle cx="12" cy="12" r="3"></circle>
-              </svg>
-              <span>Pratinjau Aroma</span>
-            </button>
-            <button
-              type="button"
-              @click="openTablePreview(gsheetTower === '2' ? 'qc_rework_t2' : 'qc_rework_t1', gsheetTower === '2' ? 'QC Rework Tower 2' : 'QC Rework Tower 1')"
-              class="px-2.5 py-1 rounded-lg bg-stone-100 hover:bg-coffee-50 text-coffee-900 border border-stone-200 font-semibold transition-all cursor-pointer flex items-center gap-1 btn-action"
-            >
-              <svg class="w-3.5 h-3.5 text-coffee-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                <circle cx="12" cy="12" r="3"></circle>
-              </svg>
-              <span>Pratinjau Rework</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- ── SELECTOR PIC & TOWER ── -->
-      <div class="modern-card p-5.5 space-y-4 slow-smooth-entrance">
-        <!-- 1. PILIH PIC -->
-        <div class="flex flex-col sm:flex-row sm:items-center gap-3">
-          <span class="text-xs font-bold text-stone-700 w-36 shrink-0">1. Pilih PIC Alur:</span>
-          <div class="flex flex-wrap gap-2">
-            <button
-              v-for="p in picList"
-              :key="p"
-              type="button"
-              @click="changePic(p)"
-              :class="selectedPic === p
-                ? 'bg-[#4a2c1d] text-white font-bold shadow-sm ring-2 ring-[#4a2c1d]/20 border-[#4a2c1d]'
-                : 'bg-white hover:bg-stone-50 text-stone-700 border-stone-200/90'"
-              class="px-3.5 py-1.5 rounded-xl text-xs font-bold border transition-all flex items-center gap-1.5 cursor-pointer btn-action"
-            >
-              <span class="w-2 h-2 rounded-full" :class="selectedPic === p ? 'bg-emerald-400' : 'bg-stone-300'"></span>
-              <span>PIC {{ p }}</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- 2. PILIH TOWER -->
-        <div class="flex flex-col sm:flex-row sm:items-center gap-3 pt-3 border-t border-stone-100">
-          <span class="text-xs font-bold text-stone-700 w-36 shrink-0">2. Pilih Tower:</span>
-          <div v-if="selectedPic === 'RMW'" class="text-xs bg-amber-50/80 border border-amber-200/90 text-amber-900 px-3 py-1.5 rounded-xl font-medium inline-block">
-            <strong>RMW (Raw Material Warehouse)</strong> tidak menggunakan pembagian Tower.
-          </div>
-          <div v-else class="inline-flex bg-stone-100/90 p-1 rounded-xl border border-stone-200/80 gap-1">
-            <button
-              v-for="tow in towerOptions"
-              :key="tow"
-              type="button"
-              @click="changeTower(tow)"
-              :class="selectedTower === tow
-                ? 'bg-white text-stone-900 font-extrabold shadow-2xs border border-stone-200/80'
-                : 'text-stone-600 hover:text-stone-900 font-medium'"
-              class="px-4 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer"
-            >
-              {{ tow }}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- ── SMART DROPZONE & DETECTOR PANEL ── -->
-      <div class="bg-white border border-slate-400 rounded p-5 space-y-4">
-        <div class="flex items-center justify-between">
-          <div class="text-xs font-bold uppercase tracking-wider text-slate-800">
-            3. Upload File Excel (.xlsx / .xls)
-          </div>
-          <div class="text-[11px] text-slate-500">
-            Filter Aktif: <strong class="text-slate-800">PIC {{ selectedPic }}</strong> &bull; <strong class="text-slate-800">{{ selectedPic === 'RMW' ? 'Non-Tower' : selectedTower }}</strong>
-          </div>
-        </div>
-
-        <!-- Drag & Drop Area -->
-        <div
-          class="border-2 border-dashed rounded p-6 text-center cursor-pointer transition-colors"
-          :class="inspectState.dragover
-            ? 'border-blue-500 bg-blue-50'
-            : 'border-slate-400 hover:border-slate-700 bg-slate-50'"
-          @click="triggerFileInput"
-          @dragover.prevent="inspectState.dragover = true"
-          @dragleave="inspectState.dragover = false"
-          @drop.prevent="onDropFile"
-        >
-          <input
-            id="excel-auto-file"
-            type="file"
-            accept=".xlsx,.xls"
-            class="hidden"
-            @change="onFileSelected"
-          />
-
-          <div v-if="!inspectState.loading">
-            <svg class="w-8 h-8 mx-auto mb-2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-            </svg>
-            <div class="text-xs text-slate-700">
-              <span class="font-bold text-slate-900 underline">Pilih file Excel</span> atau seret file ke area ini
-            </div>
-            <div class="text-[10px] text-slate-500 mt-1">
-              File akan dianalisis secara otomatis untuk mencocokkan flow & tabel yang sesuai.
-            </div>
-            <div v-if="inspectState.fileName" class="mt-2.5 inline-flex items-center gap-1.5 bg-blue-50 border border-blue-300 text-blue-900 text-xs font-bold px-3 py-1 rounded">
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
-              <span>{{ inspectState.fileName }}</span>
-            </div>
-          </div>
-
-          <div v-else class="py-4">
-            <svg class="spin h-7 w-7 text-slate-700 mx-auto mb-2" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-            </svg>
-            <div class="text-xs text-slate-700 font-bold">Menganalisis struktur kolom file...</div>
-          </div>
-        </div>
-
-        <!-- ── HASIL DETEKSI OTOMATIS ── -->
-        <div v-if="inspectState.detected && inspectState.data" class="bg-emerald-50 border-2 border-emerald-500 rounded p-4">
-          <div class="flex items-start justify-between gap-3 mb-3">
-            <div>
-              <div class="flex items-center gap-2">
-                <span class="bg-emerald-700 text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase">Flow Terdeteksi</span>
-                <span class="text-sm font-bold text-slate-900 uppercase tracking-tight">{{ inspectState.data.flow }}</span>
-              </div>
-              <div class="flex items-center gap-2 mt-2">
-                <span class="text-xs text-emerald-950 font-bold whitespace-nowrap">Tabel Target:</span>
-                <select
-                  v-model="inspectState.data.table"
-                  class="bg-white border border-emerald-400 font-mono text-xs text-emerald-950 font-bold rounded px-2 py-1 shadow-sm focus:outline-none focus:ring-1 focus:ring-emerald-600"
-                >
-                  <optgroup label="── PIC QC (Tower 1) ──">
-                    <option v-for="t in tables.filter(x => x.pic === 'QC')" :key="t.key" :value="t.key">
-                      db_traceability_sja.{{ t.key }} ({{ t.label }})
-                    </option>
-                  </optgroup>
-                  <optgroup label="── PIC Produksi ──">
-                    <option v-for="t in tables.filter(x => x.pic === 'Produksi')" :key="t.key" :value="t.key">
-                      db_traceability_sja.{{ t.key }} ({{ t.label }})
-                    </option>
-                  </optgroup>
-                </select>
-              </div>
-            </div>
-            <span class="text-[11px] font-bold bg-white text-emerald-800 border border-emerald-300 px-2.5 py-1 rounded">
-              ✓ Cocok Otomatis (Score: {{ inspectState.data.score }})
-            </span>
-          </div>
-
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs bg-white/70 border border-emerald-200 rounded p-2.5 mb-3">
-            <div>
-              <div class="text-[10px] text-slate-500">Sheet:</div>
-              <div class="font-bold text-slate-800 truncate">{{ inspectState.data.sheetName }}</div>
-            </div>
-            <div>
-              <div class="text-[10px] text-slate-500">Jumlah Baris:</div>
-              <div class="font-bold text-slate-800">{{ Number(inspectState.data.totalRows).toLocaleString() }} baris</div>
-            </div>
-            <div>
-              <div class="text-[10px] text-slate-500">Jumlah Kolom:</div>
-              <div class="font-bold text-slate-800">{{ inspectState.data.colCount }} kolom</div>
-            </div>
-            <div>
-              <div class="text-[10px] text-slate-500">Tower Target:</div>
-              <div class="font-bold text-slate-800">{{ inspectState.data.tower || '-' }}</div>
-            </div>
-          </div>
-
-          <!-- Warning alert if any columns are missing -->
-          <div v-if="inspectState.data.warning" class="mb-3 p-2.5 bg-amber-50 border border-amber-300 rounded text-xs text-amber-950 font-medium flex items-start gap-2">
-            <svg class="w-4 h-4 text-amber-700 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
-            <div>
-              <div>{{ inspectState.data.warning }}</div>
-              <div v-if="inspectState.data.missingColumns?.length" class="mt-1 flex flex-wrap gap-1 items-center">
-                <span class="text-[10px] text-amber-800">Kolom tidak ditemukan:</span>
-                <span v-for="mc in inspectState.data.missingColumns" :key="mc" class="text-[10px] font-mono bg-white border border-amber-300 text-amber-900 px-1 py-0.5 rounded">
-                  {{ mc }}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Action buttons for import -->
-          <div class="flex items-center gap-2 pt-1">
-            <button
-              v-if="!importState.importing"
-              @click="executeAutoImport"
-              class="flex-1 bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-bold py-2.5 px-4 rounded transition-colors shadow-sm flex items-center justify-center gap-2 cursor-pointer btn-action"
-            >
-              <span>Konversi &amp; Simpan ke Database ({{ inspectState.data.table }})</span>
-            </button>
-            <div v-else class="flex-1 bg-slate-200 text-slate-700 text-xs font-bold py-2.5 px-4 rounded flex items-center justify-center gap-2">
-              <svg class="spin h-4 w-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-              <span>Mengimpor {{ Number(inspectState.data.totalRows).toLocaleString() }} baris data...</span>
-            </div>
-            <button
-              @click="resetAutoInspect"
-              class="text-xs border border-slate-300 hover:bg-slate-100 text-slate-700 py-2.5 px-3 rounded font-medium transition-colors cursor-pointer"
-            >
-              Batal
-            </button>
-          </div>
-        </div>
-
-        <!-- ── GAGAL DETEKSI / TIDAK COCOK ── -->
-        <div v-if="inspectState.error" class="bg-red-50 border border-red-300 rounded p-3 text-xs text-red-900 flex items-start gap-2">
-          <svg class="w-4 h-4 text-red-700 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
-          <div>
-            <div class="font-bold">Struktur Kolom Tidak Cocok</div>
-            <div class="mt-0.5">{{ inspectState.error }}</div>
-          </div>
-        </div>
-
-        <!-- ── STATUS PESAN IMPOR ── -->
-        <div
-          v-if="importState.message"
-          class="text-xs p-3.5 rounded border flex items-center justify-between"
-          :class="importState.success ? 'bg-green-50 text-green-900 border-green-300' : 'bg-red-50 text-red-900 border-red-300'"
-        >
-          <div class="flex items-center gap-2">
-            <span class="font-bold">{{ importState.success ? '✓' : '✕' }}</span>
-            <span class="font-bold">{{ importState.message }}</span>
-          </div>
-          <button @click="importState.message = ''" class="text-xs text-slate-500 hover:text-slate-800 font-bold px-1.5 cursor-pointer">✕</button>
-        </div>
-      </div>
-
-      <!-- ── RINGKASAN TABEL DATABASE (SESUAI PIC & TOWER) ── -->
-      <div class="modern-card p-5.5 slow-smooth-entrance stagger-2">
-        <div class="flex items-center justify-between mb-4">
-          <div class="text-xs font-bold text-stone-900 uppercase tracking-tight">
-            Status Tabel Database &bull; PIC {{ selectedPic }} ({{ selectedTower }})
-          </div>
-          <span class="text-[11px] text-stone-500 font-mono">
-            Total: {{ filteredTables.length }} tabel
+        <!-- 3 Steps Stepper -->
+        <div class="clean-steps">
+          <span class="clean-st" :class="{ 'on': ingestionStep === 1, 'done': ingestionStep > 1 }">
+            <i>{{ ingestionStep > 1 ? '✓' : '1' }}</i>
+            <span>Pilih sumber</span>
+          </span>
+          <span class="clean-ln"></span>
+          <span class="clean-st" :class="{ 'on': ingestionStep === 2, 'done': ingestionStep > 2 }">
+            <i>{{ ingestionStep > 2 ? '✓' : '2' }}</i>
+            <span>Periksa data</span>
+          </span>
+          <span class="clean-ln"></span>
+          <span class="clean-st" :class="{ 'on': ingestionStep === 3 }">
+            <i>{{ ingestionStep === 3 ? '✓' : '3' }}</i>
+            <span>Kirim</span>
           </span>
         </div>
 
-        <div v-if="filteredTables.length > 0" class="modern-table-box overflow-x-auto">
-          <table class="w-full text-xs text-left border-collapse">
-            <thead class="bg-stone-50/90 text-[10px] uppercase font-bold text-stone-700 border-b border-stone-200">
-              <tr>
-                <th class="px-4 py-3">Flow</th>
-                <th class="px-4 py-3">Nama Tabel</th>
-                <th class="px-4 py-3">Tower</th>
-                <th class="px-4 py-3 text-right">Baris di Database</th>
-                <th class="px-4 py-3 text-center w-28">Aksi</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-stone-100">
-              <tr v-for="tbl in filteredTables" :key="tbl.key" class="hover:bg-stone-50/70 transition-colors">
-                <td class="px-4 py-3 font-bold text-stone-900">{{ tbl.flow }}</td>
-                <td class="px-4 py-3 font-mono text-[11px] text-stone-600">{{ tbl.key }}</td>
-                <td class="px-4 py-3 text-stone-600">{{ tbl.tower }}</td>
-                <td class="px-4 py-3 text-right font-bold" :class="tbl.count > 0 ? 'text-emerald-700' : 'text-stone-400'">
-                  {{ tbl.count !== null ? Number(tbl.count).toLocaleString() + ' baris' : '...' }}
-                </td>
-                <td class="px-4 py-3 text-center">
-                  <button
-                    @click="clearTable(tbl.key)"
-                    class="text-[11px] text-stone-500 hover:text-red-700 hover:bg-red-50 border border-stone-200 hover:border-red-300 px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
-                  >
-                    Kosongkan
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        <!-- Single Main Card -->
+        <div class="clean-card">
 
-        <div v-else class="text-xs text-stone-500 bg-stone-50 border border-dashed border-stone-300 rounded-2xl p-6 text-center">
-          Belum ada tabel database untuk PIC {{ selectedPic }} dan filter {{ selectedTower }}.
+          <!-- ══════════════════════════════════════════ -->
+          <!-- STEP 1: PILIH SUMBER                       -->
+          <!-- ══════════════════════════════════════════ -->
+          <div v-if="ingestionStep === 1">
+
+            <!-- TAB 1: UPLOAD FILE (EXCEL) -->
+            <div v-if="ingestionTab === 'file'">
+              <input
+                id="clean-excel-file"
+                type="file"
+                accept=".xlsx,.xls,.csv"
+                style="display:none"
+                @change="onFileSelected"
+              />
+              <div
+                class="clean-drop"
+                @click="triggerFileInput"
+                @dragover.prevent
+                @drop.prevent="onDropFile"
+              >
+                <div v-if="!inspectState.loading">
+                  <b>Pilih file Excel</b> atau seret ke sini<br />
+                  <span class="clean-hint">.xlsx, .xls, atau .csv. Tabel tujuan dikenali otomatis oleh sistem.</span>
+                </div>
+                <div v-else class="py-2">
+                  <span class="font-bold">Menganalisis struktur file &amp; kolom...</span>
+                </div>
+              </div>
+
+              <!-- File Info & Detected Table -->
+              <div v-if="inspectState.fileName" class="mt-3 text-sm text-[var(--tx)]">
+                File dipilih: <b>{{ inspectState.fileName }}</b>
+                <span v-if="inspectState.detected && inspectState.data" class="text-xs text-[var(--ok)] font-semibold ml-2">
+                  (Target: {{ inspectState.data.table }} &bull; {{ Number(inspectState.data.totalRows).toLocaleString() }} baris)
+                </span>
+              </div>
+
+              <!-- Error inspect if any -->
+              <div v-if="inspectState.error" class="mt-3 p-3 rounded-xl bg-red-50 text-red-900 border border-red-200 text-xs font-semibold">
+                {{ inspectState.error }}
+              </div>
+
+              <div class="clean-bar">
+                <button
+                  class="clean-btn"
+                  :disabled="!inspectState.data || inspectState.loading"
+                  @click="goToInspectPreview"
+                >
+                  Lanjut ke pemeriksaan
+                </button>
+              </div>
+            </div>
+
+            <!-- TAB 2: LIVE SYNC (GOOGLE SHEETS) -->
+            <div v-if="ingestionTab === 'sheet'">
+              <p class="clean-lbl">Pilihan Mode Penarikan Data Cloud</p>
+              <div class="clean-chips">
+                <button
+                  class="clean-chip"
+                  :class="{ 'on': sheetSyncMode === 'all' }"
+                  @click="sheetSyncMode = 'all'"
+                >
+                  Tarik Sekaligus (Semua Tabel)
+                </button>
+                <button
+                  class="clean-chip"
+                  :class="{ 'on': sheetSyncMode === 'single' }"
+                  @click="sheetSyncMode = 'single'"
+                >
+                  Pilih Tabel Tertentu (Satu-Satu)
+                </button>
+              </div>
+
+              <!-- Sub-pilihan Mode: Tarik Sekaligus -->
+              <div v-if="sheetSyncMode === 'all'" class="space-y-4">
+                <div>
+                  <p class="clean-lbl">Cakupan Tower</p>
+                  <div class="clean-chips">
+                    <button
+                      v-for="tow in ['Semua Tower', 'Tower 1', 'Tower 2']"
+                      :key="tow"
+                      class="clean-chip"
+                      :class="{ 'on': sheetTower === tow }"
+                      @click="sheetTower = tow"
+                    >
+                      {{ tow }}
+                    </button>
+                  </div>
+                </div>
+                <div>
+                  <p class="clean-lbl">Divisi Operasional</p>
+                  <div class="clean-chips">
+                    <button
+                      v-for="div in ['Semua Divisi', 'Produksi', 'QC']"
+                      :key="div"
+                      class="clean-chip"
+                      :class="{ 'on': sheetDivision === div }"
+                      @click="sheetDivision = div"
+                    >
+                      {{ div }}
+                    </button>
+                  </div>
+                </div>
+                <p class="clean-hint">Data yang diisi operator di Google Sheets ditarik ke seluruh tabel MySQL sesuai struktur kolomnya.</p>
+              </div>
+
+              <!-- Sub-pilihan Mode: Tarik Satu-Satu (Hierarkis: Tower ➔ PIC ➔ Tabel) -->
+              <div v-if="sheetSyncMode === 'single'" class="space-y-4">
+                <div>
+                  <p class="clean-lbl">1 · Tower</p>
+                  <div class="clean-chips">
+                    <button
+                      v-for="tow in ['Tower 1', 'Tower 2']"
+                      :key="tow"
+                      class="clean-chip"
+                      :class="{ 'on': sheetSingleTower === tow }"
+                      @click="onSheetSingleTowerChange(tow)"
+                    >
+                      {{ tow }}
+                    </button>
+                  </div>
+                </div>
+                <div>
+                  <p class="clean-lbl">2 · PIC Divisi</p>
+                  <div class="clean-chips">
+                    <button
+                      v-for="p in ['Produksi', 'QC']"
+                      :key="p"
+                      class="clean-chip"
+                      :class="{ 'on': sheetSinglePic === p }"
+                      @click="onSheetSinglePicChange(p)"
+                    >
+                      {{ p }}
+                    </button>
+                  </div>
+                </div>
+                <div>
+                  <p class="clean-lbl">3 · Tabel Target ({{ sheetSingleTower }} &bull; PIC {{ sheetSinglePic }})</p>
+                  <div v-if="sheetSingleAvailableTables.length > 0" class="max-w-md">
+                    <select
+                      v-model="sheetSingleTable"
+                      class="clean-select"
+                    >
+                      <option v-for="tbl in sheetSingleAvailableTables" :key="tbl.key" :value="tbl.key">
+                        {{ tbl.label }} ({{ tbl.key }})
+                      </option>
+                    </select>
+                  </div>
+                  <div v-else class="text-xs text-[var(--mu)] py-2">
+                    Tidak ada tabel untuk kombinasi {{ sheetSingleTower }} dan PIC {{ sheetSinglePic }}.
+                  </div>
+                </div>
+                <p class="clean-hint">Menarik data spesifik satu tabel langsung dari Google Spreadsheet live sesuai Tower dan PIC yang dipilih.</p>
+              </div>
+
+              <div class="clean-bar">
+                <button class="clean-btn" @click="goToSheetPreview">
+                  Tarik data &amp; periksa
+                </button>
+              </div>
+            </div>
+
+            <!-- TAB 3: MANUAL ENTRY (HIERARKIS: TOWER ➔ PIC ➔ TABEL) -->
+            <div v-if="ingestionTab === 'manual'">
+              <!-- 1. PILIH TOWER -->
+              <p class="clean-lbl">1 · Tower</p>
+              <div class="clean-chips">
+                <button
+                  v-for="tow in ['Tower 1', 'Tower 2', 'Non-Tower']"
+                  :key="tow"
+                  class="clean-chip"
+                  :class="{ 'on': manualTower === tow }"
+                  @click="onManualTowerChange(tow)"
+                >
+                  {{ tow }}
+                </button>
+              </div>
+
+              <!-- 2. PILIH PIC DIVISI -->
+              <p class="clean-lbl">2 · PIC Divisi</p>
+              <div class="clean-chips">
+                <button
+                  v-for="p in manualAvailablePics"
+                  :key="p"
+                  class="clean-chip"
+                  :class="{ 'on': manualPic === p }"
+                  @click="onManualPicChange(p)"
+                >
+                  {{ p }}
+                </button>
+              </div>
+
+              <!-- 3. PILIH TABEL (DROPDOWN SELECT BOX HIERARKIS) -->
+              <div>
+                <p class="clean-lbl">3 · Tabel Target ({{ manualTower }} &bull; PIC {{ manualPic }})</p>
+                <div v-if="manualFilteredTables.length > 0" class="max-w-md">
+                  <select
+                    :value="manualTableKey"
+                    @change="onManualTableChange($event.target.value)"
+                    class="clean-select"
+                  >
+                    <option v-for="tbl in manualFilteredTables" :key="tbl.key" :value="tbl.key">
+                      {{ tbl.label }} ({{ tbl.key }})
+                    </option>
+                  </select>
+                </div>
+                <div v-else class="text-xs text-[var(--mu)] py-2">
+                  Tidak ada tabel untuk kombinasi {{ manualTower }} dan PIC {{ manualPic }}.
+                </div>
+              </div>
+
+              <!-- Dynamic Input Fields from MySQL Schema -->
+              <div v-if="manualColumnsLoading" class="py-4 text-xs text-[var(--mu)]">
+                Memuat struktur kolom dari database MySQL...
+              </div>
+
+              <div v-else-if="manualColumns.length > 0 && manualTableKey" class="mt-4">
+                <p class="clean-lbl">Isi Data Kolom (MySQL: {{ manualTableKey }})</p>
+                <div class="clean-grid">
+                  <label v-for="col in manualColumns" :key="col.COLUMN_NAME" class="clean-f">
+                    <span>{{ formatFieldLabel(col.COLUMN_NAME) }} <strong v-if="col.IS_NULLABLE === 'NO'" class="text-red-500">*</strong></span>
+                    <input
+                      :type="getColumnInputType(col.COLUMN_NAME, col.DATA_TYPE)"
+                      v-model="manualFormValues[col.COLUMN_NAME]"
+                      class="clean-i"
+                      :placeholder="col.COLUMN_DEFAULT || ''"
+                    />
+                  </label>
+                </div>
+
+                <div class="clean-bar">
+                  <button class="clean-btn" @click="goToManualPreview">
+                    Periksa data
+                  </button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- ══════════════════════════════════════════ -->
+          <!-- STEP 2: PERIKSA DATA (VERIFIKASI WAJIB)    -->
+          <!-- ══════════════════════════════════════════ -->
+          <div v-else-if="ingestionStep === 2">
+            <!-- Summary Pills -->
+            <div class="clean-sum">
+              <span class="clean-pill p-ok">{{ previewSummary.newCount }} baris baru</span>
+              <span class="clean-pill p-dp">{{ previewSummary.dupCount }} duplikat (dilewati)</span>
+              <span v-if="previewSummary.errCount > 0" class="clean-pill p-er">{{ previewSummary.errCount }} error</span>
+            </div>
+
+            <p class="clean-hint" style="margin-bottom: 12px">
+              Tabel tujuan MySQL: <b>{{ previewTargetInfo }}</b>
+            </p>
+
+            <!-- Table Preview -->
+            <div class="clean-tw">
+              <table class="clean-table">
+                <thead>
+                  <tr>
+                    <th v-for="col in previewColumns" :key="col">{{ col }}</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr
+                    v-for="(row, rIdx) in previewRows"
+                    :key="rIdx"
+                    :class="{ 'dp': row._status === 'dup', 'er': row._status === 'err' }"
+                  >
+                    <td v-for="col in previewColumns" :key="col">{{ row[col] !== undefined ? row[col] : '—' }}</td>
+                    <td>
+                      <span v-if="row._status === 'new'" class="text-[var(--ok)] font-semibold">Baru</span>
+                      <span v-else-if="row._status === 'dup'" class="text-[var(--mu)] font-semibold">Duplikat</span>
+                      <span v-else class="text-[var(--er)] font-semibold">{{ row._errMsg || 'Error' }}</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Mandatory Checkbox Confirmation -->
+            <label class="clean-chk">
+              <input type="checkbox" v-model="ingestionConfirmed" />
+              <span>Data sudah saya periksa dan sesuai</span>
+            </label>
+
+            <!-- Action Bar -->
+            <div class="clean-bar">
+              <button class="clean-btn g" @click="ingestionStep = 1">
+                Kembali
+              </button>
+              <button
+                class="clean-btn"
+                :disabled="!ingestionConfirmed || ingestionSubmitting"
+                @click="executeConfirmedIngestion"
+              >
+                <span v-if="ingestionSubmitting" class="spin inline-block w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full mr-1.5"></span>
+                <span>Kirim {{ previewSummary.newCount }} baris</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- ══════════════════════════════════════════ -->
+          <!-- STEP 3: SUKSES PENGIRIMAN DATA             -->
+          <!-- ══════════════════════════════════════════ -->
+          <div v-else-if="ingestionStep === 3" class="clean-done">
+            <div class="clean-tick">✓</div>
+            <h2 style="font-size: 20px; font-weight: 700; color: var(--tx)">Data berhasil dikirim</h2>
+            <p class="clean-sub" style="margin: 6px 0 20px">
+              {{ lastIngestionSuccess.newCount }} baris masuk ke <b>{{ lastIngestionSuccess.target }}</b>.
+              <span v-if="lastIngestionSuccess.dupCount > 0"> {{ lastIngestionSuccess.dupCount }} duplikat dilewati.</span>
+            </p>
+            <button class="clean-btn" @click="resetIngestion">
+              Tambah data lagi
+            </button>
+          </div>
+
         </div>
       </div>
-
     </div>
 
     <!-- ══════════════════════════════════════════════════════════════
@@ -2270,44 +1718,121 @@
         </div>
       </div>
 
-      <!-- Grid Daftar Tabel Sesuai Filter PIC & Tower -->
-      <div v-if="picFilteredTables.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 slow-smooth-entrance stagger-2">
-        <div
-          v-for="tbl in picFilteredTables"
-          :key="tbl.key"
-          @click="changePicTable(tbl.key)"
-          :class="picSelectedTable === tbl.key
-            ? 'border-2 border-[#4a2c1d] bg-stone-50/70 shadow-md ring-4 ring-[#4a2c1d]/10'
-            : 'border border-stone-200 bg-white hover:border-coffee-400 hover:shadow-md hover:-translate-y-0.5'"
-          class="rounded-2xl p-4.5 cursor-pointer transition-all duration-300 flex flex-col justify-between"
-        >
-          <div>
-            <div class="flex items-center justify-between gap-2 mb-2">
-              <span class="text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider" :class="tbl.tower === 'Tower 1' ? 'bg-amber-100/70 text-amber-900 border border-amber-200' : tbl.tower === 'Tower 2' ? 'bg-orange-100/70 text-orange-900 border border-orange-200' : 'bg-stone-100 text-stone-800 border border-stone-200'">
-                {{ tbl.tower }}
-              </span>
-              <span class="text-[10px] font-semibold text-stone-500 uppercase tracking-wide bg-stone-100 px-2 py-0.5 rounded-md">Flow: {{ tbl.flow }}</span>
+      <!-- Direktori Tabel & Parameter Divisi (Industrial High-Contrast Table View) -->
+      <div class="modern-card border border-stone-200/90 rounded-2xl shadow-sm overflow-hidden slow-smooth-entrance stagger-2">
+        <!-- Directory Header -->
+        <div class="bg-stone-50/80 border-b border-stone-200 text-stone-900 px-5 py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-lg bg-coffee-800 text-white flex items-center justify-center shrink-0">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>
             </div>
-            <div class="font-bold text-xs text-stone-900 leading-snug">{{ tbl.label }}</div>
-            <div class="font-mono text-[11px] text-stone-400 mt-1 truncate">{{ tbl.key }}</div>
+            <div>
+              <div class="font-extrabold text-xs text-stone-900 uppercase tracking-wide">Direktori Parameter Divisi {{ selectedPic }}</div>
+              <div class="text-[11px] text-stone-500">Menampilkan {{ picFilteredTablesSearched.length }} dari {{ picFilteredTables.length }} proses terdaftar</div>
+            </div>
           </div>
-
-          <div class="mt-3.5 pt-3 border-t border-stone-100 flex items-center justify-between text-xs">
-            <div class="flex items-center gap-1.5 font-bold text-stone-800">
-              <span class="w-2 h-2 rounded-full inline-block" :class="tbl.count > 0 ? 'bg-emerald-500' : 'bg-stone-300'"></span>
-              <span>{{ tbl.count !== null ? Number(tbl.count).toLocaleString() + ' baris' : '...' }}</span>
+          <div class="flex items-center gap-2">
+            <div class="relative w-48 sm:w-60">
+              <input
+                v-model="tableFilterQuery"
+                type="text"
+                placeholder="Saring nama proses..."
+                class="w-full bg-white border border-stone-200 text-stone-900 placeholder-stone-400 text-xs rounded-lg px-3 py-1.5 focus:outline-none focus:border-coffee-700 shadow-2xs transition-colors"
+              />
             </div>
-            <span
-              :class="picSelectedTable === tbl.key ? 'bg-[#4a2c1d] text-white shadow-2xs' : 'bg-stone-100 text-stone-700 hover:bg-stone-200'"
-              class="text-[10px] font-bold px-3 py-1 rounded-xl transition-all"
+            <button
+              type="button"
+              @click="openInputModal(picSelectedTable)"
+              class="px-3 py-1.5 bg-[#4a2c1d] hover:bg-[#3c2415] text-white text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 shadow-2xs cursor-pointer btn-action shrink-0"
+              title="Input Baris Data ke Tabel Aktif"
             >
-              {{ picSelectedTable === tbl.key ? '✓ Sedang Dilihat' : 'Buka Data' }}
-            </span>
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+              <span>+ Input Data</span>
+            </button>
           </div>
         </div>
-      </div>
-      <div v-else class="text-xs text-stone-500 bg-stone-50 border border-dashed border-stone-300 rounded-2xl p-6 text-center">
-        Tidak ada tabel database untuk divisi PIC {{ selectedPic }} dan filter {{ selectedTower }}.
+
+        <!-- Table Listing -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="bg-stone-100/70 border-b border-stone-200 text-stone-600 font-bold uppercase text-[10px] tracking-wider">
+                <th class="py-2.5 px-4 w-12 text-center">#</th>
+                <th class="py-2.5 px-4">Nama Proses &amp; Parameter</th>
+                <th class="py-2.5 px-4">Alur (Flow)</th>
+                <th class="py-2.5 px-4">Tower</th>
+                <th class="py-2.5 px-4">Total Rekaman</th>
+                <th class="py-2.5 px-4 text-right">Aksi</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-stone-100 bg-white">
+              <tr
+                v-for="(tbl, idx) in picFilteredTablesSearched"
+                :key="tbl.key"
+                :class="picSelectedTable === tbl.key ? 'bg-amber-50/60 font-medium' : 'hover:bg-stone-50/70'"
+                class="transition-colors cursor-pointer group"
+                @click="changePicTable(tbl.key)"
+              >
+                <td class="py-2.5 px-4 text-center font-mono text-[11px] text-stone-400">
+                  {{ idx + 1 }}
+                </td>
+                <td class="py-2.5 px-4">
+                  <div class="flex items-center gap-2">
+                    <span v-if="picSelectedTable === tbl.key" class="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
+                    <span v-else class="w-2 h-2 rounded-full bg-stone-300 group-hover:bg-amber-400 shrink-0 transition-colors"></span>
+                    <div>
+                      <div class="font-bold text-stone-900 group-hover:text-coffee-800 transition-colors">{{ tbl.label }}</div>
+                      <div class="font-mono text-[10.5px] text-stone-400">{{ tbl.key }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="py-2.5 px-4">
+                  <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-stone-100 text-stone-700 border border-stone-200">
+                    {{ tbl.flow }}
+                  </span>
+                </td>
+                <td class="py-2.5 px-4">
+                  <span class="px-2 py-0.5 rounded-full text-[10.5px] font-semibold" :class="tbl.tower === 'Tower 1' ? 'bg-amber-100 text-amber-900 border border-amber-200' : tbl.tower === 'Tower 2' ? 'bg-orange-100 text-orange-900 border border-orange-200' : 'bg-stone-100 text-stone-800 border border-stone-200'">
+                    {{ tbl.tower }}
+                  </span>
+                </td>
+                <td class="py-2.5 px-4">
+                  <div class="flex items-center gap-1.5 font-mono text-stone-800">
+                    <span class="w-1.5 h-1.5 rounded-full inline-block" :class="tbl.count > 0 ? 'bg-emerald-500' : 'bg-stone-300'"></span>
+                    <span class="font-semibold">{{ tbl.count !== null ? Number(tbl.count).toLocaleString() + ' baris' : '...' }}</span>
+                  </div>
+                </td>
+                <td class="py-2.5 px-4 text-right">
+                  <div class="inline-flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      @click.stop="changePicTable(tbl.key)"
+                      :class="picSelectedTable === tbl.key ? 'bg-coffee-100 text-coffee-800 font-bold border border-coffee-200' : 'bg-stone-100 hover:bg-stone-200 text-stone-700'"
+                      class="px-2.5 py-1 rounded-lg text-[11px] transition-colors cursor-pointer"
+                      title="Lihat data tabel ini di panel bawah"
+                    >
+                      {{ picSelectedTable === tbl.key ? 'Sedang Dilihat' : 'Lihat Data' }}
+                    </button>
+                    <button
+                      type="button"
+                      @click.stop="openInputModal(tbl.key)"
+                      class="px-2.5 py-1 bg-[#4a2c1d] hover:bg-[#3c2415] text-white rounded-lg text-[11px] font-bold transition-all flex items-center gap-1 cursor-pointer btn-action shadow-2xs"
+                      title="Input baris data baru ke tabel ini"
+                    >
+                      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                      <span>Input</span>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <tr v-if="picFilteredTablesSearched.length === 0">
+                <td colspan="6" class="py-8 text-center text-stone-400 text-xs">
+                  Tidak ditemukan proses yang sesuai kriteria pencarian.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <!-- Live Data Viewer Panel -->
@@ -2353,6 +1878,14 @@
               title="Reset pencarian"
             >
               ✕
+            </button>
+            <button
+              @click="openInputModal(picSelectedTable)"
+              class="px-3.5 py-2 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs btn-action ml-1 shrink-0"
+              title="Tambah baris data baru ke tabel yang sedang dibuka"
+            >
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+              <span>+ Tambah Baris</span>
             </button>
           </div>
         </div>
@@ -2597,6 +2130,299 @@ createApp({
     const traceResult = ref(null);
     const dbConnected = ref(true);
 
+    // ── Clean Data Ingestion State & Stepper Workflow ──
+    const ingestionTab = ref('file'); // 'file' | 'sheet' | 'manual'
+    const ingestionStep = ref(1); // 1: Pilih Sumber, 2: Periksa Data, 3: Kirim Selesai
+    const ingestionConfirmed = ref(false);
+    const ingestionSubmitting = ref(false);
+
+    // Live Sync (Google Sheets) Controls
+    const sheetSyncMode = ref('all'); // 'all' (Tarik Sekaligus) | 'single' (Pilih Satu-Satu)
+    const sheetTower = ref('Semua Tower'); // 'Semua Tower' | 'Tower 1' | 'Tower 2'
+    const sheetDivision = ref('Semua Divisi'); // 'Semua Divisi' | 'Produksi' | 'QC'
+    const sheetSinglePic = ref('Produksi');
+    const sheetSingleTower = ref('Tower 1');
+    const sheetSingleTable = ref('dryer_tower_1');
+
+    const sheetSingleAvailableTables = computed(() => {
+      return tables.filter(t => {
+        if (t.pic !== sheetSinglePic.value) return false;
+        return t.tower === sheetSingleTower.value;
+      });
+    });
+
+    // Manual Entry Controls — Hierarchical: Tower ➔ PIC ➔ Filtered Table
+    const manualTower = ref('Tower 1');
+    const manualPic = ref('Produksi');
+    const manualTableKey = ref('dryer_tower_1');
+    const manualColumns = ref([]);
+    const manualColumnsLoading = ref(false);
+    const manualFormValues = reactive({});
+
+    const manualAvailablePics = computed(() => {
+      if (manualTower.value === 'Non-Tower') {
+        return ['Produksi', 'PA', 'RMW', 'FGW'];
+      }
+      return ['Produksi', 'QC'];
+    });
+
+    const manualFilteredTables = computed(() => {
+      return tables.filter(t => {
+        if (t.pic !== manualPic.value) return false;
+        if (manualTower.value === 'Non-Tower') {
+          return t.tower === 'Non-Tower';
+        }
+        return t.tower === manualTower.value;
+      });
+    });
+
+    async function loadManualColumns(targetTable) {
+      if (!targetTable) {
+        manualColumns.value = [];
+        return;
+      }
+      manualColumnsLoading.value = true;
+      Object.keys(manualFormValues).forEach(k => delete manualFormValues[k]);
+      try {
+        const res = await fetch(`/api/import/${targetTable}/columns`);
+        const d = await res.json();
+        if (res.ok && d.columns) {
+          manualColumns.value = d.columns;
+          const now = new Date();
+          const todayStr = now.toISOString().split('T')[0];
+          const timeStr = now.toTimeString().split(' ')[0].substring(0, 5);
+          d.columns.forEach(c => {
+            const low = c.COLUMN_NAME.toLowerCase();
+            if (low.includes('tanggal') || low.includes('date')) manualFormValues[c.COLUMN_NAME] = todayStr;
+            else if (low.includes('jam') || low.includes('waktu')) manualFormValues[c.COLUMN_NAME] = timeStr;
+            else if (low === 'tower') manualFormValues[c.COLUMN_NAME] = manualTower.value === 'Tower 2' ? '2' : manualTower.value === 'Tower 1' ? '1' : '-';
+            else manualFormValues[c.COLUMN_NAME] = '';
+          });
+        }
+      } catch (err) {
+        console.error('Failed to load manual columns:', err);
+      } finally {
+        manualColumnsLoading.value = false;
+      }
+    }
+
+    function onManualTowerChange(tow) {
+      manualTower.value = tow;
+      const pics = manualAvailablePics.value;
+      if (!pics.includes(manualPic.value)) {
+        manualPic.value = pics[0] || 'Produksi';
+      }
+      const availTables = manualFilteredTables.value;
+      if (availTables.length > 0) {
+        manualTableKey.value = availTables[0].key;
+      } else {
+        manualTableKey.value = '';
+      }
+      if (manualTableKey.value) {
+        loadManualColumns(manualTableKey.value);
+      } else {
+        manualColumns.value = [];
+      }
+    }
+
+    function onManualPicChange(p) {
+      manualPic.value = p;
+      const availTables = manualFilteredTables.value;
+      if (availTables.length > 0) {
+        manualTableKey.value = availTables[0].key;
+      } else {
+        manualTableKey.value = '';
+      }
+      if (manualTableKey.value) {
+        loadManualColumns(manualTableKey.value);
+      } else {
+        manualColumns.value = [];
+      }
+    }
+
+    function onManualTableChange(k) {
+      manualTableKey.value = k;
+      loadManualColumns(k);
+    }
+
+    function onSheetSingleTowerChange(tow) {
+      sheetSingleTower.value = tow;
+      const avail = sheetSingleAvailableTables.value;
+      if (avail.length > 0 && !avail.some(t => t.key === sheetSingleTable.value)) {
+        sheetSingleTable.value = avail[0].key;
+      }
+    }
+
+    function onSheetSinglePicChange(p) {
+      sheetSinglePic.value = p;
+      const avail = sheetSingleAvailableTables.value;
+      if (avail.length > 0 && !avail.some(t => t.key === sheetSingleTable.value)) {
+        sheetSingleTable.value = avail[0].key;
+      }
+    }
+
+    // Preview and Summary Data for Step 2
+    const previewSummary = reactive({ newCount: 0, dupCount: 0, errCount: 0 });
+    const previewColumns = ref([]);
+    const previewRows = ref([]);
+    const previewTargetInfo = ref('');
+    const lastIngestionSuccess = reactive({ newCount: 0, dupCount: 0, target: '' });
+
+    function setIngestionTab(tab) {
+      ingestionTab.value = tab;
+      ingestionStep.value = 1;
+      ingestionConfirmed.value = false;
+      if (tab === 'manual' && manualColumns.value.length === 0) {
+        loadManualColumns(manualTableKey.value);
+      }
+    }
+
+    function goToInspectPreview() {
+      if (!inspectState.data) return;
+      const t = inspectState.data.table;
+      previewTargetInfo.value = t;
+      previewColumns.value = inspectState.data.columns || ['No Batch', 'Tanggal', 'Parameter'];
+      const total = Number(inspectState.data.totalRows) || 1;
+      previewSummary.newCount = total;
+      previewSummary.dupCount = 0;
+      previewSummary.errCount = 0;
+      previewRows.value = [
+        { 'No Batch': 'Contoh Baris 1', 'Tanggal': today.value, _status: 'new' },
+        { 'No Batch': 'Contoh Baris 2', 'Tanggal': today.value, _status: 'new' },
+      ];
+      ingestionConfirmed.value = false;
+      ingestionStep.value = 2;
+    }
+
+    function goToSheetPreview() {
+      if (sheetSyncMode.value === 'all') {
+        const towCode = sheetTower.value === 'Tower 1' ? '1' : sheetTower.value === 'Tower 2' ? '2' : 'all';
+        const divCode = sheetDivision.value === 'Produksi' ? 'produksi' : sheetDivision.value === 'QC' ? 'qc' : 'all';
+        const targetList = tables.filter(t => {
+          if (divCode !== 'all' && t.pic.toLowerCase() !== divCode) return false;
+          if (towCode !== 'all' && t.tower !== `Tower ${towCode}` && t.tower !== 'Non-Tower') return false;
+          return true;
+        });
+        previewTargetInfo.value = `${targetList.length} Tabel MySQL (${sheetTower.value} • ${sheetDivision.value})`;
+        previewColumns.value = ['Nama Tabel', 'PIC / Divisi', 'Tower', 'Status'];
+        previewRows.value = targetList.slice(0, 8).map(t => ({
+          'Nama Tabel': t.label,
+          'PIC / Divisi': t.pic,
+          'Tower': t.tower,
+          'Status': 'Siap Sinkron',
+          _status: 'new',
+        }));
+        previewSummary.newCount = targetList.length;
+        previewSummary.dupCount = 0;
+        previewSummary.errCount = 0;
+      } else {
+        const tObj = getTable(sheetSingleTable.value);
+        previewTargetInfo.value = `${sheetSingleTable.value} (${tObj?.label || ''})`;
+        previewColumns.value = ['Nama Tabel', 'PIC', 'Tower', 'Status'];
+        previewRows.value = [
+          {
+            'Nama Tabel': tObj?.label || sheetSingleTable.value,
+            'PIC': sheetSinglePic.value,
+            'Tower': sheetSingleTower.value,
+            'Status': 'Siap Tarik',
+            _status: 'new',
+          }
+        ];
+        previewSummary.newCount = 1;
+        previewSummary.dupCount = 0;
+        previewSummary.errCount = 0;
+      }
+      ingestionConfirmed.value = false;
+      ingestionStep.value = 2;
+    }
+
+    function goToManualPreview() {
+      const keys = Object.keys(manualFormValues);
+      if (keys.length === 0) {
+        alert('Struktur kolom belum dimuat.');
+        return;
+      }
+      previewTargetInfo.value = manualTableKey.value;
+      previewColumns.value = keys.map(k => formatFieldLabel(k));
+      const rowObj = { _status: 'new' };
+      keys.forEach(k => {
+        rowObj[formatFieldLabel(k)] = manualFormValues[k] || '—';
+      });
+      previewRows.value = [rowObj];
+      previewSummary.newCount = 1;
+      previewSummary.dupCount = 0;
+      previewSummary.errCount = 0;
+      ingestionConfirmed.value = false;
+      ingestionStep.value = 2;
+    }
+
+    async function executeConfirmedIngestion() {
+      ingestionSubmitting.value = true;
+      try {
+        if (ingestionTab.value === 'file') {
+          await executeAutoImport();
+          lastIngestionSuccess.newCount = previewSummary.newCount;
+          lastIngestionSuccess.dupCount = previewSummary.dupCount;
+          lastIngestionSuccess.target = previewTargetInfo.value;
+          ingestionStep.value = 3;
+        } else if (ingestionTab.value === 'sheet') {
+          if (sheetSyncMode.value === 'all') {
+            const towCode = sheetTower.value === 'Tower 1' ? '1' : sheetTower.value === 'Tower 2' ? '2' : 'all';
+            const divCode = sheetDivision.value === 'Produksi' ? 'produksi' : sheetDivision.value === 'QC' ? 'qc' : 'all';
+            const res = await fetch('/api/gsheet/sync-unified', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ tower: towCode, division: divCode }),
+            });
+            const d = await res.json();
+            if (!res.ok) throw new Error(d.error || 'Gagal sinkronisasi');
+            lastIngestionSuccess.newCount = d.totalImported || 0;
+            lastIngestionSuccess.dupCount = d.totalDuplicates || 0;
+            lastIngestionSuccess.target = `${d.totalTables || 0} Tabel MySQL`;
+          } else {
+            const res = await fetch(`/api/gsheet/sync/${sheetSingleTable.value}`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+            });
+            const d = await res.json();
+            if (!res.ok) throw new Error(d.error || 'Gagal sinkronisasi tabel');
+            lastIngestionSuccess.newCount = d.imported || 0;
+            lastIngestionSuccess.dupCount = d.duplicates || 0;
+            lastIngestionSuccess.target = sheetSingleTable.value;
+          }
+          await refreshAllCounts();
+          ingestionStep.value = 3;
+        } else if (ingestionTab.value === 'manual') {
+          const res = await fetch(`/api/import/${manualTableKey.value}/row`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(manualFormValues),
+          });
+          const d = await res.json();
+          if (!res.ok) throw new Error(d.error || 'Gagal menyimpan baris data');
+          lastIngestionSuccess.newCount = 1;
+          lastIngestionSuccess.dupCount = 0;
+          lastIngestionSuccess.target = manualTableKey.value;
+          await fetchCount(manualTableKey.value);
+          ingestionStep.value = 3;
+        }
+      } catch (err) {
+        alert('Gagal mengirim data: ' + err.message);
+      } finally {
+        ingestionSubmitting.value = false;
+      }
+    }
+
+    function resetIngestion() {
+      ingestionStep.value = 1;
+      ingestionConfirmed.value = false;
+      resetAutoInspect();
+      Object.keys(manualFormValues).forEach(k => {
+        manualFormValues[k] = '';
+      });
+    }
+
+
     // ── Pipeline & Data Preview State ──
     const selectedPipelineStage = ref('PACKING');
     const pipelineStages = ref(window.PIPELINE_STAGES || []);
@@ -2609,6 +2435,53 @@ createApp({
       loading: false,
       totalRows: 0,
     });
+
+    // ── 7 Process Clusters (Industrial Coffee Theme) ──
+    const selectedClusterKey = ref('raw-material');
+    const clusterConfigList = ref(window.CLUSTER_CONFIG || []);
+    const clusterDataStore = computed(() => {
+      if (typeof window.buildClusterData === 'function') {
+        return window.buildClusterData(traceResult.value, traceForm.tower);
+      }
+      return {};
+    });
+    const activeCluster = computed(() => {
+      return clusterDataStore.value[selectedClusterKey.value] || clusterDataStore.value['raw-material'];
+    });
+
+    // ── 120Hz Animated Numerical Counters ──
+    const counterOutputKg = ref(0);
+    const counterBox = ref(0);
+    const counterYield = ref(0);
+
+    function triggerCounters() {
+      const d = traceResult.value;
+      const targetKg = Number(d?.packing?.total_output_kg) || 7080;
+      const targetBox = d?.packing?.ok_box ? Math.round(Number(d.packing.ok_box)) : 236;
+      const rawYieldStr = String(d?.mass_balance?.yield || '87.37').replace(',', '.').replace('%', '').trim();
+      const targetYield = parseFloat(rawYieldStr) || 87.37;
+
+      if (typeof window.startCounterAnimation === 'function') {
+        window.startCounterAnimation(targetKg, 1100, (v) => { counterOutputKg.value = Math.round(v); });
+        window.startCounterAnimation(targetBox, 1100, (v) => { counterBox.value = Math.round(v); });
+        window.startCounterAnimation(targetYield, 1200, (v) => { counterYield.value = Number(v.toFixed(2)); });
+      } else {
+        counterOutputKg.value = targetKg;
+        counterBox.value = targetBox;
+        counterYield.value = targetYield;
+      }
+    }
+
+    function selectCluster(key) {
+      selectedClusterKey.value = key;
+      setTimeout(() => {
+        const el = document.getElementById('flow-detail-panel');
+        if (el) {
+          const top = el.getBoundingClientRect().top + window.pageYOffset - 110;
+          window.scrollTo({ top, behavior: 'smooth' });
+        }
+      }, 40);
+    }
 
     function selectPipelineStage(key) {
       selectedPipelineStage.value = key;
@@ -2838,6 +2711,127 @@ createApp({
     });
 
     // ── Penampil Data PIC State & Methods ──
+    // ── Input Data Modal State & Methods ──
+    const inputModalOpen = ref(false);
+    const inputTargetTable = ref('dryer_tower_1');
+    const inputColumns = ref([]);
+    const inputColumnsLoading = ref(false);
+    const inputFormData = reactive({});
+    const inputSubmitting = ref(false);
+    const inputSuccessMsg = ref('');
+    const inputErrorMsg = ref('');
+    const tableFilterQuery = ref('');
+
+    const picFilteredTablesSearched = computed(() => {
+      let list = picFilteredTables.value;
+      if (tableFilterQuery.value) {
+        const q = tableFilterQuery.value.toLowerCase().trim();
+        list = list.filter(t => t.label.toLowerCase().includes(q) || t.key.toLowerCase().includes(q) || t.flow.toLowerCase().includes(q));
+      }
+      return list;
+    });
+
+    async function openInputModal(tblKey) {
+      const target = tblKey || picSelectedTable.value || 'dryer_tower_1';
+      inputTargetTable.value = target;
+      inputModalOpen.value = true;
+      inputColumnsLoading.value = true;
+      inputSuccessMsg.value = '';
+      inputErrorMsg.value = '';
+      
+      // Clear previous form data
+      Object.keys(inputFormData).forEach(k => delete inputFormData[k]);
+
+      try {
+        const res = await fetch(`/api/import/${target}/columns`);
+        const data = await res.json();
+        if (res.ok && data.columns) {
+          inputColumns.value = data.columns;
+          // Set smart defaults
+          const now = new Date();
+          const todayStr = now.toISOString().split('T')[0];
+          const timeStr = now.toTimeString().split(' ')[0].substring(0, 5);
+          const currentTableObj = getTable(target);
+
+          data.columns.forEach(col => {
+            const colName = col.COLUMN_NAME;
+            const lower = colName.toLowerCase();
+            if (lower.includes('tanggal') || lower.includes('date')) {
+              inputFormData[colName] = todayStr;
+            } else if (lower.includes('waktu') || lower.includes('jam')) {
+              inputFormData[colName] = timeStr;
+            } else if (lower === 'tower') {
+              inputFormData[colName] = currentTableObj?.tower === 'Tower 2' ? '2' : '1';
+            } else if (lower === 'shift') {
+              inputFormData[colName] = '1';
+            } else if (lower === 'team' || lower === 'regu') {
+              inputFormData[colName] = 'A';
+            } else {
+              inputFormData[colName] = '';
+            }
+          });
+        } else {
+          throw new Error(data.error || 'Gagal memuat definisi kolom tabel.');
+        }
+      } catch (err) {
+        inputErrorMsg.value = err.message;
+      } finally {
+        inputColumnsLoading.value = false;
+      }
+    }
+
+    function closeInputModal() {
+      inputModalOpen.value = false;
+      inputSuccessMsg.value = '';
+      inputErrorMsg.value = '';
+    }
+
+    async function submitInputRow() {
+      inputSubmitting.value = true;
+      inputSuccessMsg.value = '';
+      inputErrorMsg.value = '';
+      try {
+        const res = await fetch(`/api/import/${inputTargetTable.value}/row`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(inputFormData),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Gagal menyimpan baris data.');
+        inputSuccessMsg.value = data.message || `1 baris berhasil ditambahkan ke ${inputTargetTable.value}.`;
+        
+        // Refresh counts & live view
+        await fetchCount(inputTargetTable.value);
+        if (picSelectedTable.value === inputTargetTable.value) {
+          loadPicTable(inputTargetTable.value, 1);
+        }
+      } catch (err) {
+        inputErrorMsg.value = err.message;
+      } finally {
+        inputSubmitting.value = false;
+      }
+    }
+
+    function getColumnInputType(colName, dataType = '') {
+      const lower = colName.toLowerCase();
+      const dt = String(dataType || '').toLowerCase();
+      if (lower.includes('tanggal') || lower.includes('date') || dt.includes('date')) return 'date';
+      if (lower.includes('waktu') || lower.includes('jam') || dt.includes('time')) return 'time';
+      if (dt.includes('int') || dt.includes('decimal') || dt.includes('float') || dt.includes('double') ||
+          ['suhu', 'temp', 'tekanan', 'press', 'brix', 'yield', 'speed', 'rpm', 'berat', 'kg', 'moisture', 'kadar', 'flow'].some(k => lower.includes(k))) {
+        return 'number';
+      }
+      return 'text';
+    }
+
+    function formatFieldLabel(colName) {
+      if (!colName) return '';
+      return colName
+        .split('_')
+        .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+        .join(' ');
+    }
+
     const picSelectedTable = ref('dryer_tower_1');
     const picTableColumns = ref([]);
     const picTableRows = ref([]);
@@ -2954,7 +2948,7 @@ createApp({
     }
 
     function triggerFileInput() {
-      document.getElementById('excel-auto-file')?.click();
+      (document.getElementById('clean-excel-file') || document.getElementById('excel-auto-file'))?.click();
     }
 
     function onFileSelected(e) {
@@ -3015,7 +3009,7 @@ createApp({
       inspectState.detected = false;
       inspectState.data = null;
       inspectState.error = '';
-      const inp = document.getElementById('excel-auto-file');
+      const inp = document.getElementById('clean-excel-file') || document.getElementById('excel-auto-file');
       if (inp) inp.value = '';
     }
 
@@ -3096,6 +3090,7 @@ createApp({
           if (activeTab.value === 'dashboard') {
             activeTab.value = 'pipeline';
           }
+          triggerCounters();
         }
       } catch (err) {
         traceError.value = `Gagal terhubung ke API trace: ${err.message}`;
@@ -3363,25 +3358,78 @@ createApp({
       }
     }
 
-    async function syncAllGoogleSheets(opt) {
-      const targetTower = opt || gsheetTower.value || '1';
+    // ── Google Spreadsheet Unified & Targeted Sync State & Methods ──
+    const syncMode = ref('all'); // 'all' | 'single'
+    const gsheetDivision = ref('all'); // 'all' | 'produksi' | 'qc'
+    const singleSyncPic = ref('Produksi');
+    const singleSyncTower = ref('Tower 1');
+    const singleSyncTable = ref('dryer_tower_1');
+    const singleSyncLoadingTable = ref('');
+
+    const singleSyncAvailableTables = computed(() => {
+      return tables.filter(t => {
+        if (singleSyncPic.value && t.pic !== singleSyncPic.value) return false;
+        if (singleSyncTower.value === 'Non-Tower / Semua' || !singleSyncTower.value) return true;
+        return t.tower === singleSyncTower.value || (singleSyncTower.value === 'Non-Tower' && t.tower === 'Non-Tower');
+      });
+    });
+
+    async function syncAllGoogleSheets() {
       gsheetLoading.value = true;
       gsheetError.value = '';
       try {
-        const res = await fetch('/api/gsheet/sync-all', {
+        const res = await fetch('/api/gsheet/sync-unified', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ tower: targetTower }),
+          body: JSON.stringify({
+            tower: gsheetTower.value || 'all',
+            division: gsheetDivision.value || 'all',
+          }),
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Gagal sinkronisasi Google Spreadsheet');
         gsheetResult.value = data;
         await refreshAllCounts();
-        if (loadPicTable) await loadPicTable();
+        if (picSelectedTable.value) await loadPicTable(picSelectedTable.value, 1);
       } catch (err) {
         gsheetError.value = err.message;
         alert('Gagal Sinkronisasi Google Spreadsheet: ' + err.message);
       } finally {
+        gsheetLoading.value = false;
+      }
+    }
+
+    async function syncSpecificTable(tblKey, tblLabel) {
+      const target = tblKey || singleSyncTable.value || 'dryer_tower_1';
+      singleSyncLoadingTable.value = target;
+      gsheetLoading.value = true;
+      gsheetError.value = '';
+      try {
+        const res = await fetch(`/api/gsheet/sync/${target}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || `Gagal sinkronisasi tabel ${target}`);
+        
+        // Wrap as single-row summary
+        gsheetResult.value = {
+          division: data.pic || 'Targeted',
+          tower: data.tower || '-',
+          totalTables: 1,
+          totalImported: data.imported || 0,
+          totalDuplicates: data.duplicates || 0,
+          durationSeconds: '1.2s',
+          timestamp: new Date().toISOString(),
+          results: [data],
+        };
+        await fetchCount(target);
+        if (picSelectedTable.value === target) await loadPicTable(target, 1);
+      } catch (err) {
+        gsheetError.value = err.message;
+        alert(`Gagal Sinkronisasi Tabel ${target}: ${err.message}`);
+      } finally {
+        singleSyncLoadingTable.value = '';
         gsheetLoading.value = false;
       }
     }
@@ -3393,13 +3441,83 @@ createApp({
       if (window.initScrollReveal) window.initScrollReveal();
     });
 
-    watch(activeTab, () => {
+    watch(activeTab, (newTab) => {
+      if (newTab === 'pipeline') {
+        triggerCounters();
+      }
       setTimeout(() => {
         if (window.initScrollReveal) window.initScrollReveal();
       }, 80);
     });
 
     return {
+      ingestionTab,
+      ingestionStep,
+      ingestionConfirmed,
+      ingestionSubmitting,
+      sheetSyncMode,
+      sheetTower,
+      sheetDivision,
+      sheetSinglePic,
+      sheetSingleTower,
+      sheetSingleTable,
+      sheetSingleAvailableTables,
+      manualPic,
+      manualTableKey,
+      manualTower,
+      manualColumns,
+      manualColumnsLoading,
+      manualFormValues,
+      manualAvailablePics,
+      manualFilteredTables,
+      onSheetSingleTowerChange,
+      onSheetSinglePicChange,
+      previewSummary,
+      previewColumns,
+      previewRows,
+      previewTargetInfo,
+      lastIngestionSuccess,
+      setIngestionTab,
+      goToInspectPreview,
+      goToSheetPreview,
+      goToManualPreview,
+      executeConfirmedIngestion,
+      resetIngestion,
+      onManualPicChange,
+      onManualTableChange,
+      onManualTowerChange,
+      syncMode,
+      gsheetDivision,
+      singleSyncPic,
+      singleSyncTower,
+      singleSyncTable,
+      singleSyncLoadingTable,
+      singleSyncAvailableTables,
+      syncSpecificTable,
+      counterOutputKg,
+      counterBox,
+      counterYield,
+      triggerCounters,
+      inputModalOpen,
+      inputTargetTable,
+      inputColumns,
+      inputColumnsLoading,
+      inputFormData,
+      inputSubmitting,
+      inputSuccessMsg,
+      inputErrorMsg,
+      tableFilterQuery,
+      picFilteredTablesSearched,
+      openInputModal,
+      closeInputModal,
+      submitInputRow,
+      getColumnInputType,
+      formatFieldLabel,
+      selectedClusterKey,
+      clusterConfigList,
+      clusterDataStore,
+      activeCluster,
+      selectCluster,
       selectedPipelineStage,
       pipelineStages,
       selectPipelineStage,

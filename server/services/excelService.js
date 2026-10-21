@@ -44,6 +44,15 @@ async function bulkInsertExcelData(tableName, buffer) {
         const p = parseFloat(String(rowVals[c]).replace(',', '.'));
         rowVals[c] = !isNaN(p) ? p : 0;
       }
+      for (let c = 18; c <= 22; c++) {
+        if (rowVals[c] !== null && rowVals[c] !== undefined) {
+          const clean = String(rowVals[c]).replace(',', '.').replace(/[^0-9.-]/g, '');
+          const p = parseFloat(clean);
+          rowVals[c] = !isNaN(p) ? p : null;
+        } else {
+          rowVals[c] = null;
+        }
+      }
     }
 
     incomingRows.push(rowVals);

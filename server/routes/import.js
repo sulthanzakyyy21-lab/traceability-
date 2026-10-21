@@ -40,6 +40,71 @@ router.post('/:tableName', upload.single('file'), async (req, res) => {
   }
 });
 
+// POST /api/import/:tableName/row — Insert single row from web form
+router.post('/:tableName/row', async (req, res) => {
+  try {
+    const paramValidation = TableNameParamSchema.safeParse(req.params);
+    if (!paramValidation.success) {
+      return res.status(400).json({ error: paramValidation.error.issues?.[0]?.message || paramValidation.error.message });
+    }
+    const { tableName } = paramValidation.data;
+    const rowData = req.body;
+    if (!rowData || typeof rowData !== 'object' || Object.keys(rowData).length === 0) {
+      return res.status(400).json({ error: 'Data baris tidak boleh kosong.' });
+    }
+    // Get columns from DB (exclude id)
+    const [cols] = await pool.query(
+      `SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME != 'id' ORDER BY ORDINAL_POSITION`,
+      [tableName]
+    );
+    const allowedCols = cols.map(c => c.COLUMN_NAME);
+    const filteredData = {};
+    for (const col of allowedCols) {
+      if (rowData[col] !== undefined && rowData[col] !== '') {
+        filteredData[col] = rowData[col];
+      }
+    }
+    if (Object.keys(filteredData).length === 0) {
+      return res.status(400).json({ error: 'Tidak ada kolom valid yang terisi.' });
+    }
+    const keys = Object.keys(filteredData);
+    const vals = Object.values(filteredData);
+    const placeholders = keys.map(() => '?').join(', ');
+    const colNames = keys.map(k => `\`${k}\``).join(', ');
+    const [result] = await pool.execute(
+      `INSERT INTO \`${tableName}\` (${colNames}) VALUES (${placeholders})`,
+      vals
+    );
+    res.json({ success: true, insertId: result.insertId, message: `1 baris berhasil ditambahkan ke ${tableName}.` });
+  } catch (error) {
+    console.error('Row insert error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// GET /api/import/:tableName/columns — Get table column definitions
+router.get('/:tableName/columns', async (req, res) => {
+  try {
+    const paramValidation = TableNameParamSchema.safeParse(req.params);
+    if (!paramValidation.success) {
+      return res.status(400).json({ error: paramValidation.error.issues?.[0]?.message });
+    }
+    const { tableName } = paramValidation.data;
+    const [cols] = await pool.query(
+      `SELECT COLUMN_NAME, DATA_TYPE, IS_NULLABLE, COLUMN_DEFAULT
+       FROM information_schema.COLUMNS
+       WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME != 'id'
+       ORDER BY ORDINAL_POSITION`,
+      [tableName]
+    );
+    res.json({ table: tableName, columns: cols });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+
+
 router.delete('/:tableName', async (req, res) => {
   try {
     const paramValidation = TableNameParamSchema.safeParse(req.params);
