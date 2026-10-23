@@ -1,6 +1,6 @@
 const { avg, getUniquePic, getUniqueVal } = require('./qcFormatHelpers');
 
-function formatQcTrace(qcFlow, packingFlow) {
+function formatQcTrace(qcFlow, packingFlow, roastingFlow) {
   const qcMap = {};
   if (!qcFlow) return qcMap;
 
@@ -63,17 +63,17 @@ function formatQcTrace(qcFlow, packingFlow) {
       ['150_180', 'Mesh Test (gram) 150-180', '4.4'],
       ['lt150', 'Mesh Test (gram) <150', '3.8'],
     ];
-    meshCols.forEach(([k, c, def]) => {
-      qcMap[`qc_packing_mesh_${k}`] = meshRows.length ? avg(meshRows, c, 1) : def;
+    meshCols.forEach(([k, c]) => {
+      qcMap[`qc_packing_mesh_${k}`] = meshRows.length ? avg(meshRows, c, 1) : '-';
     });
 
-    qcMap['qc_packing_pic'] = allDryerPic;
-    qcMap['qc_packing_tpc'] = '< 2.5 x 10^1';
-    qcMap['qc_packing_yeast_mold'] = '< 5.0 x 10^1';
-    qcMap['qc_packing_pic_mikro'] = 'Meisy';
-    qcMap['qc_packing_status_ok'] = String(packingFlow?.ok_box || '205');
+    qcMap['qc_packing_pic'] = allDryerPic || '-';
+    qcMap['qc_packing_tpc'] = '-';
+    qcMap['qc_packing_yeast_mold'] = '-';
+    qcMap['qc_packing_pic_mikro'] = '-';
+    qcMap['qc_packing_status_ok'] = packingFlow?.ok_box ? String(packingFlow.ok_box) : '-';
     qcMap['qc_packing_status_bo'] = packingFlow?.bo_box ? String(packingFlow.bo_box) : '-';
-    qcMap['qc_packing_status_pic'] = 'Farrel , Hapy , Samsul';
+    qcMap['qc_packing_status_pic'] = allDryerPic || '-';
   }
 
   // ── 3. EVAPORATION: Evaporasi & Final Tank ──
@@ -162,35 +162,12 @@ function formatQcTrace(qcFlow, packingFlow) {
     qcMap['qc_hydro_pic'] = getUniquePic(hydroRows);
   }
 
-  // ── 5. ROASTING: Analisa Kualitas Kopi Goreng ──
-  const roastRows = qcFlow.roasting?.raw_rows || [];
-  if (roastRows.length > 0) {
-    qcMap['qc_roast_visual_fm'] = 'OK / Tidak Ada';
-    qcMap['qc_roast_warna'] = getUniqueVal(roastRows, 'Warna', ' ; ');
-    qcMap['qc_roast_kadar_air'] = getUniqueVal(roastRows, 'Kadar Air (%)', ' ; ');
-    qcMap['qc_roast_ph'] = getUniqueVal(roastRows, 'pH', ' ; ');
-    qcMap['qc_roast_brix'] = getUniqueVal(roastRows, 'Brix (°brix)', ' ; ');
-    qcMap['qc_roast_wangi'] = getUniqueVal(roastRows, 'Score Cuptest Wangi', ' ; ');
-    qcMap['qc_roast_asam'] = getUniqueVal(roastRows, 'Score Cuptest Asam', ' ; ');
-    qcMap['qc_roast_pahit'] = getUniqueVal(roastRows, 'Score Cuptest Pahit', ' ; ');
-    qcMap['qc_roast_sepat'] = getUniqueVal(roastRows, 'Score Cuptest Sepat', ' ; ');
-    qcMap['qc_roast_body'] = getUniqueVal(roastRows, 'Score Cuptest Body', ' ; ');
-    qcMap['qc_roast_bau_asing'] = getUniqueVal(roastRows, 'Score Cuptest Bau Asing', ' ; ') || '0 ; 0';
-    qcMap['qc_roast_pic'] = getUniquePic(roastRows);
-  } else {
-    qcMap['qc_roast_visual_fm'] = 'OK / Tidak Ada';
-    qcMap['qc_roast_warna'] = '113 ; 113';
-    qcMap['qc_roast_kadar_air'] = '4.96 ; 5.15';
-    qcMap['qc_roast_ph'] = '6.283 ; 6.368';
-    qcMap['qc_roast_brix'] = '1.19 ; 1.18';
-    qcMap['qc_roast_wangi'] = '2.5 ; 2.5';
-    qcMap['qc_roast_asam'] = '3 ; 3';
-    qcMap['qc_roast_pahit'] = '2.75 ; 3';
-    qcMap['qc_roast_sepat'] = '2.75 ; 2.75';
-    qcMap['qc_roast_body'] = '2.75 ; 2.75';
-    qcMap['qc_roast_bau_asing'] = '0 ; 0';
-    qcMap['qc_roast_pic'] = 'Arul , Gufron, Wawan , Argo , Hapy';
-  }
+  // ── 5. ROASTING: Analisa Kualitas Kopi Goreng (Belum ada dataset QC) ──
+  [
+    'qc_roast_visual_fm', 'qc_roast_warna', 'qc_roast_kadar_air', 'qc_roast_ph',
+    'qc_roast_brix', 'qc_roast_wangi', 'qc_roast_asam', 'qc_roast_pahit',
+    'qc_roast_sepat', 'qc_roast_body', 'qc_roast_bau_asing', 'qc_roast_pic',
+  ].forEach((k) => { qcMap[k] = '-'; });
 
   return qcMap;
 }

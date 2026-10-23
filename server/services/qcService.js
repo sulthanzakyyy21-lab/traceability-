@@ -118,12 +118,10 @@ async function queryQcTable(tableName, batch, noBatchFull, customCol = null) {
 
 async function getQcFlow(batch, tahun, tower, noBatchFull) {
   const tw = String(tower || '1');
-  if (tw !== '1') {
-    return { tower: tw, info: 'Tabel QC Tower 2 belum tersedia di database.', hasData: false };
-  }
+  const twKey = tw === '2' ? 't2' : 't1';
 
+  const rework = { found: false, totalRows: 0, data: null, raw_rows: [] };
   const [
-    rework,
     dryerRaw,
     feedTank,
     finalTank,
@@ -135,17 +133,16 @@ async function getQcFlow(batch, tahun, tower, noBatchFull) {
     grinding,
     mesh,
   ] = await Promise.all([
-    queryQcTable('qc_rework_t1', batch, noBatchFull, 'Batch Finished Good'),
-    queryQcTable('qc_dryer_t1', batch, noBatchFull),
-    queryQcTable('qc_feed_tank_t1', batch, noBatchFull),
-    queryQcTable('qc_final_tank_t1', batch, noBatchFull),
-    queryQcTable('qc_evaporasi_t1', batch, noBatchFull),
-    queryQcTable('qc_tank_system_t1', batch, noBatchFull),
-    queryQcTable('qc_pure_aroma_t1', batch, noBatchFull),
-    queryQcTable('qc_hydro_t1', batch, noBatchFull),
-    queryQcTable('qc_aroma_t1', batch, noBatchFull),
-    queryQcTable('qc_grinding_t1', batch, noBatchFull),
-    queryQcTable(tw === '2' ? 'qc_mesh_t2' : 'qc_mesh_t1', batch, noBatchFull),
+    queryQcTable(`qc_dryer_${twKey}`, batch, noBatchFull),
+    queryQcTable(`qc_feed_tank_${twKey}`, batch, noBatchFull),
+    queryQcTable(`qc_final_tank_${twKey}`, batch, noBatchFull),
+    queryQcTable(`qc_evaporasi_${twKey}`, batch, noBatchFull),
+    queryQcTable(`qc_tank_system_${twKey}`, batch, noBatchFull),
+    queryQcTable(`qc_pure_aroma_${twKey}`, batch, noBatchFull),
+    queryQcTable(`qc_hydro_${twKey}`, batch, noBatchFull),
+    queryQcTable(`qc_aroma_${twKey}`, batch, noBatchFull),
+    queryQcTable(`qc_grinding_${twKey}`, batch, noBatchFull),
+    queryQcTable(`qc_mesh_${twKey}`, batch, noBatchFull),
   ]);
 
   // Separate Finished Goods from VF2 monitoring in qc_dryer_t1

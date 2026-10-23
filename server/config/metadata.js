@@ -81,7 +81,28 @@ const TABLE_METADATA = {
     pic: 'Produksi',
     tower: 'Non-Tower',
     sheetKeyword: 'roasti',
+    targetSheet: 'Checklist Hasil Produksi Roasti',
     keywords: ['roasting time', 'silocell', 'destoner', 'susut goreng', 'jenis kopi mentah', 'mode goreng', 'roasting'],
+  },
+  roasting_scolari_1: {
+    key: 'roasting_scolari_1',
+    label: 'Roasting Scolari 1',
+    flow: 'ROASTING',
+    pic: 'Produksi',
+    tower: 'Non-Tower',
+    sheetKeyword: 'sheet56',
+    targetSheet: 'Sheet56',
+    keywords: ['roasting time (minute)', 'roasting time (second)', 'silocell', 'susut goreng %', 'mode goreng', 'scolari 1', 'sr1'],
+  },
+  roasting_scolari_2: {
+    key: 'roasting_scolari_2',
+    label: 'Roasting Scolari 2',
+    flow: 'ROASTING',
+    pic: 'Produksi',
+    tower: 'Non-Tower',
+    sheetKeyword: 'sheet57',
+    targetSheet: 'Sheet57',
+    keywords: ['roasting time (minute)', 'roasting time (second)', 'silocell', 'silo cell 4', 'susut goreng %', 'mode goreng', 'scolari 2', 'scl 2'],
   },
 };
 

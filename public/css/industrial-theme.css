@@ -975,5 +975,264 @@ select.clean-select option {
   font-size: 13px;
 }
 
+/* ── SIMPUL ALUR PROSES: GPU-ACCELERATED FLOATING ICONS ── */
+.cluster-stage-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  will-change: transform;
+  transform-origin: center center;
+  animation: float-standard 4s ease-in-out infinite;
+}
 
+/* Inactive negative delays: tiap kartu berbeda agar tidak serempak */
+.cluster-stage-icon.icon-raw-material { animation-delay: -0.4s; }
+.cluster-stage-icon.icon-roasting     { animation-delay: -1.7s; }
+.cluster-stage-icon.icon-extraction   { animation-delay: -2.8s; }
+.cluster-stage-icon.icon-evaporasi    { animation-delay: -0.9s; }
+.cluster-stage-icon.icon-dryer        { animation-delay: -3.3s; }
+.cluster-stage-icon.icon-rework       { animation-delay: -1.5s; }
+.cluster-stage-icon.icon-packing      { animation-delay: -2.4s; }
+.cluster-stage-icon.icon-distribusi   { animation-delay: -3.8s; }
+
+/* Gerakan Khusus: Roasting (api bergoyang seperti api) */
+.cluster-stage-icon.icon-roasting {
+  animation-name: float-flame;
+}
+
+/* Gerakan Khusus: Spray Dryer (angin bergeser ke samping) */
+.cluster-stage-icon.icon-dryer {
+  animation-name: float-wind;
+}
+
+/* Gerakan Khusus: Distribusi (truk bergeser kecil kiri-kanan) */
+.cluster-stage-icon.icon-distribusi {
+  animation-name: float-truck;
+}
+
+/* Kartu Aktif: icon scale 1.12 dan durasi sedikit lebih cepat (2.8s) */
+.cluster-stage-icon.is-active {
+  animation-name: float-standard-active;
+  animation-duration: 2.8s;
+}
+.cluster-stage-icon.is-active.icon-roasting {
+  animation-name: float-flame-active;
+}
+.cluster-stage-icon.is-active.icon-dryer {
+  animation-name: float-wind-active;
+}
+.cluster-stage-icon.is-active.icon-distribusi {
+  animation-name: float-truck-active;
+}
+
+/* ── KEYFRAMES (GPU-ACCELERATED: HANYA TRANSFORM) ── */
+
+/* 1. Standard float: naik-turun 6px, ease-in-out */
+@keyframes float-standard {
+  0%, 100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, -6px, 0);
+  }
+}
+
+@keyframes float-standard-active {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) scale(1.12);
+  }
+  50% {
+    transform: translate3d(0, -6px, 0) scale(1.12);
+  }
+}
+
+/* 2. Roasting: api bergoyang */
+@keyframes float-flame {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  20% {
+    transform: translate3d(-1px, -2px, 0) rotate(-3.5deg);
+  }
+  45% {
+    transform: translate3d(1.5px, -6px, 0) rotate(3.5deg);
+  }
+  70% {
+    transform: translate3d(-1.5px, -3.5px, 0) rotate(-2deg);
+  }
+  85% {
+    transform: translate3d(1px, -1.5px, 0) rotate(1.5deg);
+  }
+}
+
+@keyframes float-flame-active {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) rotate(0deg) scale(1.12);
+  }
+  20% {
+    transform: translate3d(-1px, -2px, 0) rotate(-3.5deg) scale(1.12);
+  }
+  45% {
+    transform: translate3d(1.5px, -6px, 0) rotate(4deg) scale(1.12);
+  }
+  70% {
+    transform: translate3d(-1.5px, -3.5px, 0) rotate(-2.5deg) scale(1.12);
+  }
+  85% {
+    transform: translate3d(1px, -1.5px, 0) rotate(2deg) scale(1.12);
+  }
+}
+
+/* 3. Spray Dryer: angin bergeser ke samping */
+@keyframes float-wind {
+  0%, 100% {
+    transform: translate3d(0, 0, 0);
+  }
+  25% {
+    transform: translate3d(4px, -2.5px, 0);
+  }
+  50% {
+    transform: translate3d(0, -6px, 0);
+  }
+  75% {
+    transform: translate3d(-4px, -3.5px, 0);
+  }
+}
+
+@keyframes float-wind-active {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) scale(1.12);
+  }
+  25% {
+    transform: translate3d(4.5px, -2.5px, 0) scale(1.12);
+  }
+  50% {
+    transform: translate3d(0, -6px, 0) scale(1.12);
+  }
+  75% {
+    transform: translate3d(-4.5px, -3.5px, 0) scale(1.12);
+  }
+}
+
+/* 4. Distribusi: truk bergeser kecil kiri-kanan */
+@keyframes float-truck {
+  0%, 100% {
+    transform: translate3d(0, 0, 0);
+  }
+  25% {
+    transform: translate3d(2.5px, -1.5px, 0);
+  }
+  50% {
+    transform: translate3d(0, -6px, 0);
+  }
+  75% {
+    transform: translate3d(-2.5px, -4.5px, 0);
+  }
+}
+
+@keyframes float-truck-active {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) scale(1.12);
+  }
+  25% {
+    transform: translate3d(3px, -1.5px, 0) scale(1.12);
+  }
+  50% {
+    transform: translate3d(0, -6px, 0) scale(1.12);
+  }
+  75% {
+    transform: translate3d(-3px, -4.5px, 0) scale(1.12);
+  }
+}
+
+/* ── PREFERS-REDUCED-MOTION ── */
+@media (prefers-reduced-motion: reduce) {
+  .cluster-stage-icon,
+  .cluster-stage-icon.is-active,
+  .cluster-stage-icon.icon-roasting,
+  .cluster-stage-icon.icon-dryer,
+  .cluster-stage-icon.icon-distribusi {
+    animation: none !important;
+    transform: none !important;
+  }
+  .cluster-stage-icon.is-active {
+    transform: scale(1.12) !important;
+  }
+}
+
+/* =========================================================================
+   WORK ORDER TRACEABILITY SYSTEM (FORM F/QC/01.030) STYLES
+   ========================================================================= */
+.wo-card {
+  background: #ffffff;
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  padding: 1.25rem 1.5rem;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+}
+
+.wo-card:hover {
+  border-color: #d6d3d1;
+  box-shadow: 0 4px 16px -2px rgba(60, 36, 21, 0.06);
+}
+
+.wo-card.status-running {
+  border-left: 4px solid #059669;
+}
+
+.wo-card.status-completed {
+  border-left: 4px solid #4a2c1d;
+}
+
+.wo-card.status-draft {
+  border-left: 4px solid #a8a29e;
+}
+
+.wo-stepper-tab {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.wo-stepper-tab.active {
+  background: #fdfaf7;
+  color: #4a2c1d;
+  border: 1px solid #e2cebf;
+}
+
+.wo-stepper-tab.inactive {
+  background: transparent;
+  color: #78716c;
+}
+
+.wo-step-num {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 800;
+  shrink: 0;
+}
+
+.wo-stepper-tab.active .wo-step-num {
+  background: #4a2c1d;
+  color: #ffffff;
+}
+
+.wo-stepper-tab.inactive .wo-step-num {
+  background: #e7e5e4;
+  color: #78716c;
+}
 

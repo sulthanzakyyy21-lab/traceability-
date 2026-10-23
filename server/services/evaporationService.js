@@ -34,6 +34,7 @@ async function getEvaporationFlow(batch, tahun, tower) {
     return {
       table: evaTable,
       totalRows: rows.length,
+      tanggal: first.Tanggal ? String(first.Tanggal).split('T')[0].split(' ')[0] : null,
       waktu_proses: `${formatDT(first.Tanggal, first['Start Tank'])} - ${formatDT(last.Tanggal, last['Finish Tank'])}`,
       operator_produksi: uniqueJoin(rows.map((r) => r['Nama Petugas'])) || '-',
       no_final_tank: destTanks.length > 0 ? extractTankNo(destTanks[0]) : '-',

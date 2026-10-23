@@ -1,5 +1,5 @@
 /**
- * Helper utility to detect and reject duplicate rows before database insertion.
+ * Helper utility to detect duplicates and support Smart UPSERT before database operations.
  */
 
 function normalizeVal(val) {
@@ -35,88 +35,71 @@ function buildSignature(columns, rowData) {
 function findBatchAndDateColumns(columns) {
   const batchCols = [];
   const dateCols = [];
+  const qualifiers = ['jam', 'waktu', 'start', 'shift', 'nomor box', 'box', 'perculator', 'percolator', 'start tank', 'masakan ke'];
+  const qualifierCols = [];
 
   columns.forEach((col, idx) => {
     const lower = col.toLowerCase();
-    if (lower.includes('batch')) {
+    if (['batch', 'no_batch', 'nomor batch', 'kode_batch', 'id_no'].some((k) => lower.includes(k))) {
       batchCols.push({ name: col, index: idx });
     }
     if (['tanggal', 'date', 'stamp', 'waktu'].some((k) => lower.includes(k))) {
       dateCols.push({ name: col, index: idx });
     }
+    if (qualifiers.some((q) => lower === q || lower.startsWith(q))) {
+      qualifierCols.push({ name: col, index: idx });
+    }
   });
 
-  return { batchCols, dateCols };
+  const uniqueQualifiers = qualifierCols.filter(
+    (q) => !batchCols.some((b) => b.index === q.index) && !dateCols.some((d) => d.index === q.index)
+  );
+
+  return { batchCols, dateCols, keyCols: [...dateCols, ...uniqueQualifiers, ...batchCols] };
 }
 
-async function filterDuplicateRows(tableName, columns, incomingRows, pool) {
-  if (!incomingRows || incomingRows.length === 0) {
-    return { newRows: [], duplicateCount: 0, totalIncoming: 0 };
-  }
+function buildIdentityKey(keyCols, rowData) {
+  if (!keyCols || keyCols.length === 0) return null;
+  const isArr = Array.isArray(rowData);
+  const parts = keyCols.map((k) => normalizeVal(isArr ? rowData[k.index] : rowData[k.name]));
+  if (parts.every((p) => p === '')) return null;
+  return parts.join('###');
+}
 
+async function fetchExistingRows(tableName, columns, incomingRows, pool) {
   const { batchCols, dateCols } = findBatchAndDateColumns(columns);
   let existingRows = [];
 
   try {
     if (batchCols.length > 0) {
       for (const bCol of batchCols) {
-        const batchVals = [
-          ...new Set(
-            incomingRows
-              .map((r) => r[bCol.index])
-              .filter((v) => v !== null && v !== undefined && String(v).trim() !== '')
-          ),
-        ];
-
+        const batchVals = [...new Set(incomingRows.map((r) => r[bCol.index]).filter((v) => v !== null && v !== undefined && String(v).trim() !== ''))];
         if (batchVals.length > 0) {
           const CHUNK = 500;
           for (let i = 0; i < batchVals.length; i += CHUNK) {
             const chunk = batchVals.slice(i, i + CHUNK);
             const placeholders = chunk.map(() => '?').join(', ');
-            const [rows] = await pool.query(
-              `SELECT * FROM \`${tableName}\` WHERE \`${bCol.name}\` IN (${placeholders})`,
-              chunk
-            );
+            const [rows] = await pool.query(`SELECT * FROM \`${tableName}\` WHERE \`${bCol.name}\` IN (${placeholders})`, chunk);
             existingRows.push(...rows);
           }
         }
       }
-
-      // Check rows without any batch value using date columns
       const rowsWithoutBatch = incomingRows.filter((r) => !batchCols.some((b) => r[b.index]));
       if (rowsWithoutBatch.length > 0 && dateCols.length > 0) {
         const dCol = dateCols[0];
-        const dates = [
-          ...new Set(
-            rowsWithoutBatch
-              .map((r) => r[dCol.index])
-              .filter((v) => v !== null && v !== undefined && String(v).trim() !== '')
-          ),
-        ];
+        const dates = [...new Set(rowsWithoutBatch.map((r) => r[dCol.index]).filter((v) => v !== null && v !== undefined && String(v).trim() !== ''))];
         if (dates.length > 0) {
           const placeholders = dates.map(() => '?').join(', ');
-          const [rows] = await pool.query(
-            `SELECT * FROM \`${tableName}\` WHERE \`${dCol.name}\` IN (${placeholders})`,
-            dates
-          );
+          const [rows] = await pool.query(`SELECT * FROM \`${tableName}\` WHERE \`${dCol.name}\` IN (${placeholders})`, dates);
           existingRows.push(...rows);
         }
       }
     } else if (dateCols.length > 0) {
       const dCol = dateCols[0];
-      const dates = [
-        ...new Set(
-          incomingRows
-            .map((r) => r[dCol.index])
-            .filter((v) => v !== null && v !== undefined && String(v).trim() !== '')
-        ),
-      ];
+      const dates = [...new Set(incomingRows.map((r) => r[dCol.index]).filter((v) => v !== null && v !== undefined && String(v).trim() !== ''))];
       if (dates.length > 0) {
         const placeholders = dates.map(() => '?').join(', ');
-        const [rows] = await pool.query(
-          `SELECT * FROM \`${tableName}\` WHERE \`${dCol.name}\` IN (${placeholders})`,
-          dates
-        );
+        const [rows] = await pool.query(`SELECT * FROM \`${tableName}\` WHERE \`${dCol.name}\` IN (${placeholders})`, dates);
         existingRows.push(...rows);
       }
     } else {
@@ -127,27 +110,71 @@ async function filterDuplicateRows(tableName, columns, incomingRows, pool) {
     console.warn(`[DEDUP] Warning checking existing rows in ${tableName}:`, err.message);
   }
 
-  const existingSet = new Set();
+  return existingRows;
+}
+
+async function filterDuplicateRows(tableName, columns, incomingRows, pool) {
+  if (!incomingRows || incomingRows.length === 0) {
+    return { newRows: [], updateRows: [], duplicateCount: 0, totalIncoming: 0 };
+  }
+
+  const { keyCols } = findBatchAndDateColumns(columns);
+  const existingRows = await fetchExistingRows(tableName, columns, incomingRows, pool);
+
+  const existingFullSignatures = new Set();
+  const existingByIdentity = new Map();
+
   for (const row of existingRows) {
-    existingSet.add(buildSignature(columns, row));
+    existingFullSignatures.add(buildSignature(columns, row));
+    const idKey = buildIdentityKey(keyCols, row);
+    if (idKey && !existingByIdentity.has(idKey)) {
+      existingByIdentity.set(idKey, row);
+    }
   }
 
   const newRows = [];
+  const updateRows = [];
   let duplicateCount = 0;
   const seenIncoming = new Set();
 
   for (const row of incomingRows) {
-    const sig = buildSignature(columns, row);
-    if (existingSet.has(sig) || seenIncoming.has(sig)) {
+    const fullSig = buildSignature(columns, row);
+    if (existingFullSignatures.has(fullSig) || seenIncoming.has(fullSig)) {
       duplicateCount++;
-    } else {
-      seenIncoming.add(sig);
-      newRows.push(row);
+      continue;
     }
+
+    const idKey = buildIdentityKey(keyCols, row);
+    if (idKey && existingByIdentity.has(idKey)) {
+      const existingDbRow = existingByIdentity.get(idKey);
+      const updates = {};
+      let hasMeaningfulUpdate = false;
+
+      columns.forEach((col, idx) => {
+        const incomingVal = row[idx];
+        const existingVal = existingDbRow[col];
+        if (incomingVal !== null && incomingVal !== undefined && String(incomingVal).trim() !== '') {
+          if (normalizeVal(incomingVal) !== normalizeVal(existingVal)) {
+            updates[col] = incomingVal;
+            hasMeaningfulUpdate = true;
+          }
+        }
+      });
+
+      if (hasMeaningfulUpdate && existingDbRow.id) {
+        updateRows.push({ id: existingDbRow.id, updates });
+        seenIncoming.add(fullSig);
+        continue;
+      }
+    }
+
+    seenIncoming.add(fullSig);
+    newRows.push(row);
   }
 
   return {
     newRows,
+    updateRows,
     duplicateCount,
     totalIncoming: incomingRows.length,
   };
@@ -156,5 +183,7 @@ async function filterDuplicateRows(tableName, columns, incomingRows, pool) {
 module.exports = {
   normalizeVal,
   buildSignature,
+  buildIdentityKey,
+  findBatchAndDateColumns,
   filterDuplicateRows,
 };

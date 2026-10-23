@@ -20,6 +20,7 @@ function normHeader(h) {
   s = s.replace(/\bno box\b/g, 'nomor box');
   s = s.replace(/\bno pack\b/g, 'nomor pack');
   s = s.replace(/\bbatch fg\b/g, 'batch finished good');
+  s = s.replace(/\bsilocell\b/g, 'silo cell');
   return s.trim();
 }
 

@@ -196,6 +196,18 @@ describe('Traceability System - Automated Monitoring & Validation', () => {
     const res2 = await filterDuplicateRows('test_tbl', columns, fakeIncoming, mockPoolExisting);
     assert.strictEqual(res2.duplicateCount, 2, 'Baris existing di DB + duplikat internal harus ditolak');
     assert.strictEqual(res2.newRows.length, 1, 'Hanya Box 2 yang lolos sebagai baris baru');
+
+    // 3. Smart UPSERT: Baris existing di DB belum lengkap lalu diperbarui di file
+    const mockPoolIncomplete = {
+      query: async () => [[
+        { id: 42, Tanggal: '2026-03-01', Jam: '08:00', Batch: 'B999', 'Nomor Box': 'Box 1', 'Kadar Air (%)': null }
+      ]],
+    };
+    const res3 = await filterDuplicateRows('test_tbl', columns, fakeIncoming, mockPoolIncomplete);
+    assert.strictEqual(res3.updateRows.length, 1, 'Baris yang awalnya kosong harus masuk ke updateRows (UPSERT)');
+    assert.strictEqual(res3.updateRows[0].id, 42);
+    assert.strictEqual(res3.updateRows[0].updates['Kadar Air (%)'], '3.10');
+    assert.strictEqual(res3.newRows.length, 1, 'Hanya Box 2 yang masuk ke newRows');
   });
 
   // ══════════════════════════════════════════════════════════════
@@ -241,6 +253,32 @@ describe('Traceability System - Automated Monitoring & Validation', () => {
     assert.strictEqual(resPartial.valid, false, 'Kesesuaian kolom < 40% harus ditolak');
     assert.ok(resPartial.warning.includes('Peringatan: Kolom tidak cocok'), 'Peringatan harus menginformasikan ketidakcocokan kolom');
     assert.ok(resPartial.missingColumns.length > 0, 'Daftar kolom yang hilang harus terisi');
+  });
+
+  // ══════════════════════════════════════════════════════════════
+  // Test Case 8: Konektor Google Spreadsheet QC & Produksi
+  // ══════════════════════════════════════════════════════════════
+  test('TC-8: Verifikasi Konektor Google Spreadsheet QC & Produksi (file_penghubung)', () => {
+    const { getQcConnectorStatus } = require('../server/services/qcGoogleAuthService');
+    const { getProdConnectorStatus } = require('../server/services/prodGoogleAuthService');
+    const { isQcSheet, DEFAULT_QC_SHEETS } = require('../server/config/sheetConfig');
+
+    // 1. QC Connector
+    const qcStatus = getQcConnectorStatus();
+    assert.strictEqual(qcStatus.active, true, 'Konektor QC harus aktif (file_penghubung/qc.json tersedia)');
+    assert.strictEqual(qcStatus.keyFile, 'file_penghubung/qc.json');
+    assert.strictEqual(qcStatus.clientEmail, 'checklist-qc@traceability-512303.iam.gserviceaccount.com');
+
+    // 2. Produksi Connector
+    const prodStatus = getProdConnectorStatus();
+    assert.strictEqual(prodStatus.active, true, 'Konektor Produksi harus aktif (file_penghubung/produksi.json tersedia)');
+    assert.strictEqual(prodStatus.keyFile, 'file_penghubung/produksi.json');
+    assert.strictEqual(prodStatus.clientEmail, 'cheklist-produksi@traceability-512303.iam.gserviceaccount.com');
+
+    // 3. Routing Identification
+    assert.strictEqual(isQcSheet(DEFAULT_QC_SHEETS['1']), true, 'Sheet ID QC Tower 1 harus dikenali sebagai QC');
+    assert.strictEqual(isQcSheet(DEFAULT_QC_SHEETS['2']), true, 'Sheet ID QC Tower 2 harus dikenali sebagai QC');
+    assert.strictEqual(isQcSheet('random_other_sheet'), false, 'Sheet non-QC tidak boleh dikenali sebagai QC');
   });
 
 });

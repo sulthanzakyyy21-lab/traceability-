@@ -97,7 +97,7 @@ router.get('/', async (req, res) => {
 
     // 5. QC stage (Tower 1 & Tower 2)
     const qcFlow = await getQcFlow(batch, tahun, tower, normalizedBatchFull);
-    result.qc = formatQcTrace(qcFlow, result.packing);
+    result.qc = formatQcTrace(qcFlow, result.packing, result.roasting);
     result.qc_raw = qcFlow;
 
     res.json(result);

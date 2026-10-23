@@ -41,16 +41,31 @@ const server = app.listen(PORT, () => {
   console.log(`📡 Server running at http://localhost:${PORT}`);
   console.log(`📊 Database: db_traceability_sja @ localhost\n`);
 
-  // Support both 3001 and 3000 so localhost:3000 also works seamlessly
-  if (Number(PORT) !== 3000) {
-    const http = require('http');
-    const altServer = http.createServer(app);
-    altServer.listen(3000, () => {
-      console.log(`📡 Server juga aktif di http://localhost:3000`);
-    }).on('error', () => {
-      // Port 3000 in use, ignore
-    });
+
+
+  // ──────────────────────────────────────────────────────────
+  // AUTO-SYNC: Sinkronisasi otomatis dari Google Sheets setiap 5 menit
+  // Ini memastikan data selalu real-time tanpa perlu tombol sync manual
+  // ──────────────────────────────────────────────────────────
+  const { syncUnifiedTables } = require('./services/googleSheetService');
+  const AUTO_SYNC_INTERVAL_MS = 5 * 60 * 1000; // 5 menit
+
+  async function runAutoSync() {
+    try {
+      console.log('[AutoSync] Memulai sinkronisasi otomatis...', new Date().toISOString());
+      const result = await syncUnifiedTables({ division: 'all', tower: 'all', force: false });
+      const { totalImported, totalTables, durationSeconds } = result;
+      console.log(`[AutoSync] Selesai: ${totalImported} baris baru dari ${totalTables} tabel dalam ${durationSeconds}`);
+    } catch (e) {
+      console.error('[AutoSync] Error:', e.message);
+    }
   }
+
+  // Jalankan sekali saat startup (delay 10 detik agar server stabil dulu)
+  setTimeout(runAutoSync, 10000);
+  // Lalu interval setiap 5 menit
+  setInterval(runAutoSync, AUTO_SYNC_INTERVAL_MS);
+  console.log(`🔄 Auto-sync aktif setiap ${AUTO_SYNC_INTERVAL_MS / 60000} menit`);
 }).on('error', (err) => {
   if (err.code === 'EADDRINUSE') {
     console.error(`[ERROR] Port ${PORT} sudah digunakan. Coba port lain atau hentikan proses yang memakai port tersebut.`);

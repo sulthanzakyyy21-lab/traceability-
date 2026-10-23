@@ -14,6 +14,7 @@ const SyncBodySchema = z.object({
   sheetId: z.string().optional().nullable(),
   tower: z.enum(['1', '2', 'all', 'both']).optional().default('all'),
   division: z.enum(['qc', 'produksi', 'all']).optional().default('all'),
+  force: z.boolean().optional().default(false),
 });
 
 router.get('/status', (req, res) => {
@@ -27,7 +28,8 @@ router.post('/sync-all', async (req, res) => {
     const tower = bodyResult.success && bodyResult.data.tower ? bodyResult.data.tower : 'all';
     const division = bodyResult.success && bodyResult.data.division ? bodyResult.data.division : 'all';
     const sheetId = bodyResult.success ? bodyResult.data.sheetId : null;
-    const summary = await syncUnifiedTables({ division, tower, customSheetId: sheetId });
+    const force = bodyResult.success && req.body && req.body.force !== undefined ? Boolean(bodyResult.data.force) : true;
+    const summary = await syncUnifiedTables({ division, tower, customSheetId: sheetId, force });
     res.json(summary);
   } catch (err) {
     console.error('Google Sheet Unified Sync Error:', err);
@@ -42,7 +44,8 @@ router.post('/sync-unified', async (req, res) => {
     const tower = bodyResult.success && bodyResult.data.tower ? bodyResult.data.tower : 'all';
     const division = bodyResult.success && bodyResult.data.division ? bodyResult.data.division : 'all';
     const sheetId = bodyResult.success ? bodyResult.data.sheetId : null;
-    const summary = await syncUnifiedTables({ division, tower, customSheetId: sheetId });
+    const force = bodyResult.success && req.body && req.body.force !== undefined ? Boolean(bodyResult.data.force) : true;
+    const summary = await syncUnifiedTables({ division, tower, customSheetId: sheetId, force });
     res.json(summary);
   } catch (err) {
     console.error('Google Sheet Unified Sync Error:', err);
@@ -53,7 +56,7 @@ router.post('/sync-unified', async (req, res) => {
 // POST /api/gsheet/sync-prod — Sync Production tables (Roasting, Ekstraksi, Evaporasi, Dryer, Packing)
 router.post('/sync-prod', async (req, res) => {
   try {
-    const summary = await syncAllProdTables();
+    const summary = await syncAllProdTables({ force: true });
     res.json(summary);
   } catch (err) {
     console.error('Google Sheet Produksi Sync Error:', err);
@@ -70,7 +73,8 @@ router.post('/sync/:tableName', async (req, res) => {
     }
     const bodyResult = SyncBodySchema.safeParse(req.body);
     const sheetId = bodyResult.success ? bodyResult.data.sheetId : null;
-    const result = await syncSingleTable(paramValidation.data.tableName, sheetId);
+    const force = bodyResult.success && req.body && req.body.force !== undefined ? Boolean(bodyResult.data.force) : true;
+    const result = await syncSingleTable(paramValidation.data.tableName, sheetId, force);
     res.json(result);
   } catch (err) {
     console.error('Single Table Google Sheet Sync Error:', err);

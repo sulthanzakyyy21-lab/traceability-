@@ -71,6 +71,24 @@ const TABLE_COLUMNS_MAP = {
     'Susut Goreng', 'Keterangan', 'Nama Petugas',
   ],
 
+  roasting_scolari_1: [
+    'Stamp', 'Tanggal', 'Shift', 'Team', 'Batch', 'Mode Goreng', 'Silo Degassing', 'Start',
+    'Roasting Time (minute)', 'Roasting Time (Second)', 'Roasting Time', 'Temperatur End Roast',
+    'Volume air', 'Warna', 'Foreign Matter', 'Bau', 'waktu transfer mentah',
+    'SiloCell 1', 'SiloCell 2', 'SiloCell 3', 'SiloCell 4', 'SiloCell 5', 'SiloCell 6', 'SiloCell 7', 'SiloCell 8',
+    'Jenis Kopi Mentah', 'waktu transfer matang', 'berat kopi matang',
+    'Susut Goreng %', 'Keterangan', 'Nama Petugas',
+  ],
+
+  roasting_scolari_2: [
+    'Stamp', 'Tanggal', 'Shift', 'Team', 'Batch', 'Mode Goreng', 'Silo Degassing', 'Start',
+    'Roasting Time (minute)', 'Roasting Time (Second)', 'Roasting Time', 'Temperatur End Roast',
+    'Volume air', 'Warna', 'Foreign Matter', 'Bau', 'waktu transfer mentah',
+    'SiloCell 1', 'SiloCell 2', 'SiloCell 3', 'SiloCell 4', 'SiloCell 5', 'SiloCell 6', 'SiloCell 7', 'SiloCell 8',
+    'Jenis Kopi Mentah', 'waktu transfer matang', 'berat kopi matang',
+    'Susut Goreng %', 'Keterangan', 'Nama Petugas',
+  ],
+
   packing_tower_1: [
     'stamp', 'tanggal', 'waktu', 'nama', 'shift', 'team', 'batch', 'pin', 'nama_produk',
     'ok_box', 'hold_box', 'bo_box', 'bo_kg', 'waste_dust_collector_kg', 'waste_metal_separator_kg',

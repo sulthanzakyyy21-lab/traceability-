@@ -13,24 +13,43 @@ async function getRoastingFlow(siloNumbers, extractionStartStr, totalOutputVal, 
 
   try {
     const siloPlaceholders = siloNumbers.map(() => '?').join(', ');
-    let [roastRows] = await pool.execute(
-      `SELECT * FROM roasting_probat
-       WHERE CAST(\`Silo Degassing\` AS UNSIGNED) IN (${siloPlaceholders})
-         AND Stamp >= DATE_SUB(?, INTERVAL 48 HOUR)
-         AND Stamp <= ?
-       ORDER BY Stamp ASC`,
-      [...siloNumbers, extractionStartStr, extractionStartStr]
-    );
+    const roastingTables = [
+      { name: 'roasting_probat', machine: 'PRB' },
+      { name: 'roasting_scolari_1', machine: 'SCL 1' },
+      { name: 'roasting_scolari_2', machine: 'SCL 2' },
+    ];
 
-    if (roastRows.length === 0) {
-      [roastRows] = await pool.execute(
-        `SELECT * FROM roasting_probat
+    let roastRows = [];
+    let matchedMachine = 'PRB';
+    let matchedTable = 'roasting_probat';
+
+    for (const t of roastingTables) {
+      let [rows] = await pool.execute(
+        `SELECT * FROM \`${t.name}\`
          WHERE CAST(\`Silo Degassing\` AS UNSIGNED) IN (${siloPlaceholders})
-           AND Stamp >= DATE_SUB(?, INTERVAL 96 HOUR)
+           AND Stamp >= DATE_SUB(?, INTERVAL 48 HOUR)
            AND Stamp <= ?
          ORDER BY Stamp ASC`,
         [...siloNumbers, extractionStartStr, extractionStartStr]
       );
+
+      if (rows.length === 0) {
+        [rows] = await pool.execute(
+          `SELECT * FROM \`${t.name}\`
+           WHERE CAST(\`Silo Degassing\` AS UNSIGNED) IN (${siloPlaceholders})
+             AND Stamp >= DATE_SUB(?, INTERVAL 96 HOUR)
+             AND Stamp <= ?
+           ORDER BY Stamp ASC`,
+          [...siloNumbers, extractionStartStr, extractionStartStr]
+        );
+      }
+
+      if (rows.length > 0) {
+        roastRows = rows;
+        matchedMachine = t.machine;
+        matchedTable = t.name;
+        break;
+      }
     }
 
     if (roastRows.length === 0) {
@@ -78,20 +97,22 @@ async function getRoastingFlow(siloNumbers, extractionStartStr, totalOutputVal, 
       : usedSiloCells.join(', ');
 
     const roasting = {
+      table: matchedTable,
       totalRows: roastRows.length,
+      tanggal: first.Tanggal ? String(first.Tanggal).split('T')[0].split(' ')[0] : (first.Stamp ? String(first.Stamp).split(' ')[0] : null),
       waktu_proses: `${formatDT(first.Stamp, first.Stamp)} - ${formatDT(last.Stamp, last.Stamp)}`,
-      mesin_goreng: 'PRB',
+      mesin_goreng: matchedMachine,
       jenis_kopi_goreng: modeGoreng.join(', ') || 'TIC 18',
       silo_degassing: siloNumbers.join(' & '),
       jumlah_batch: roastRows.length,
-      operator_produksi: uniqueJoin(roastRows.map((r) => r['Nama Petugas']), ', ') || '-',
+      operator_produksi: uniqueJoin(roastRows.map((r) => r['Nama Petugas'] === 'Heri' ? 'Heri S.' : r['Nama Petugas']), ', ') || '-',
       jenis_biji_mentah: jenisKopi.join(', ') || '018 SK',
       silo_cell_terpakai: siloCellDisplay || '8, 1, 2, 4, 5 & 6',
       total_kopi_mentah_kg: totalKopiMentah.toFixed(1),
       total_kopi_matang_kg: totalKopiMatang.toFixed(1),
       yield_roasting: yieldRoastingStr,
       yield_roasting_num: yieldRoastingNum,
-      columns: TABLE_COLUMNS_MAP['roasting_probat'] || [],
+      columns: TABLE_COLUMNS_MAP[matchedTable] || TABLE_COLUMNS_MAP['roasting_probat'] || [],
       raw_rows: roastRows,
     };
 
@@ -106,10 +127,13 @@ async function getRoastingFlow(siloNumbers, extractionStartStr, totalOutputVal, 
     const rasioIC = finalOutput ? (parseFloat(totalKopiMentahMb) / finalOutput).toFixed(2) : '2.16';
 
     const mass_balance = {
-      total_output_produk: finalOutput ? `${finalOutput.toLocaleString()} kg` : '6,150 kg',
-      total_kopi_goreng_transfer: `${transferKopiGoreng.toLocaleString()} kg`,
-      total_kopi_mentah: `${totalKopiMentahMb} kg (yield roasting ${yieldRoastingStr})`,
-      rasio_ic: rasioIC,
+      total_output_produk: finalOutput ? `${finalOutput.toLocaleString()} kg` : (packingOutputKg ? `${packingOutputKg.toLocaleString()} kg` : '-'),
+      total_kopi_goreng_transfer: totalKopiMatang > 0 ? `${totalKopiMatang.toLocaleString()} kg` : '-',
+      total_kopi_mentah: totalKopiMentah > 0 ? `${totalKopiMentah.toFixed(1)} kg (yield roasting ${yieldRoastingStr})` : '-',
+      yield: yieldRoastingNum,
+      yield_roasting: yieldRoastingStr,
+      rasio_ic: (finalOutput && totalKopiMentah > 0) ? (totalKopiMentah / finalOutput).toFixed(2) : null,
+      icRatio: (finalOutput && totalKopiMentah > 0) ? (totalKopiMentah / finalOutput).toFixed(2) : null,
     };
 
     return { roasting, upbm, mass_balance };
