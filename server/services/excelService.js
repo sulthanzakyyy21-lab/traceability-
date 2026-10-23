@@ -126,6 +126,24 @@ async function bulkInsertExcelData(tableName, bufferOrWorkbook, customSheetName)
     return { imported: 0, duplicates: 0, table: tableName, message: 'Data sudah paling mutakhir di database.' };
   }
 
+  const isQc = tableName.startsWith('qc_');
+  let rowsToProcess = incomingRows;
+  let inBatchDuplicates = 0;
+
+  if (isQc) {
+    const seen = new Set();
+    rowsToProcess = [];
+    for (const r of incomingRows) {
+      const sig = r.join('|||');
+      if (seen.has(sig)) {
+        inBatchDuplicates++;
+      } else {
+        seen.add(sig);
+        rowsToProcess.push(r);
+      }
+    }
+  }
+
   const escapedCols = columns.map((c) => `\`${c}\``).join(', ');
   const nonKeys = columns.filter((c) => c !== 'id' && c !== 'ID_No');
   const onDupClause = nonKeys.map((c) => `\`${c}\` = COALESCE(VALUES(\`${c}\`), \`${c}\`)`).join(', ');
@@ -136,8 +154,11 @@ async function bulkInsertExcelData(tableName, bufferOrWorkbook, customSheetName)
 
   try {
     await conn.beginTransaction();
-    for (let i = 0; i < incomingRows.length; i += CHUNK_SIZE) {
-      const chunk = incomingRows.slice(i, i + CHUNK_SIZE);
+    if (isQc) {
+      await conn.query(`DELETE FROM \`${tableName}\``);
+    }
+    for (let i = 0; i < rowsToProcess.length; i += CHUNK_SIZE) {
+      const chunk = rowsToProcess.slice(i, i + CHUNK_SIZE);
       const rowPlaceholders = `(${columns.map(() => '?').join(', ')})`;
       const allPlaceholders = chunk.map(() => rowPlaceholders).join(', ');
       const sql = `INSERT INTO \`${tableName}\` (${escapedCols}) VALUES ${allPlaceholders} ON DUPLICATE KEY UPDATE ${onDupClause}`;
@@ -146,12 +167,14 @@ async function bulkInsertExcelData(tableName, bufferOrWorkbook, customSheetName)
     }
     await conn.commit();
 
-    const msg = `Berhasil: ${incomingRows.length.toLocaleString()} baris data diproses dengan sistem Native UPSERT (${totalAffected} rekaman diperbarui/ditambahkan).`;
+    const msg = isQc
+      ? `Berhasil: ${rowsToProcess.length.toLocaleString()} baris data QC disinkronkan tanpa duplikasi.`
+      : `Berhasil: ${incomingRows.length.toLocaleString()} baris data diproses dengan sistem Native UPSERT (${totalAffected} rekaman diperbarui/ditambahkan).`;
 
     return {
-      imported: incomingRows.length,
+      imported: rowsToProcess.length,
       updated: totalAffected,
-      duplicates: 0,
+      duplicates: inBatchDuplicates,
       table: tableName,
       message: msg,
     };

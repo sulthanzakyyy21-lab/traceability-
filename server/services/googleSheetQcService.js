@@ -2,7 +2,7 @@ const crypto = require('crypto');
 const xlsx = require('xlsx');
 const pool = require('../db');
 const { bulkInsertExcelData } = require('./excelService');
-const { QC_TABLES_BY_TOWER, getSpreadsheetId, fetchQcSheetBuffer } = require('../config/sheetConfig');
+const { QC_TABLES_BY_TOWER, getSpreadsheetId, fetchGoogleSheetBuffer } = require('../config/sheetConfig');
 const { getSpreadsheetFingerprint } = require('./sheetMetadataService');
 
 async function syncTowerTables(towerKey, customSheetId, hashCache = {}, force = false, lastSyncTime = 0) {
@@ -17,10 +17,10 @@ async function syncTowerTables(towerKey, customSheetId, hashCache = {}, force = 
     } catch {}
   }
 
-  const buffer = await fetchQcSheetBuffer(targetId);
+  const buffer = await fetchGoogleSheetBuffer(targetId, { isQc: true });
   const bufHash = crypto.createHash('md5').update(buffer).digest('hex');
   const FORCE_AFTER_MS = 30 * 60 * 1000; // Force setelah 30 menit
-  const forceByTime = (Date.now() - lastSyncTime) > FORCE_AFTER_MS;
+  const forceByTime = lastSyncTime > 0 && (Date.now() - lastSyncTime) > FORCE_AFTER_MS;
   if (!force && !forceByTime && !hasEmpty && hashCache[targetId] === bufHash) {
     const results = tables.map(tbl => ({
       table: tbl,

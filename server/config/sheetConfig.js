@@ -2,18 +2,18 @@ const { QC_TABLE_COLUMNS_MAP_T1 } = require('./qcColumnsT1');
 const { QC_TABLE_COLUMNS_MAP_T2 } = require('./qcColumnsT2');
 
 const DEFAULT_QC_SHEETS = {
-  '1': process.env.GOOGLE_SHEET_QC_T1_ID || process.env.GOOGLE_SHEET_QC_ID || '1rx6D5Iecd7-3UzZiixLbkko5m1YYfYrQpTdZ60uIKUA',
+  '1': process.env.GOOGLE_SHEET_QC_T1_ID || process.env.GOOGLE_SHEET_QC_ID || '1gYPOqD4NT0v3U0eZewDCYNpwf-3zk_icIXsJcTslTdo',
   '2': process.env.GOOGLE_SHEET_QC_T2_ID || '1I_n0gmzWSZAkjZD-Hsdz-OVNmreo90dEwS3btq7KxY0',
 };
 
 const DEFAULT_PROD_SHEETS = {
-  roasting: process.env.GOOGLE_SHEET_ROASTING_ID || '1PcdJp5v44Jjmy_gsjMLvAiGjtUqXBfmMfZszLCamRNg',
-  extraction_t1: process.env.GOOGLE_SHEET_EXT_T1_ID || '1TNxgBuWR_5E7EYJFltHYGWZUFjJZ_9QrejEAiYW9ilQ',
-  evaporation_t1: process.env.GOOGLE_SHEET_EVAP_T1_ID || process.env.GOOGLE_SHEET_EXT_T1_ID || '1TNxgBuWR_5E7EYJFltHYGWZUFjJZ_9QrejEAiYW9ilQ',
+  roasting: process.env.GOOGLE_SHEET_ROASTING_ID || '1YatCViAKs4A_JH8SdFgqJap-t1zY9YYYu5rsTKnnfBE',
+  extraction_t1: process.env.GOOGLE_SHEET_EXT_T1_ID || '1JZGk5sPI0VnbVaU7c0xMDVx4DlX7WfsFS_rf292-Mk8',
+  evaporation_t1: process.env.GOOGLE_SHEET_EVAP_T1_ID || process.env.GOOGLE_SHEET_EXT_T1_ID || '1JZGk5sPI0VnbVaU7c0xMDVx4DlX7WfsFS_rf292-Mk8',
   extraction_t2: process.env.GOOGLE_SHEET_EXT_T2_ID || '1DILvtmlL4zIzOeMusV7AHAiIn5v2jckpuD4eLzdFFFM',
   evaporation_t2: process.env.GOOGLE_SHEET_EVAP_T2_ID || process.env.GOOGLE_SHEET_EXT_T2_ID || '1DILvtmlL4zIzOeMusV7AHAiIn5v2jckpuD4eLzdFFFM',
   dryer_t1: process.env.GOOGLE_SHEET_DRYER_T1_ID || '19J2qf2d4lKGfPZ4SeY6w7ZW1BIv4SoVC3MVS7WP1QCo',
-  dryer_t2: process.env.GOOGLE_SHEET_DRYER_T2_ID || '1-UHi2pXHCyaR73Ws4wHJiXaBZ_CuIDCbhKMaLYqO_7U',
+  dryer_t2: process.env.GOOGLE_SHEET_DRYER_T2_ID || '1y0u7E1qLo9wuaDrtYOrl2skzMYfMVTAi7OtX44WiaAQ',
 };
 
 const GDRIVE_FOLDER_ID = process.env.GOOGLE_DRIVE_FOLDER_ID || '1fNUUqJSoE1JesqkkmKZ6PU4dDP5MEswn';
@@ -132,10 +132,19 @@ function isQcSheet(sheetId) {
 }
 
 async function fetchGoogleSheetBuffer(sheetId, options = {}) {
-  if (options.isQc || isQcSheet(sheetId)) {
-    return fetchQcSheetBuffer(sheetId);
+  const isQc = Boolean(options.isQc || isQcSheet(sheetId));
+  try {
+    return isQc ? await fetchQcSheetBuffer(sheetId) : await fetchProdSheetBuffer(sheetId);
+  } catch (err) {
+    const url = getExportUrl(sheetId);
+    const res = await fetch(url, {
+      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' },
+      redirect: 'follow',
+    });
+    if (!res.ok) throw err;
+    const arrayBuffer = await res.arrayBuffer();
+    return Buffer.from(arrayBuffer);
   }
-  return fetchProdSheetBuffer(sheetId);
 }
 
 module.exports = {

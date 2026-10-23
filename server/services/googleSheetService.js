@@ -6,12 +6,8 @@ const { syncTowerTables, syncAllQcTables } = require('./googleSheetQcService');
 const { getSyncStatus } = require('./googleSheetStatusService');
 const { getSpreadsheetFingerprint } = require('./sheetMetadataService');
 const {
-  DEFAULT_PROD_SHEETS,
-  PROD_TABLE_MAP,
-  QC_TABLES_BY_TOWER,
-  getSpreadsheetId,
-  getTableSheetUrl,
-  fetchGoogleSheetBuffer,
+  DEFAULT_PROD_SHEETS, PROD_TABLE_MAP, QC_TABLES_BY_TOWER,
+  getSpreadsheetId, getTableSheetUrl, fetchGoogleSheetBuffer,
 } = require('../config/sheetConfig');
 
 let syncState = { lastSyncTime: null, isSyncing: false, lastSummary: null };
@@ -97,11 +93,18 @@ async function executeUnifiedSync({ division = 'all', tower = 'all', customSheet
     if (division === 'all' || division === 'qc') {
       const towersToSync = (tower === 'all' || tower === 'both') ? ['1', '2'] : [String(tower)];
       for (const t of towersToSync) {
-        const { results, imported, duplicates } = await syncTowerTables(t, towersToSync.length === 1 ? customSheetId : null, sheetBufferHashes, force);
-        results.forEach(r => { r.pic = 'QC'; r.label = r.table; });
-        allResults = allResults.concat(results);
-        totalImported += imported;
-        totalDuplicates += duplicates;
+        try {
+          const lastQcTime = lastSyncByScope[`qc:${t}`] || lastSyncByScope['all:all'] || 0;
+          const { results, imported, duplicates } = await syncTowerTables(t, towersToSync.length === 1 ? customSheetId : null, sheetBufferHashes, force, lastQcTime);
+          results.forEach(r => { r.pic = 'QC'; r.label = r.table; });
+          allResults = allResults.concat(results);
+          totalImported += imported;
+          totalDuplicates += duplicates;
+        } catch (qcErr) {
+          (QC_TABLES_BY_TOWER[t] || []).forEach(tbl => {
+            allResults.push({ table: tbl, label: tbl, pic: 'QC', tower: `Tower ${t}`, imported: 0, duplicates: 0, message: qcErr.message, success: false });
+          });
+        }
       }
     }
 
@@ -114,10 +117,8 @@ async function executeUnifiedSync({ division = 'all', tower = 'all', customSheet
     syncState.lastSyncTime = summary.timestamp;
     syncState.lastSummary = summary;
     const scopeKey = `${division}:${tower}`;
-    lastSyncByScope[scopeKey] = Date.now();
-    lastSummaryByScope[scopeKey] = summary;
-    lastSyncByScope['all:all'] = Date.now();
-    lastSummaryByScope['all:all'] = summary;
+    lastSyncByScope[scopeKey] = lastSyncByScope['all:all'] = Date.now();
+    lastSummaryByScope[scopeKey] = lastSummaryByScope['all:all'] = summary;
     return summary;
   } finally {
     syncState.isSyncing = false;
