@@ -2,8 +2,8 @@ const { QC_TABLE_COLUMNS_MAP_T1 } = require('./qcColumnsT1');
 const { QC_TABLE_COLUMNS_MAP_T2 } = require('./qcColumnsT2');
 
 const DEFAULT_QC_SHEETS = {
-  '1': process.env.GOOGLE_SHEET_QC_T1_ID || process.env.GOOGLE_SHEET_QC_ID || '1gYPOqD4NT0v3U0eZewDCYNpwf-3zk_icIXsJcTslTdo',
-  '2': process.env.GOOGLE_SHEET_QC_T2_ID || '1I_n0gmzWSZAkjZD-Hsdz-OVNmreo90dEwS3btq7KxY0',
+  '1': process.env.GOOGLE_SHEET_QC_T1_ID || process.env.GOOGLE_SHEET_QC_ID || '1gYPOqD4NT0v3U0eZewDCYNpwf-3zk_iclXsJcTsITdo',
+  '2': process.env.GOOGLE_SHEET_QC_T2_ID || '18skCecZKGdFj8uSE7hu7F-X8XQ2PD1Ys5EIvdh8iez8',
 };
 
 const DEFAULT_PROD_SHEETS = {
