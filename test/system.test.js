@@ -1,4 +1,4 @@
-const { test, describe, after } = require('node:test');
+const { test, describe, after, before } = require('node:test');
 const assert = require('node:assert');
 const fs = require('node:fs');
 const path = require('node:path');
@@ -8,8 +8,15 @@ const pool = require('../server/db');
 const { TraceQuerySchema } = require('../server/schemas/traceSchema');
 const { TableNameParamSchema, PicRowsQuerySchema } = require('../server/schemas/importSchema');
 const { parseBatch, formatAvg2 } = require('../server/utils/traceHelpers');
+const { seedPaBaseline } = require('../server/db/migrations/seedPaBaseline');
 
 describe('Traceability System - Automated Monitoring & Validation', () => {
+
+  before(async () => {
+    try {
+      await seedPaBaseline();
+    } catch {}
+  });
 
   after(async () => {
     try {

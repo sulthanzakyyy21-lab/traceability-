@@ -353,7 +353,8 @@ function buildClusterData(traceResult, tower = '1') {
           title: 'INCOMING BAHAN',
           refDoc: 'Form F/SC/01.06, F/SC/01.05 & F/QC/01.030',
           isAvailable: hasRmw,
-          pendingPicName: hasRmw ? 'RMW & QC' : 'Data tidak ditemukan di database',
+          pendingPicName: hasRmw ? 'RMW & QC' : 'RMW & QC (Data belum ada di database)',
+          noticeText: 'Data Penerimaan Bahan Baku Kopi Mentah (RMW) belum ada di database MySQL.',
           operationalTitle: 'Data Kedatangan & Logistik Bahan Baku',
           prodRole: 'RMW',
           fields: cleanFields([
@@ -386,7 +387,8 @@ function buildClusterData(traceResult, tower = '1') {
           title: 'UPBM',
           refDoc: 'Form F/PRO/01.01 & F/QC/01.030',
           isAvailable: hasUpbm,
-          pendingPicName: hasUpbm ? 'UPBM' : 'Data tidak ditemukan di database',
+          pendingPicName: hasUpbm ? 'UPBM' : 'UPBM (Data belum ada di database)',
+          noticeText: 'Data Inload Silo Cell dan serah terima biji kopi mentah (UPBM) belum ada di database MySQL.',
           operationalTitle: 'Data Serah Terima & Inload Silo Cell',
           prodRole: 'Produksi',
           fields: cleanFields([
@@ -434,6 +436,7 @@ function buildClusterData(traceResult, tower = '1') {
           ]),
           qcTitle: 'Hasil Pengujian Laboratorium Mutu Biji Sangrai',
           qcRole: 'QC',
+          qcNotice: 'Data Analisa Laboratorium Mutu Biji Sangrai (QC) belum ada di database MySQL.',
           qcMetrics: cleanMetrics([
             { label: 'Warna Kopi Goreng', value: d.qc?.qc_roast_warna || 'Data tidak ditemukan', spec: 'Standar Agtron' },
             { label: 'Kadar air', value: d.qc?.qc_roast_kadar_air || 'Data tidak ditemukan', spec: 'Maks. 5.50%' },
@@ -1108,7 +1111,8 @@ function buildClusterData(traceResult, tower = '1') {
           title: 'INCOMING BAHAN KEMAS',
           refDoc: 'Form F/SC/02.6, F/SC/02.11 & F/QC/01.030',
           isAvailable: hasFgwKemas,
-          pendingPicName: hasFgwKemas ? 'FGW & QC' : 'Data tidak ditemukan di database',
+          pendingPicName: hasFgwKemas ? 'FGW & QC' : 'FGW & QC (Data belum ada di database)',
+          noticeText: 'Data Kedatangan Bahan Kemasan Karton & Plastik belum ada di database MySQL.',
           operationalTitle: 'Data Kedatangan Bahan Kemasan Karton & Plastik',
           prodRole: 'FGW',
           sections: [
@@ -1198,7 +1202,8 @@ function buildClusterData(traceResult, tower = '1') {
           title: 'DISTRIBUSI',
           refDoc: 'Surat Jalan Antar Gudang, F-SC-02.2 & F/QC/01.030',
           isAvailable: hasDistribusi,
-          pendingPicName: hasDistribusi ? 'FGW & QA' : 'Data tidak ditemukan di database',
+          pendingPicName: hasDistribusi ? 'FGW & QA' : 'FGW & QA (Data belum ada di database)',
+          noticeText: 'Data Pengiriman Produk Jadi (FGW) dan verifikasi CoA belum ada di database MySQL.',
           operationalTitle: 'Data Gudang & Pengiriman Produk Jadi',
           prodRole: 'FGW',
           fields: cleanFields([

@@ -51,6 +51,7 @@ jobs:
           mysql -h 127.0.0.1 -P 3306 -u root db_traceability_sja < pa_schema.sql
           node server/db/migrations/createUsersTable.js
           node server/db/migrations/createAuditLogsTable.js
+          node server/db/migrations/seedPaBaseline.js
           mkdir -p file_penghubung
           echo '{"client_email":"checklist-qc@traceability-512303.iam.gserviceaccount.com"}' > file_penghubung/qc.json
           echo '{"client_email":"cheklist-produksi@traceability-512303.iam.gserviceaccount.com"}' > file_penghubung/produksi.json
@@ -168,6 +169,7 @@ jobs:
           mysql -h 127.0.0.1 -P 3306 -u root db_traceability_sja < pa_schema.sql
           node server/db/migrations/createUsersTable.js
           node server/db/migrations/createAuditLogsTable.js
+          node server/db/migrations/seedPaBaseline.js
           mkdir -p file_penghubung
           echo '{"client_email":"checklist-qc@traceability-512303.iam.gserviceaccount.com"}' > file_penghubung/qc.json
           echo '{"client_email":"cheklist-produksi@traceability-512303.iam.gserviceaccount.com"}' > file_penghubung/produksi.json
@@ -230,6 +232,7 @@ jobs:
           mysql -h 127.0.0.1 -P 3306 -u root db_traceability_sja < pa_schema.sql
           node server/db/migrations/createUsersTable.js
           node server/db/migrations/createAuditLogsTable.js
+          node server/db/migrations/seedPaBaseline.js
           mkdir -p file_penghubung
           echo '{"client_email":"checklist-qc@traceability-512303.iam.gserviceaccount.com"}' > file_penghubung/qc.json
           echo '{"client_email":"cheklist-produksi@traceability-512303.iam.gserviceaccount.com"}' > file_penghubung/produksi.json
