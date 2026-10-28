@@ -35,7 +35,13 @@ app.use(cors());
 app.use(express.json({ limit: '15mb' }));
 app.use(express.urlencoded({ extended: true, limit: '15mb' }));
 
-// Serve static frontend files
+// Serve static frontend files (Dual-Running: /app for React, / for stable fallback)
+const clientDist = path.join(__dirname, '../client/dist');
+if (fs.existsSync(clientDist)) {
+  app.use('/app', express.static(clientDist));
+  app.get('/app', (req, res) => res.sendFile(path.join(clientDist, 'index.html')));
+  app.get('/app/*', (req, res) => res.sendFile(path.join(clientDist, 'index.html')));
+}
 app.use(express.static(path.join(__dirname, '../public')));
 
 // API Routes

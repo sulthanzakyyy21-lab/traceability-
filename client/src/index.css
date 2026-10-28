@@ -1,0 +1,72 @@
+@import "tailwindcss";
+
+@theme {
+  --color-coffee-50: #fdfaf7;
+  --color-coffee-100: #f4ede6;
+  --color-coffee-200: #e8dcce;
+  --color-coffee-300: #d5c2ad;
+  --color-coffee-400: #bca188;
+  --color-coffee-500: #a38165;
+  --color-coffee-600: #876348;
+  --color-coffee-700: #6d4c35;
+  --color-coffee-800: #4a2c1d;
+  --color-coffee-900: #3c2415;
+  --color-coffee-950: #26160c;
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+body {
+  background-color: #fbfaf8;
+  color: #1c1917;
+  font-family: var(--font-sans);
+}
+
+/* Param Stacked Table Styles (Clean Industrial Blue) */
+.param-stacked-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 9.5px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+}
+
+.param-green-th {
+  background: #1d4ed8 !important;
+  color: #ffffff !important;
+  padding: 5px 8px;
+  font-weight: bold;
+  font-size: 9.5px;
+  border: 1px solid #1e40af;
+  text-align: center;
+  white-space: nowrap !important;
+}
+
+.param-th-no {
+  width: 28px;
+  min-width: 28px;
+  background: #1e3a8a !important;
+  color: #ffffff !important;
+  font-size: 9.5px;
+  text-align: center;
+  border: 1px solid #1e40af;
+}
+
+.param-td-no {
+  text-align: center;
+  font-weight: bold;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1 !important;
+  padding: 3px 6px;
+  font-size: 9.5px;
+  color: #1e3a8a;
+}
+
+.param-td {
+  border: 1px solid #cbd5e1 !important;
+  padding: 3.5px 8px;
+  color: #0f172a;
+  text-align: center;
+  font-size: 9.5px;
+  white-space: nowrap !important;
+}
