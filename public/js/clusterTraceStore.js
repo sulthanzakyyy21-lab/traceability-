@@ -583,7 +583,8 @@ function buildClusterData(traceResult, tower = '1') {
           ]),
           paTitle: 'Verifikasi Sanitasi CIP Ekstraktor',
           paFields: cleanFields([
-            { label: 'Waktu CIP terakhir', value: d.pa?.cip?.extraction?.tanggal || '' },
+            { label: 'Waktu CIP terakhir', value: d.pa?.extraction_cip_checklist?.latestCipDate || d.pa?.cip?.extraction?.tanggal || '' },
+            { label: 'Checklist Sanitasi', value: d.pa?.extraction_cip_checklist ? (d.pa.extraction_cip_checklist.recordedItems + ' / ' + d.pa.extraction_cip_checklist.totalItems + ' Titik Terverifikasi (' + d.pa.extraction_cip_checklist.plantName + ')') : '' },
             { label: 'Konsentrasi lye', value: d.pa?.cip?.extraction?.konsentrasi_lye || (d.pa?.cip?.extraction?.tanggal ? '3 %' : '') },
             { label: 'Verifikasi Final Rinse', value: d.pa?.cip?.extraction?.rinse || '' },
             { label: 'PIC PA', value: d.pa?.cip?.extraction?.pic || '' },
@@ -675,6 +676,7 @@ function buildClusterData(traceResult, tower = '1') {
             columns: d.pa.tables.extraction.columns,
             averages: d.pa.tables.extraction.averages || {},
           } : null,
+          cipChecklist: d.pa?.extraction_cip_checklist || null,
           pic: {
             operasional: d.extraction?.operator_produksi || '',
             qc: d.qc?.qc_aroma_pic || d.qc?.qc_hydro_pic || d.qc?.qc_grind_pic || '',
