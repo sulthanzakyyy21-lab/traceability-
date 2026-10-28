@@ -22,6 +22,12 @@ export const ProcessSectionCard: React.FC<Props> = ({
   onOpenInspect,
 }) => {
   const isExtraction = section.name === 'EKSTRAKSI';
+  const isDryer = section.name === 'DRYER';
+  const isPacking = section.name === 'PACKING';
+
+  const activeCip = isExtraction
+    ? (cipChecklist || traceResult?.pa?.extraction_cip_checklist)
+    : (isDryer ? traceResult?.pa?.dryer_cip_checklist : (isPacking ? traceResult?.pa?.packing_cop_checklist : null));
 
   const getItemValue = (key: string): string => {
     if (!traceResult) return '-';
@@ -36,17 +42,21 @@ export const ProcessSectionCard: React.FC<Props> = ({
   };
 
   const handleInspectCip = () => {
-    if (!cipChecklist) return;
+    if (!activeCip) return;
+    const titleText = isPacking 
+      ? `CHECKLIST COP & SANITASI AREA PACKING (${activeCip.plantName || 'PLANT 1'})`
+      : (isDryer ? `CHECKLIST CIP & FLUSHING AREA DRYER (${activeCip.plantName || 'PLANT 1'})` : `CHECKLIST CIP & FLUSHING AREA EXTRACTION (${activeCip.plantName || 'PLANT 1'})`);
+
     onOpenInspect({
       type: 'cip',
-      title: 'CHECKLIST CIP & FLUSHING AREA EXTRACTION (PLANT 1)',
-      subtitle: 'Pengambilan data waktu CIP terakhir untuk setiap titik instrument/area ekstraksi.',
-      refForm: cipChecklist.refForm || 'QF/PDQC/SS/010',
-      tableName: cipChecklist.tableName || 'pa_cip_t1',
-      cipChecklist,
-      totalItems: cipChecklist.totalItems,
-      recordedItems: cipChecklist.recordedItems,
-      latestCipDate: cipChecklist.latestCipDate,
+      title: titleText,
+      subtitle: 'Pengambilan data waktu sanitasi terakhir untuk setiap titik instrument/area sebelum tanggal proses batch.',
+      refForm: activeCip.refForm || 'QF/PDQC/SS/010',
+      tableName: activeCip.tableName || 'pa_cip_t1',
+      cipChecklist: activeCip,
+      totalItems: activeCip.totalItems,
+      recordedItems: activeCip.recordedItems,
+      latestCipDate: activeCip.latestCipDate,
     });
   };
 
@@ -67,18 +77,18 @@ export const ProcessSectionCard: React.FC<Props> = ({
 
         {/* Action Trigger Buttons for Inspect Pop-up Modals */}
         <div className="flex items-center gap-2 shrink-0">
-          {isExtraction && cipChecklist && (
+          {activeCip && (
             <Button
               type="button"
               variant="blueOutline"
               size="sm"
               onClick={handleInspectCip}
               className="gap-1.5 h-7 text-[11px] font-semibold"
-              title="Inspect checklist sanitasi CIP"
+              title={`Inspect checklist sanitasi ${isPacking ? 'COP' : 'CIP'}`}
             >
-              <span className="font-bold">Inspect Checklist</span>
+              <span className="font-bold">{isPacking ? 'Inspect Checklist COP' : 'Inspect Checklist CIP'}</span>
               <span className="font-mono text-[10px] bg-white px-1.5 py-0.2 rounded border border-blue-200 font-bold text-blue-900">
-                {cipChecklist.recordedItems} / {cipChecklist.totalItems} Titik
+                {activeCip.recordedItems} / {activeCip.totalItems} Titik
               </span>
             </Button>
           )}

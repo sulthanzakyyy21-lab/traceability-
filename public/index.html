@@ -476,7 +476,6 @@
 
     .main-content-wrap {
       will-change: width;
-      contain: paint;
     }
 
     /* Print styles */
@@ -2094,21 +2093,17 @@
                       </h5>
                     </div>
                     <div class="flex items-center gap-2 flex-wrap">
-                      <!-- Tombol Checklist Sanitasi CIP Extraction (Plant 1 / Plant 2) -->
+                      <!-- Tombol Checklist Sanitasi CIP / COP (Plant 1 / Plant 2) -->
                       <button
                         v-if="flow.cipChecklist"
                         type="button"
-                        @click="openInspectCip(flow.cipChecklist)"
-                        class="btn-secondary-action inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-emerald-50 hover:bg-emerald-100 text-emerald-950 border border-emerald-300 rounded-xl transition-all cursor-pointer shadow-2xs hover:shadow-xs"
-                        title="Buka checklist sanitasi CIP di pop-up inspector"
+                        @click="openInspectCip(flow.cipChecklist, flow.flowNumber?.includes('2') ? 'Checklist COP & Sanitasi Area Packing' : (flow.flowNumber?.includes('4') ? 'Checklist CIP & Flushing Area Dryer' : 'Checklist CIP & Flushing Area Extraction'))"
+                        class="btn-secondary-action inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-blue-50/80 hover:bg-blue-100 text-blue-950 border border-blue-200 rounded-xl transition-all cursor-pointer shadow-2xs hover:shadow-xs active:scale-97"
+                        :title="'Buka checklist sanitasi ' + (flow.flowNumber?.includes('2') ? 'COP Packing' : 'CIP') + ' di pop-up inspector'"
                       >
-                        <svg class="w-3.5 h-3.5 text-emerald-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
-                        <span>Inspect Checklist CIP</span>
-                        <span class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-white text-emerald-900 border border-emerald-200 font-bold">
+                        <span class="font-bold">{{ flow.flowNumber?.includes('2') ? 'Inspect Checklist COP' : 'Inspect Checklist CIP' }}</span>
+                        <span class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-white text-blue-950 border border-blue-200 font-bold">
                           {{ flow.cipChecklist.recordedItems }} / {{ flow.cipChecklist.totalItems }} Titik
-                        </span>
-                        <span class="text-[9.5px] font-mono px-1.5 py-0.2 rounded bg-emerald-700 text-white font-bold">
-                          Pop-up
                         </span>
                       </button>
 
@@ -3315,9 +3310,9 @@
                         <span class="proc-colon">:</span>
                         <div class="flex-1 flex flex-wrap items-center justify-between gap-2">
                           <div class="flex items-center gap-2">
-                            <!-- Nilai biasa untuk selain parameter kritis & selain checklist CIP -->
+                            <!-- Nilai biasa untuk selain parameter kritis & selain checklist CIP / COP -->
                             <span
-                              v-if="!isParamKritis(item.key) && item.key !== 'pa_ext_cip_checklist'"
+                              v-if="!isParamKritis(item.key) && item.key !== 'pa_ext_cip_checklist' && item.key !== 'pa_dryer_cip_waktu' && item.key !== 'pa_packing_cop_waktu'"
                               class="proc-value"
                               :class="getItemValue(item.key) !== '-' ? 'proc-value-active' : ''"
                             >
@@ -3333,13 +3328,55 @@
                                 <button
                                   v-if="traceResult?.pa?.extraction_cip_checklist"
                                   type="button"
-                                  @click="openInspectCip(traceResult.pa.extraction_cip_checklist)"
+                                  @click="openInspectCip(traceResult.pa.extraction_cip_checklist, 'Checklist CIP & Flushing Area Extraction')"
                                   class="no-print inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[11px] font-semibold text-blue-900 bg-blue-50/80 hover:bg-blue-100 border border-blue-200 rounded-lg cursor-pointer transition-all shadow-2xs active:scale-97"
-                                  title="Inspect checklist sanitasi CIP"
+                                  title="Inspect checklist sanitasi CIP Extraction"
                                 >
                                   <span class="font-bold">Inspect Checklist</span>
                                   <span class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-white text-blue-950 border border-blue-200 font-bold">
                                     {{ traceResult.pa.extraction_cip_checklist.totalItems }} Titik
+                                  </span>
+                                </button>
+                              </div>
+                            </template>
+
+                            <!-- Khusus Checklist Sanitasi CIP Dryer di Quality Audit Report -->
+                            <template v-else-if="item.key === 'pa_dryer_cip_waktu'">
+                              <div class="flex flex-wrap items-center gap-2">
+                                <span class="proc-value font-semibold text-black">
+                                  {{ getItemValue(item.key) }}
+                                </span>
+                                <button
+                                  v-if="traceResult?.pa?.dryer_cip_checklist"
+                                  type="button"
+                                  @click="openInspectCip(traceResult.pa.dryer_cip_checklist, 'Checklist CIP & Flushing Area Dryer')"
+                                  class="no-print inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[11px] font-semibold text-blue-900 bg-blue-50/80 hover:bg-blue-100 border border-blue-200 rounded-lg cursor-pointer transition-all shadow-2xs active:scale-97"
+                                  title="Inspect checklist sanitasi CIP Dryer"
+                                >
+                                  <span class="font-bold">Inspect Checklist CIP</span>
+                                  <span class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-white text-blue-950 border border-blue-200 font-bold">
+                                    {{ traceResult.pa.dryer_cip_checklist.totalItems }} Titik
+                                  </span>
+                                </button>
+                              </div>
+                            </template>
+
+                            <!-- Khusus Checklist Sanitasi COP Packing di Quality Audit Report -->
+                            <template v-else-if="item.key === 'pa_packing_cop_waktu'">
+                              <div class="flex flex-wrap items-center gap-2">
+                                <span class="proc-value font-semibold text-black">
+                                  {{ getItemValue(item.key) }}
+                                </span>
+                                <button
+                                  v-if="traceResult?.pa?.packing_cop_checklist"
+                                  type="button"
+                                  @click="openInspectCip(traceResult.pa.packing_cop_checklist, 'Checklist COP & Sanitasi Area Packing')"
+                                  class="no-print inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[11px] font-semibold text-blue-900 bg-blue-50/80 hover:bg-blue-100 border border-blue-200 rounded-lg cursor-pointer transition-all shadow-2xs active:scale-97"
+                                  title="Inspect checklist COP sanitasi Packing"
+                                >
+                                  <span class="font-bold">Inspect Checklist COP</span>
+                                  <span class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-white text-blue-950 border border-blue-200 font-bold">
+                                    {{ traceResult.pa.packing_cop_checklist.totalItems }} Titik
                                   </span>
                                 </button>
                               </div>
@@ -5578,7 +5615,7 @@ createApp({
     const inspectSearchQuery = ref('');
     const inspectCipFilter = ref('all');
 
-    function openInspectCip(checklistData) {
+    function openInspectCip(checklistData, customTitle, customSubtitle) {
       if (!checklistData) {
         checklistData = traceResult.value?.pa?.extraction_cip_checklist;
       }
@@ -5587,12 +5624,12 @@ createApp({
       inspectCipFilter.value = 'all';
       activeInspectModal.value = {
         type: 'cip',
-        title: `Checklist CIP & Flushing Area Extraction (${checklistData.plantName || 'Plant 1'})`,
-        subtitle: 'Pengambilan data waktu CIP terakhir untuk setiap titik instrument/area ekstraksi sebelum tanggal proses batch.',
+        title: customTitle ? `${customTitle} (${checklistData.plantName || 'Plant 1'})` : `Checklist CIP & Flushing Area Extraction (${checklistData.plantName || 'Plant 1'})`,
+        subtitle: customSubtitle || 'Pengambilan data waktu CIP/COP terakhir untuk setiap titik instrument/area sebelum tanggal proses batch.',
         tableName: checklistData.tableName || (String(checklistData.tower).includes('2') ? 'pa_cip_t2' : 'pa_cip_t1'),
         refForm: 'QF/PDQC/SS/010',
         plantName: checklistData.plantName || 'Plant 1',
-        totalItems: checklistData.totalItems || (checklistData.items ? checklistData.items.length : 57),
+        totalItems: checklistData.totalItems || (checklistData.items ? checklistData.items.length : 0),
         recordedItems: checklistData.recordedItems || (checklistData.items ? checklistData.items.filter(i => i.status === 'OK').length : 0),
         latestCipDate: checklistData.latestCipDate || '-',
         items: checklistData.items || []

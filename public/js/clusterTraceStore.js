@@ -887,6 +887,7 @@ function buildClusterData(traceResult, tower = '1') {
             columns: d.pa.tables.dryer.columns,
             averages: d.pa.tables.dryer.averages || {},
           } : null,
+          cipChecklist: d.pa?.dryer_cip_checklist || null,
           pic: {
             operasional: d.dryer?.operator_produksi || '',
             qc: d.qc?.qc_dryer_vf2_pic || '',
@@ -1106,6 +1107,7 @@ function buildClusterData(traceResult, tower = '1') {
             rows: d.qc_raw.packing.raw_rows,
             columns: d.qc_raw.packing.raw_rows[0] ? Object.keys(d.qc_raw.packing.raw_rows[0]) : [],
           } : null,
+          cipChecklist: d.pa?.packing_cop_checklist || null,
           pic: {
             operasional: d.packing?.operator_packing || '',
             qc: d.qc?.qc_packing_pic || '',

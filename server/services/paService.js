@@ -119,7 +119,7 @@ async function getLatestCip(tower, equipKeywords, targetDate) {
   }
 }
 
-async function getPaFlow(batch, tahun, tower, extractionDate, packingDate) {
+async function getPaFlow(batch, tahun, tower, extractionDate, packingDate, dryerDate) {
   const isT2 = String(tower).includes('2');
   const refDate = extractionDate || packingDate;
   const cutoff = getCutoff(refDate);
@@ -153,6 +153,7 @@ async function getPaFlow(batch, tahun, tower, extractionDate, packingDate) {
 
   const { getSessionCipRows, getWaterProcessTable, getPackingEmpTable } = require('./paTableHelper');
   const { getExtractionCipChecklist } = require('./paCipChecklistService');
+  const { getDryerCipChecklist, getPackingCopChecklist } = require('./paDryerPackingService');
   const extCutoff = getCutoff(extractionDate);
   const waterTable = await getWaterProcessTable(tower, extCutoff);
   const extCipTable = await getSessionCipRows(tower, ['ekstrak', 'c01', 'flash tank', 'kolom c03', 'tank system', 'aroma', 'reboiler', 'hydrolis'], extCutoff, ['selang biru']);
@@ -161,25 +162,16 @@ async function getPaFlow(batch, tahun, tower, extractionDate, packingDate) {
   const reworkCipTable = await getSessionCipRows(tower, ['rework'], extCutoff);
   const packingEmpTable = await getPackingEmpTable(tower, cutoff);
   const extCipChecklist = await getExtractionCipChecklist(tower, extractionDate);
+  const dryerCipChecklist = await getDryerCipChecklist(tower, dryerDate || extractionDate);
+  const packingCopChecklist = await getPackingCopChecklist(tower, packingDate || dryerDate || extractionDate);
 
   return {
     water,
-    cip: {
-      extraction: cipExt,
-      evaporation: cipEvap,
-      final_tank: cipFinalTank,
-      dryer: cipDryer,
-      rework: cipRework,
-    },
-    tables: {
-      water: waterTable,
-      extraction: extCipTable,
-      evaporation: evapCipTable,
-      dryer: dryerCipTable,
-      rework: reworkCipTable,
-      packing: packingEmpTable,
-    },
+    cip: { extraction: cipExt, evaporation: cipEvap, final_tank: cipFinalTank, dryer: cipDryer, rework: cipRework },
+    tables: { water: waterTable, extraction: extCipTable, evaporation: evapCipTable, dryer: dryerCipTable, rework: reworkCipTable, packing: packingEmpTable },
     extraction_cip_checklist: extCipChecklist,
+    dryer_cip_checklist: dryerCipChecklist,
+    packing_cop_checklist: packingCopChecklist,
     env_swab_date: empDate,
     air_bacteria_date: abeDate,
   };

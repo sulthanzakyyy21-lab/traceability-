@@ -108,7 +108,8 @@ router.get('/', async (req, res) => {
       tahun,
       tower,
       extractionResult?.extractionStartStr,
-      result.packing?.tanggal
+      result.packing?.tanggal,
+      result.dryer?.tanggal
     );
 
     res.json(result);
