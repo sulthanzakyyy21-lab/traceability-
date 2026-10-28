@@ -9,6 +9,8 @@
     "test": "node --test test/system.test.js test/audit-security.test.js",
     "backup": "node scripts/backup-db.js",
     "restore:drill": "node scripts/restore-drill.js",
+    "audit": "node scripts/audit-engine.js",
+    "audit:sja": "node scripts/audit-engine.js",
     "audit:gms": "node scripts/audit-engine.js"
   },
   "dependencies": {

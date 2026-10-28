@@ -1,4 +1,4 @@
-name: GMS Production CI & Security Quality Gate
+name: SJA Traceability CI & Production Quality Gate
 
 on:
   push:
@@ -187,7 +187,7 @@ jobs:
   # 5. GMS-PRAS Production Readiness Score & Release Gate
   # ══════════════════════════════════════════════════════════════
   production-release-gate:
-    name: GMS Production Readiness Score & Release Gate (GMS-PRAS v1.0)
+    name: SJA Production Readiness Score & Release Gate (SJA-PRAS v1.0)
     needs: [backend-verification, frontend-verification, security-and-secrets, database-dr-rehearsal]
     runs-on: ubuntu-latest
 
@@ -222,12 +222,12 @@ jobs:
           node server/db/migrations/createUsersTable.js
           node server/db/migrations/createAuditLogsTable.js
 
-      - name: 4. Run GMS-PRAS Automated Audit Engine
+      - name: 4. Run SJA-PRAS Automated Audit Engine
         env:
           DB_HOST: 127.0.0.1
           DB_USER: root
           DB_PASSWORD: ''
           DB_NAME: db_traceability_sja
         run: |
-          npm run audit:gms
-          echo "✅ GMS-PRAS v1.0 Production Readiness Quality Gate: LULUS (Status GO)."
+          npm run audit:sja
+          echo "✅ SJA-PRAS v1.0 Production Readiness Quality Gate: LULUS (Status GO)."

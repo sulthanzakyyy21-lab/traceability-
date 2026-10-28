@@ -1,5 +1,5 @@
-# GMS Production Readiness Audit
-**Audit Standard**: GMS-PRAS v1.0  
+# SJA Traceability Production Readiness Audit
+**Audit Standard**: SJA-PRAS v1.0 (Santos Jaya Abadi Production Readiness Audit Standard)  
 **Previous score**: 9.41/10  
 **Current score**: 9.41/10  
 **Delta**: +0.00  
@@ -13,10 +13,10 @@
 ---
 
 ### Executive Summary
-Sistem Traceability PT. Santos Jaya Abadi telah diaudit menggunakan standar **GMS-PRAS v1.0** dengan 5 pilar benchmark formal: **OWASP ASVS 5.0.0**, **NIST SP 800-218 SSDF v1.1**, **NIST SP 800-63B-4**, **NIST SP 800-34 Rev.1**, dan **SLSA v1.2**. Seluruh 12 Safety Gates berada pada status **PASS**, menghasilkan keputusan rilis **GO**.
+Sistem Traceability PT. Santos Jaya Abadi telah diaudit menggunakan standar **SJA-PRAS v1.0** dengan 5 pilar benchmark formal: **OWASP ASVS 5.0.0**, **NIST SP 800-218 SSDF v1.1**, **NIST SP 800-63B-4**, **NIST SP 800-34 Rev.1**, dan **SLSA v1.2**. Seluruh 12 Safety Gates berada pada status **PASS**, menghasilkan keputusan rilis **GO**.
 
 ### Git SHA Audited
-- **Current SHA**: `89fa55b73a7a3c4ca8133bc580c862a0b90768f9`
+- **Current SHA**: `10da62edab584b371f2d6807ea8038557ad68177`
 - **Previous SHA**: `89fa55b73a7a3c4ca8133bc580c862a0b90768f9`
 
 ### Changes Since Previous Audit

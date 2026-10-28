@@ -8,7 +8,7 @@ const { loginRateLimiter, recordLoginFailure, resetLoginFailure, MAX_ATTEMPTS } 
 const { securityHeaders } = require('../server/middleware/securityHeaders');
 const { recordAuditLog, getRecentAuditLogs } = require('../server/services/auditLogService');
 
-describe('GMS-PRAS v1.0 Security, Audit & DR Controls', () => {
+describe('SJA-PRAS v1.0 Security, Audit & DR Controls', () => {
 
   after(async () => {
     try {
