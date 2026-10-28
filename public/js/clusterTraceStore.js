@@ -291,6 +291,10 @@ function getTraceItemValue(key, d) {
   if (key === 'pa_finaltank_cip_pic') return d.pa?.cip?.final_tank?.pic || '';
 
   if (key === 'pa_ext_cip_waktu') return d.pa?.cip?.extraction?.tanggal || '';
+  if (key === 'pa_ext_cip_checklist') {
+    const c = d.pa?.extraction_cip_checklist;
+    return c ? (c.recordedItems + ' / ' + c.totalItems + ' Titik Terverifikasi (' + c.plantName + ')') : '';
+  }
   if (key === 'pa_ext_cip_lye') return d.pa?.cip?.extraction?.konsentrasi_lye || (d.pa?.cip?.extraction?.tanggal ? '3 %' : '');
   if (key === 'pa_ext_cip_rinse') return d.pa?.cip?.extraction?.rinse || '';
   if (key === 'pa_ext_cip_pic') return d.pa?.cip?.extraction?.pic || '';
