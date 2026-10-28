@@ -1995,21 +1995,25 @@
                         <div
                           v-for="(f, fIdx) in sec.fields"
                           :key="fIdx"
-                          class="bg-white border border-slate-200 rounded-xl p-3 shadow-2xs flex flex-col justify-between"
+                          class="bg-white border border-slate-200 rounded-xl p-3 shadow-2xs flex flex-col justify-between min-w-0 overflow-hidden"
                           :class="f.colSpan || ''"
                         >
-                          <div class="flex items-center justify-between mb-0.5">
-                            <span class="text-[10px] font-medium text-slate-400">{{ f.label }}</span>
-                            <span v-if="f.badge" class="text-[9px] font-mono px-1.5 py-0.2 rounded bg-slate-200/60 text-slate-600">{{ f.badge }}</span>
+                          <div class="flex items-center justify-between mb-0.5 min-w-0">
+                            <span class="text-[10px] font-medium text-slate-400 truncate" :title="f.label">{{ f.label }}</span>
+                            <span v-if="f.badge" class="text-[9px] font-mono px-1.5 py-0.2 rounded bg-slate-200/60 text-slate-600 shrink-0">{{ f.badge }}</span>
                           </div>
-                          <div class="my-0.5">
-                            <span class="text-xs sm:text-sm font-extrabold text-slate-900">
-                              {{ f.value }}
+                          <div class="my-0.5 min-w-0">
+                            <span
+                              class="text-xs sm:text-sm font-extrabold text-slate-900 block truncate"
+                              :class="{ 'text-slate-400 font-semibold text-xs': isMissingVal(f.value) }"
+                              :title="formatMetricVal(f.value)"
+                            >
+                              {{ formatMetricVal(f.value) }}
                             </span>
                           </div>
                           <span v-if="f.spec" class="text-[10px] font-mono text-slate-500 mt-1 flex items-center gap-1 truncate" :title="f.spec">
-                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                            {{ f.spec }}
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></span>
+                            <span class="truncate">{{ f.spec }}</span>
                           </span>
                         </div>
                       </div>
@@ -2021,15 +2025,19 @@
                     <div
                       v-for="(f, fIdx) in flow.fields"
                       :key="fIdx"
-                      class="bg-white border border-slate-200/80 rounded-xl p-3 shadow-2xs"
+                      class="bg-white border border-slate-200/80 rounded-xl p-3 shadow-2xs min-w-0 overflow-hidden"
                       :class="f.colSpan || ''"
                     >
-                      <div class="flex items-center justify-between mb-0.5">
-                        <span class="text-[10px] font-medium text-slate-400">{{ f.label }}</span>
-                        <span v-if="f.badge" class="text-[9px] font-mono px-1.5 py-0.2 rounded bg-slate-200/60 text-slate-600">{{ f.badge }}</span>
+                      <div class="flex items-center justify-between mb-0.5 min-w-0">
+                        <span class="text-[10px] font-medium text-slate-400 truncate" :title="f.label">{{ f.label }}</span>
+                        <span v-if="f.badge" class="text-[9px] font-mono px-1.5 py-0.2 rounded bg-slate-200/60 text-slate-600 shrink-0">{{ f.badge }}</span>
                       </div>
-                      <span class="text-xs sm:text-sm font-semibold text-slate-900">
-                        {{ f.value }}
+                      <span
+                        class="text-xs sm:text-sm font-semibold text-slate-900 block truncate"
+                        :class="{ 'text-slate-400 font-semibold text-xs': isMissingVal(f.value) }"
+                        :title="formatMetricVal(f.value)"
+                      >
+                        {{ formatMetricVal(f.value) }}
                       </span>
                     </div>
                   </div>
@@ -2098,7 +2106,7 @@
                     <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-amber-300/80 text-amber-950 shadow-2xs">
                       <span class="w-2 h-2 rounded-full bg-amber-600 shrink-0"></span>
                       <span class="text-[11px] font-bold text-amber-900 uppercase tracking-wide">Petugas {{ getProdRole(flow) }}:</span>
-                      <strong class="font-black text-amber-950 text-xs sm:text-sm tracking-tight">{{ flow.pic?.operasional || flow.pic?.pa }}</strong>
+                      <strong class="font-black text-amber-950 text-xs sm:text-sm tracking-tight truncate">{{ formatMetricVal(flow.pic?.operasional || flow.pic?.pa) }}</strong>
                     </div>
                   </div>
                 </div>
@@ -2165,14 +2173,18 @@
                         <div
                           v-for="(pa, paIdx) in sec.fields"
                           :key="paIdx"
-                          class="bg-white border border-slate-200/80 rounded-xl p-3 shadow-2xs"
+                          class="bg-white border border-slate-200/80 rounded-xl p-3 shadow-2xs min-w-0 overflow-hidden"
                         >
-                          <div class="flex items-center justify-between mb-0.5">
-                            <span class="text-[10px] font-medium text-slate-400">{{ pa.label }}</span>
-                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                          <div class="flex items-center justify-between mb-0.5 min-w-0">
+                            <span class="text-[10px] font-medium text-slate-400 truncate" :title="pa.label">{{ pa.label }}</span>
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></span>
                           </div>
-                          <span class="text-xs sm:text-sm font-semibold text-slate-900">
-                            {{ pa.value }}
+                          <span
+                            class="text-xs sm:text-sm font-semibold text-slate-900 block truncate"
+                            :class="{ 'text-slate-400 font-semibold text-xs': isMissingVal(pa.value) }"
+                            :title="formatMetricVal(pa.value)"
+                          >
+                            {{ formatMetricVal(pa.value) }}
                           </span>
                         </div>
                       </div>
@@ -2184,14 +2196,18 @@
                     <div
                       v-for="(pa, paIdx) in flow.paFields"
                       :key="paIdx"
-                      class="bg-white border border-slate-200/80 rounded-xl p-3 shadow-2xs"
+                      class="bg-white border border-slate-200/80 rounded-xl p-3 shadow-2xs min-w-0 overflow-hidden"
                     >
-                      <div class="flex items-center justify-between mb-0.5">
-                        <span class="text-[10px] font-medium text-slate-400">{{ pa.label }}</span>
-                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                      <div class="flex items-center justify-between mb-0.5 min-w-0">
+                        <span class="text-[10px] font-medium text-slate-400 truncate" :title="pa.label">{{ pa.label }}</span>
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></span>
                       </div>
-                      <span class="text-xs sm:text-sm font-semibold text-slate-900">
-                        {{ pa.value }}
+                      <span
+                        class="text-xs sm:text-sm font-semibold text-slate-900 block truncate"
+                        :class="{ 'text-slate-400 font-semibold text-xs': isMissingVal(pa.value) }"
+                        :title="formatMetricVal(pa.value)"
+                      >
+                        {{ formatMetricVal(pa.value) }}
                       </span>
                     </div>
                   </div>
@@ -2270,7 +2286,7 @@
                     <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-emerald-300/80 text-emerald-950 shadow-2xs">
                       <span class="w-2 h-2 rounded-full bg-emerald-600 shrink-0"></span>
                       <span class="text-[11px] font-bold text-emerald-900 uppercase tracking-wide">Petugas PA:</span>
-                      <strong class="font-black text-emerald-950 text-xs sm:text-sm tracking-tight">{{ flow.pic.pa }}</strong>
+                      <strong class="font-black text-emerald-950 text-xs sm:text-sm tracking-tight truncate">{{ formatMetricVal(flow.pic.pa) }}</strong>
                     </div>
                   </div>
                 </div>
@@ -2343,17 +2359,21 @@
                         <div
                           v-for="(m, mIdx) in sec.metrics"
                           :key="mIdx"
-                          class="bg-white border border-slate-200 rounded-xl p-3 flex flex-col justify-between shadow-2xs"
+                          class="bg-white border border-slate-200 rounded-xl p-3 flex flex-col justify-between shadow-2xs min-w-0 overflow-hidden"
                         >
                           <span class="text-[10px] font-medium text-slate-400 truncate mb-1" :title="m.label">{{ m.label }}</span>
-                          <div class="my-0.5">
-                            <span class="text-sm sm:text-base font-extrabold text-slate-900">
-                              {{ m.value }}
+                          <div class="my-0.5 min-w-0">
+                            <span
+                              class="text-sm sm:text-base font-extrabold text-slate-900 block truncate"
+                              :class="{ 'text-slate-400 font-semibold text-xs sm:text-sm': isMissingVal(m.value) }"
+                              :title="formatMetricVal(m.value)"
+                            >
+                              {{ formatMetricVal(m.value) }}
                             </span>
                           </div>
                           <span class="text-[10px] font-mono text-slate-500 mt-1 flex items-center gap-1 truncate" :title="m.spec">
-                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                            {{ m.spec }}
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></span>
+                            <span class="truncate">{{ m.spec }}</span>
                           </span>
                         </div>
                       </div>
@@ -2373,18 +2393,22 @@
                           <div
                             v-for="(c, cIdx) in sec.cuptest"
                             :key="cIdx"
-                            class="bg-gradient-to-br from-amber-50/60 to-orange-50/40 border border-amber-900/15 rounded-xl p-2.5 flex flex-col justify-between shadow-2xs"
+                            class="bg-gradient-to-br from-amber-50/60 to-orange-50/40 border border-amber-900/15 rounded-xl p-2.5 flex flex-col justify-between shadow-2xs min-w-0 overflow-hidden"
                           >
-                            <div class="flex items-center justify-between mb-1">
+                            <div class="flex items-center justify-between mb-1 min-w-0">
                               <span class="text-[10px] font-bold text-amber-950 uppercase tracking-wide truncate" :title="c.label">{{ c.label }}</span>
                               <span class="w-1.5 h-1.5 rounded-full bg-amber-600 shrink-0"></span>
                             </div>
-                            <div class="my-0.5">
-                              <span class="text-sm sm:text-base font-extrabold text-amber-950 font-mono truncate">
-                                {{ c.value }}
+                            <div class="my-0.5 min-w-0">
+                              <span
+                                class="text-sm sm:text-base font-extrabold text-amber-950 font-mono block truncate"
+                                :class="{ 'text-slate-400 font-semibold font-sans text-xs sm:text-sm': isMissingVal(c.value) }"
+                                :title="formatMetricVal(c.value)"
+                              >
+                                {{ formatMetricVal(c.value) }}
                               </span>
                             </div>
-                            <span class="text-[9px] font-mono text-amber-800/80">Skala Organoleptik</span>
+                            <span class="text-[9px] font-mono text-amber-800/80 truncate">Skala Organoleptik</span>
                           </div>
                         </div>
                       </div>
@@ -2398,17 +2422,21 @@
                       <div
                         v-for="(m, mIdx) in flow.qcMetrics"
                         :key="mIdx"
-                        class="bg-white border border-slate-200 rounded-xl p-3 flex flex-col justify-between shadow-2xs"
+                        class="bg-white border border-slate-200 rounded-xl p-3 flex flex-col justify-between shadow-2xs min-w-0 overflow-hidden"
                       >
                         <span class="text-[10px] font-medium text-slate-400 truncate mb-1" :title="m.label">{{ m.label }}</span>
-                        <div class="my-0.5">
-                          <span class="text-sm sm:text-base font-extrabold text-slate-900">
-                            {{ m.value }}
+                        <div class="my-0.5 min-w-0">
+                          <span
+                            class="text-sm sm:text-base font-extrabold text-slate-900 block truncate"
+                            :class="{ 'text-slate-400 font-semibold text-xs sm:text-sm': isMissingVal(m.value) }"
+                            :title="formatMetricVal(m.value)"
+                          >
+                            {{ formatMetricVal(m.value) }}
                           </span>
                         </div>
                         <span class="text-[10px] font-mono text-slate-500 mt-1 flex items-center gap-1 truncate" :title="m.spec">
-                          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                          {{ m.spec }}
+                          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></span>
+                          <span class="truncate">{{ m.spec }}</span>
                         </span>
                       </div>
                     </div>
@@ -2429,18 +2457,22 @@
                         <div
                           v-for="(c, cIdx) in flow.cuptestMetrics"
                           :key="cIdx"
-                          class="bg-gradient-to-br from-amber-50/60 to-orange-50/40 border border-amber-900/15 rounded-xl p-3 flex flex-col justify-between shadow-2xs"
+                          class="bg-gradient-to-br from-amber-50/60 to-orange-50/40 border border-amber-900/15 rounded-xl p-3 flex flex-col justify-between shadow-2xs min-w-0 overflow-hidden"
                         >
-                          <div class="flex items-center justify-between mb-1">
+                          <div class="flex items-center justify-between mb-1 min-w-0">
                             <span class="text-[10px] font-bold text-amber-950 uppercase tracking-wide truncate" :title="c.label">{{ c.label }}</span>
                             <span class="w-1.5 h-1.5 rounded-full bg-amber-600 shrink-0"></span>
                           </div>
-                          <div class="my-1">
-                            <span class="text-sm sm:text-base font-extrabold text-amber-950 font-mono truncate">
-                              {{ c.value }}
+                          <div class="my-1 min-w-0">
+                            <span
+                              class="text-sm sm:text-base font-extrabold text-amber-950 font-mono block truncate"
+                              :class="{ 'text-slate-400 font-semibold font-sans text-xs sm:text-sm': isMissingVal(c.value) }"
+                              :title="formatMetricVal(c.value)"
+                            >
+                              {{ formatMetricVal(c.value) }}
                             </span>
                           </div>
-                          <span class="text-[10px] font-mono text-amber-800/80">Skala Organoleptik</span>
+                          <span class="text-[10px] font-mono text-amber-800/80 truncate">Skala Organoleptik</span>
                         </div>
                       </div>
                     </div>
@@ -2462,10 +2494,16 @@
                           <div
                             v-for="(it, itIdx) in ex.items"
                             :key="itIdx"
-                            class="bg-white border border-slate-200 rounded-xl p-2.5 flex flex-col justify-between shadow-2xs"
+                            class="bg-white border border-slate-200 rounded-xl p-2.5 flex flex-col justify-between shadow-2xs min-w-0 overflow-hidden"
                           >
                             <span class="text-[10px] font-medium text-slate-400 truncate mb-1" :title="it.label">{{ it.label }}</span>
-                            <span class="text-xs sm:text-sm font-bold text-slate-900 font-mono truncate" :title="it.value">{{ it.value }}</span>
+                            <span
+                              class="text-xs sm:text-sm font-bold text-slate-900 font-mono block truncate"
+                              :class="{ 'text-slate-400 font-medium font-sans': isMissingVal(it.value) }"
+                              :title="formatMetricVal(it.value)"
+                            >
+                              {{ formatMetricVal(it.value) }}
+                            </span>
                             <span class="text-[9px] font-mono text-slate-400 mt-1 truncate">{{ it.sub || 'Uji Terpadu' }}</span>
                           </div>
                         </div>
@@ -2534,7 +2572,7 @@
                     <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-blue-300/80 text-blue-950 shadow-2xs">
                       <span class="w-2 h-2 rounded-full bg-blue-600 shrink-0"></span>
                       <span class="text-[11px] font-bold text-blue-900 uppercase tracking-wide">Petugas {{ getQcRole(flow) }}:</span>
-                      <strong class="font-black text-blue-950 text-xs sm:text-sm tracking-tight">{{ flow.pic?.qc || flow.pic?.pa }}</strong>
+                      <strong class="font-black text-blue-950 text-xs sm:text-sm tracking-tight truncate">{{ formatMetricVal(flow.pic?.qc || flow.pic?.pa) }}</strong>
                     </div>
                   </div>
                 </div>
@@ -5476,6 +5514,17 @@ createApp({
       return 'QC';
     }
 
+    function formatMetricVal(val) {
+      if (val === null || val === undefined || val === '') return '(-)';
+      const s = String(val).trim();
+      if (s === '-' || s === 'Data tidak ditemukan' || s.toLowerCase() === 'tidak ditemukan' || s === '(-)') return '(-)';
+      return s;
+    }
+
+    function isMissingVal(val) {
+      return formatMetricVal(val) === '(-)';
+    }
+
     const openRawTables = reactive({});
     const flowRawDataCache = ref({});
     const flowRawLoading = reactive({});
@@ -7585,6 +7634,8 @@ createApp({
       cleanSectionTitle,
       getProdRole,
       getQcRole,
+      formatMetricVal,
+      isMissingVal,
       openRawTables,
       flowRawDataCache,
       flowRawLoading,
