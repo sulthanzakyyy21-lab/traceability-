@@ -631,6 +631,29 @@
     .animate-scale-in {
       animation: scaleIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
+
+    /* ── Option 3: Kinetic Smooth Slide & Solidify from Side (Lawan Kata Pudar) ── */
+    @keyframes kineticSlideIn {
+      0% {
+        opacity: 0;
+        transform: translate3d(-70px, 0, 0) scale(0.97);
+        filter: blur(8px);
+      }
+      35% {
+        opacity: 0.6;
+        filter: blur(3px);
+      }
+      100% {
+        opacity: 1;
+        transform: translate3d(0, 0, 0) scale(1);
+        filter: blur(0px);
+      }
+    }
+    .animate-kinetic-slide {
+      animation: kineticSlideIn 0.75s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      will-change: transform, opacity, filter;
+      backface-visibility: hidden;
+    }
   </style>
 </head>
 <body class="min-h-screen bg-[#fbfaf8] font-sans antialiased text-stone-900 ambient-pattern">
@@ -649,7 +672,7 @@
     <div class="absolute bottom-10 right-10 w-96 h-96 bg-[#3d251a]/40 rounded-full blur-3xl pointer-events-none"></div>
 
     <!-- MAIN CONTAINER CARD: SPLIT TWO-COLUMNS (Referensi OriginTrack / Coffee Portal) -->
-    <main class="w-full max-w-5xl rounded-[32px] sm:rounded-[40px] overflow-hidden glass-card-portal p-2 sm:p-3.5 border border-white/40 shadow-2xl transition-all duration-300 relative z-10">
+    <main class="w-full max-w-5xl rounded-[32px] sm:rounded-[40px] overflow-hidden glass-card-portal p-2 sm:p-3.5 border border-white/40 shadow-2xl animate-kinetic-slide relative z-10">
       <div class="grid grid-cols-1 lg:grid-cols-12 min-h-[580px] sm:min-h-[620px] rounded-[26px] sm:rounded-[34px] overflow-hidden">
 
         <!-- =================================================================
