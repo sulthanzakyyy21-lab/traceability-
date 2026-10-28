@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { SidebarNav } from '@/components/layout/SidebarNav';
 import { TopHeader } from '@/components/layout/TopHeader';
 import { KpiSummaryCards } from '@/features/traceability/KpiSummaryCards';
 import { ProcessSectionCard } from '@/features/traceability/ProcessSectionCard';
@@ -7,6 +8,8 @@ import { FLOW_SECTIONS } from '@/constants/flowSections';
 import type { TraceResult, InspectModalState } from '@/types/traceability';
 
 export function App() {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('report');
   const [batchInput, setBatchInput] = useState('A370/26');
   const [tower, setTower] = useState('1');
   const [loading, setLoading] = useState(false);
@@ -43,51 +46,61 @@ export function App() {
   const cipChecklist = traceResult?.pa?.extraction_cip_checklist || traceResult?.extraction?.cipChecklist;
 
   return (
-    <div className="min-h-screen bg-[#fbfaf8] text-stone-900 flex flex-col font-sans">
-      <TopHeader
-        batchInput={batchInput}
-        setBatchInput={setBatchInput}
-        tower={tower}
-        setTower={setTower}
-        onSearch={handleSearchTrace}
-        loading={loading}
+    <div className="min-h-screen bg-[#fbfaf8] text-stone-900 flex flex-row font-sans">
+      {/* 120 FPS Ultra-Smooth Hardware-Accelerated Sidebar Navigation */}
+      <SidebarNav
+        sidebarOpen={sidebarOpen}
+        setSidebarOpen={setSidebarOpen}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
         dbConnected={dbConnected}
       />
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 space-y-6">
-        {/* KPI Summary Banner */}
-        <KpiSummaryCards data={traceResult} />
+      {/* Main Content Wrapper */}
+      <div className="main-content-wrap flex-1 flex flex-col min-w-0 min-h-screen">
+        <TopHeader
+          batchInput={batchInput}
+          setBatchInput={setBatchInput}
+          tower={tower}
+          setTower={setTower}
+          onSearch={handleSearchTrace}
+          loading={loading}
+          dbConnected={dbConnected}
+        />
 
-        {/* Process Flow Stages (Form F/QC/01.030) */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <h2 className="text-base sm:text-lg font-extrabold text-stone-900 tracking-tight">
-                Alur Proses Form F/QC/01.030
-              </h2>
-              <p className="text-xs text-stone-500">
-                Data penelusuran multi-echelon terverifikasi MySQL db_traceability_sja.
-              </p>
+        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 space-y-6">
+          <KpiSummaryCards data={traceResult} />
+
+          <div className="space-y-4">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <h2 className="text-base sm:text-lg font-extrabold text-stone-900 tracking-tight">
+                  Alur Proses Form F/QC/01.030
+                </h2>
+                <p className="text-xs text-stone-500">
+                  Data penelusuran multi-echelon terverifikasi MySQL db_traceability_sja.
+                </p>
+              </div>
+              <span className="text-xs font-mono font-bold text-coffee-800 bg-coffee-100/70 px-2.5 py-1 rounded-xl">
+                {FLOW_SECTIONS.length} Tahapan Proses
+              </span>
             </div>
-            <span className="text-xs font-mono font-bold text-coffee-800 bg-coffee-100/70 px-2.5 py-1 rounded-xl">
-              {FLOW_SECTIONS.length} Tahapan Proses
-            </span>
-          </div>
 
-          <div className="space-y-3.5">
-            {FLOW_SECTIONS.map((section, idx) => (
-              <ProcessSectionCard
-                key={section.name}
-                section={section}
-                index={idx}
-                traceResult={traceResult}
-                cipChecklist={section.name === 'EKSTRAKSI' ? cipChecklist : undefined}
-                onOpenInspect={(modal) => setInspectModal(modal)}
-              />
-            ))}
+            <div className="space-y-3.5">
+              {FLOW_SECTIONS.map((section, idx) => (
+                <ProcessSectionCard
+                  key={section.name}
+                  section={section}
+                  index={idx}
+                  traceResult={traceResult}
+                  cipChecklist={section.name === 'EKSTRAKSI' ? cipChecklist : undefined}
+                  onOpenInspect={(modal) => setInspectModal(modal)}
+                />
+              ))}
+            </div>
           </div>
-        </div>
-      </main>
+        </main>
+      </div>
 
       {/* Unified Inspect Pop-up Modal (DevTools style) */}
       <UnifiedInspectDialog

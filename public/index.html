@@ -352,21 +352,31 @@
       white-space: nowrap !important;
     }
 
-    /* ── SIDEBAR NAVIGATION STYLES (LIGHT INDUSTRIAL COFFEE & GEMINI COLLAPSE) ── */
+    /* ── 120 FPS ULTRA-SMOOTH HARDWARE-ACCELERATED SIDEBAR & INSTANT TOOLTIP ── */
     .app-sidebar {
       background: #ffffff;
       border-right: 1px solid #e7e5e4;
       box-shadow: 1px 0 10px -2px rgba(60, 36, 21, 0.04);
-      transition: width 0.25s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s, border-color 0.2s;
+      will-change: width;
+      transform: translateZ(0);
+      backface-visibility: hidden;
+      perspective: 1000px;
+      transition: width 0.22s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease, border-color 0.2s ease;
+      overflow: visible !important;
     }
     .app-sidebar.is-collapsed {
       background: transparent !important;
       border-right: none !important;
       box-shadow: none !important;
+      overflow: visible !important;
     }
     .app-sidebar nav {
       scrollbar-width: none;
       -ms-overflow-style: none;
+      transition: padding 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .app-sidebar.is-collapsed nav {
+      overflow: visible !important; /* Critical: unclips tooltips */
     }
     .app-sidebar nav::-webkit-scrollbar {
       display: none;
@@ -380,14 +390,14 @@
       font-size: 11.5px;
       font-weight: 600;
       cursor: pointer;
-      transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
       color: #57534e;
       text-align: left;
       width: 100%;
       border: 1px solid transparent;
       position: relative;
     }
-    .sidebar-item svg { width: 16px; height: 16px; }
+    .sidebar-item svg { width: 16px; height: 16px; flex-shrink: 0; }
     .sidebar-item-collapsed {
       width: 40px !important;
       height: 40px !important;
@@ -426,26 +436,27 @@
     .sidebar-item.active svg {
       stroke: #ffffff;
     }
+
+    /* ── ZERO-DELAY INSTANT GEMINI TOOLTIP (TAMPIL LANGSUNG TANPA DELAY) ── */
     .sidebar-gemini-tooltip {
       position: absolute;
-      left: calc(100% + 10px);
+      left: calc(100% + 12px);
       top: 50%;
-      transform: translateY(-50%);
+      transform: translateY(-50%) translateZ(0);
       background: #1c1917;
-      border: 1px solid rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.18);
       color: #ffffff;
-      padding: 6px 11px;
-      border-radius: 8px;
+      padding: 6px 12px;
+      border-radius: 9px;
       white-space: nowrap;
       pointer-events: none;
       opacity: 0;
       visibility: hidden;
-      display: none;
-      box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.45);
-      z-index: 99999;
-      /* Tampil instan tanpa delay sama sekali */
-      transition: none !important;
-      animation: none !important;
+      box-shadow: 0 10px 25px -4px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.08);
+      z-index: 999999;
+      /* Zero delay: renders immediately on pointer-enter without lag */
+      transition: opacity 0.04s ease-out, transform 0.04s ease-out;
+      will-change: opacity, transform;
     }
     .sidebar-gemini-tooltip::before {
       content: '';
@@ -459,7 +470,12 @@
     .group:hover .sidebar-gemini-tooltip {
       opacity: 1 !important;
       visibility: visible !important;
-      display: block !important;
+      transform: translateY(-50%) translateX(2px) translateZ(0) !important;
+    }
+
+    .main-content-wrap {
+      will-change: width;
+      contain: paint;
     }
 
     /* Print styles */
@@ -604,11 +620,11 @@
   <!-- ── SIDEBAR NAVIGATION (COLLAPSIBLE RAIL WITH INSTANT HOVER TOOLTIPS & ZERO BORDER WHEN COLLAPSED) ── -->
   <aside
     :class="sidebarOpen ? 'w-64 bg-white border-r border-stone-200 shadow-xs' : 'w-16 is-collapsed bg-transparent border-r-0 shadow-none'"
-    class="app-sidebar no-print flex-shrink-0 flex flex-col sticky top-0 h-screen select-none z-30 transition-all duration-300 ease-in-out"
+    class="app-sidebar no-print flex-shrink-0 flex flex-col sticky top-0 h-screen select-none z-30"
   >
     <!-- Brand / Toggle Header -->
     <div
-      class="h-16 flex items-center transition-all duration-300"
+      class="h-16 flex items-center transition-colors duration-200"
       :class="sidebarOpen ? 'justify-between px-4 border-b border-stone-200/80 bg-white' : 'justify-center px-0 border-b-0 bg-transparent'"
     >
       <!-- Expanded Brand Header -->
@@ -656,7 +672,7 @@
     </div>
 
     <!-- Navigation Menu Items -->
-    <nav class="flex-1 py-4 px-2 space-y-2 overflow-y-auto overflow-x-hidden bg-transparent">
+    <nav :class="sidebarOpen ? 'overflow-y-auto overflow-x-hidden' : 'overflow-visible'" class="flex-1 py-4 px-2 space-y-2 bg-transparent">
       <div v-show="sidebarOpen" class="px-2 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-stone-400">
         Main Menu
       </div>
@@ -807,7 +823,7 @@
     <!-- Sidebar Bottom Status & Logout -->
     <div
       class="p-3 transition-colors space-y-2.5"
-      :class="sidebarOpen ? 'border-t border-stone-200/80 bg-stone-50 text-[11px]' : 'border-t-0 bg-transparent text-[11px]'"
+      :class="sidebarOpen ? 'border-t border-stone-200/80 bg-stone-50 text-[11px]' : 'border-t-0 bg-transparent text-[11px] overflow-visible'"
     >
       <!-- Logout Button (Sidebar Expanded) -->
       <button
@@ -840,7 +856,7 @@
       </div>
 
       <!-- Collapsed State: Icons for Logout and DB -->
-      <div v-else class="flex flex-col items-center gap-2 py-1">
+      <div v-else class="flex flex-col items-center gap-2 py-1 overflow-visible">
         <!-- Logout Button (Sidebar Collapsed) -->
         <button
           v-if="authIsLoggedIn"
