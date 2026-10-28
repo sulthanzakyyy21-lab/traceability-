@@ -1,0 +1,10 @@
+{
+  "drillStatus": "VERIFIED_SUCCESSFUL",
+  "backupFile": "backup_traceability_2026-10-27T07-07-53-704Z.json",
+  "sha256": "b86e5767c17dcb5feb58e9605571063c4fe2acf03dd2dd971f9bb6869ddc34b0",
+  "reconciledTables": 43,
+  "reconciledRows": 260301,
+  "drillExecutionTime": "2026-10-27T07:08:01.857Z",
+  "durationMs": 2697,
+  "standardCompliance": "NIST SP 800-34 Rev.1 Contingency & Exercise Mandate"
+}

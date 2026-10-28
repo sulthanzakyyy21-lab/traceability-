@@ -14,8 +14,7 @@ function sanitizePackingRow(rowVals) {
   }
   for (let c = 18; c <= 22; c++) {
     if (rowVals[c] !== null && rowVals[c] !== undefined) {
-      const clean = String(rowVals[c]).replace(',', '.').replace(/[^0-9.-]/g, '');
-      const p = parseFloat(clean);
+      const p = parseFloat(String(rowVals[c]).replace(',', '.').replace(/[^0-9.-]/g, ''));
       rowVals[c] = !isNaN(p) ? p : null;
     } else {
       rowVals[c] = null;
@@ -29,20 +28,10 @@ function isMeaningfulRow(rowVals) {
   for (const v of rowVals) {
     if (v === null || v === undefined) continue;
     const s = String(v).trim();
-    if (
-      s === '' ||
-      s === '0' ||
-      s === '00:00:00' ||
-      s.startsWith('1899') ||
-      s.startsWith('1900') ||
-      s.startsWith('30/12/1899') ||
-      s.startsWith('12/30/1899')
-    ) {
-      continue;
-    }
+    if (s === '' || s === '0' || s === '00:00:00' || s.startsWith('1899') || s.startsWith('1900') || s.startsWith('30/12/1899') || s.startsWith('12/30/1899')) continue;
     meaningful++;
   }
-  return meaningful >= 3; // Naikkan threshold: min 3 kolom berisi data bermakna
+  return meaningful >= 3;
 }
 
 function excelCellToString(cell) {
@@ -123,53 +112,65 @@ async function bulkInsertExcelData(tableName, bufferOrWorkbook, customSheetName)
   }
 
   if (incomingRows.length === 0) {
-    return { imported: 0, duplicates: 0, table: tableName, message: 'Data sudah paling mutakhir di database.' };
+    return { imported: 0, duplicates: 0, table: tableName, message: 'Tidak ada baris data valid dari spreadsheet. Database aman dan tidak diubah.' };
   }
 
-  const isQc = tableName.startsWith('qc_');
-  let rowsToProcess = incomingRows;
+  const seen = new Set();
+  const rowsToProcess = [];
   let inBatchDuplicates = 0;
-
-  if (isQc) {
-    const seen = new Set();
-    rowsToProcess = [];
-    for (const r of incomingRows) {
-      const sig = r.join('|||');
-      if (seen.has(sig)) {
-        inBatchDuplicates++;
-      } else {
-        seen.add(sig);
-        rowsToProcess.push(r);
-      }
+  for (const r of incomingRows) {
+    const sig = r.join('|||');
+    if (seen.has(sig)) {
+      inBatchDuplicates++;
+    } else {
+      seen.add(sig);
+      rowsToProcess.push(r);
     }
   }
 
-  const escapedCols = columns.map((c) => `\`${c}\``).join(', ');
-  const nonKeys = columns.filter((c) => c !== 'id' && c !== 'ID_No');
-  const onDupClause = nonKeys.map((c) => `\`${c}\` = COALESCE(VALUES(\`${c}\`), \`${c}\`)`).join(', ');
+  if (rowsToProcess.length === 0) {
+    return { imported: 0, duplicates: inBatchDuplicates, table: tableName, message: 'Tidak ada baris data unik untuk diproses. Database tidak diubah.' };
+  }
 
+  const escapedCols = columns.map((c) => `\`${c}\``).join(', ');
   const CHUNK_SIZE = 500;
   const conn = await pool.getConnection();
   let totalAffected = 0;
 
   try {
-    await conn.beginTransaction();
-    if (isQc) {
+    const [fkRows] = await conn.query(
+      `SELECT 1 FROM information_schema.TABLE_CONSTRAINTS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND CONSTRAINT_TYPE = 'FOREIGN KEY' LIMIT 1`,
+      [tableName]
+    );
+    const hasFk = fkRows.length > 0;
+
+    if (hasFk) {
+      await conn.beginTransaction();
       await conn.query(`DELETE FROM \`${tableName}\``);
+    } else {
+      try {
+        await conn.query(`TRUNCATE TABLE \`${tableName}\``);
+      } catch {
+        await conn.query(`DELETE FROM \`${tableName}\``);
+        await conn.query(`ALTER TABLE \`${tableName}\` AUTO_INCREMENT = 1`);
+      }
+      await conn.beginTransaction();
     }
+
     for (let i = 0; i < rowsToProcess.length; i += CHUNK_SIZE) {
       const chunk = rowsToProcess.slice(i, i + CHUNK_SIZE);
       const rowPlaceholders = `(${columns.map(() => '?').join(', ')})`;
       const allPlaceholders = chunk.map(() => rowPlaceholders).join(', ');
-      const sql = `INSERT INTO \`${tableName}\` (${escapedCols}) VALUES ${allPlaceholders} ON DUPLICATE KEY UPDATE ${onDupClause}`;
+      const sql = `INSERT IGNORE INTO \`${tableName}\` (${escapedCols}) VALUES ${allPlaceholders}`;
       const [res] = await conn.execute(sql, chunk.flat());
       totalAffected += res.affectedRows || 0;
     }
     await conn.commit();
+    if (hasFk) {
+      await conn.query(`ALTER TABLE \`${tableName}\` AUTO_INCREMENT = 1`);
+    }
 
-    const msg = isQc
-      ? `Berhasil: ${rowsToProcess.length.toLocaleString()} baris data QC disinkronkan tanpa duplikasi.`
-      : `Berhasil: ${incomingRows.length.toLocaleString()} baris data diproses dengan sistem Native UPSERT (${totalAffected} rekaman diperbarui/ditambahkan).`;
+    const msg = `Berhasil Full Refresh: ${rowsToProcess.length.toLocaleString()} baris data disinkronkan 100% identik dengan spreadsheet.`;
 
     return {
       imported: rowsToProcess.length,

@@ -90,8 +90,8 @@ const TABLE_METADATA = {
     flow: 'ROASTING',
     pic: 'Produksi',
     tower: 'Non-Tower',
-    sheetKeyword: 'sheet56',
-    targetSheet: 'Sheet56',
+    sheetKeyword: 'sheet58',
+    targetSheet: 'Sheet58',
     keywords: ['roasting time (minute)', 'roasting time (second)', 'silocell', 'susut goreng %', 'mode goreng', 'scolari 1', 'sr1'],
   },
   roasting_scolari_2: {
@@ -100,8 +100,8 @@ const TABLE_METADATA = {
     flow: 'ROASTING',
     pic: 'Produksi',
     tower: 'Non-Tower',
-    sheetKeyword: 'sheet57',
-    targetSheet: 'Sheet57',
+    sheetKeyword: 'sheet59',
+    targetSheet: 'Sheet59',
     keywords: ['roasting time (minute)', 'roasting time (second)', 'silocell', 'silo cell 4', 'susut goreng %', 'mode goreng', 'scolari 2', 'scl 2'],
   },
 };

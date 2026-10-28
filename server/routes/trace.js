@@ -89,7 +89,8 @@ router.get('/', async (req, res) => {
       extractionResult.siloNumbers,
       extractionResult.extractionStartStr,
       result.input.totalOutput,
-      result.packing?.total_output_kg
+      result.packing?.total_output_kg,
+      batch
     );
     result.roasting = roastResult.roasting;
     result.upbm = roastResult.upbm;
@@ -99,6 +100,16 @@ router.get('/', async (req, res) => {
     const qcFlow = await getQcFlow(batch, tahun, tower, normalizedBatchFull);
     result.qc = formatQcTrace(qcFlow, result.packing, result.roasting);
     result.qc_raw = qcFlow;
+
+    // 6. PA stage (Water Process, CIP Sanitasi, Environmental & Air)
+    const { getPaFlow } = require('../services/paService');
+    result.pa = await getPaFlow(
+      batch,
+      tahun,
+      tower,
+      extractionResult?.extractionStartStr,
+      result.packing?.tanggal
+    );
 
     res.json(result);
   } catch (error) {

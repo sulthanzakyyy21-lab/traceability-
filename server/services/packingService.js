@@ -40,15 +40,15 @@ async function getPackingFlow(batch, tahun, tower) {
 
     const validTemps = rows.map((r) => parseFloat(r.temp_ruang_packing)).filter((n) => !isNaN(n) && n > 0 && n < 60);
     const validRHs = rows.map((r) => parseFloat(r.rh_ruang_packing)).filter((n) => !isNaN(n) && n > 0 && n < 100);
-    const avgTemp = validTemps.length ? (validTemps.reduce((a, b) => a + b, 0) / validTemps.length).toFixed(1) : '23.0';
-    const avgRH = validRHs.length ? Math.round(validRHs.reduce((a, b) => a + b, 0) / validRHs.length) : '55';
+    const avgTemp = validTemps.length ? (validTemps.reduce((a, b) => a + b, 0) / validTemps.length).toFixed(1) : null;
+    const avgRH = validRHs.length ? Math.round(validRHs.reduce((a, b) => a + b, 0) / validRHs.length) : null;
 
     const validTempsTransit = rows.map((r) => parseFloat(r.temp_ruang_transit)).filter((n) => !isNaN(n) && n > 0 && n < 60);
     const validRHsTransit = rows.map((r) => parseFloat(r.rh_ruang_transit)).filter((n) => !isNaN(n) && n > 0 && n < 100);
-    const avgTempTransit = validTempsTransit.length ? (validTempsTransit.reduce((a, b) => a + b, 0) / validTempsTransit.length).toFixed(1) : '26.0';
-    const avgRHTransit = validRHsTransit.length ? Math.round(validRHsTransit.reduce((a, b) => a + b, 0) / validRHsTransit.length) : '60';
+    const avgTempTransit = validTempsTransit.length ? (validTempsTransit.reduce((a, b) => a + b, 0) / validTempsTransit.length).toFixed(1) : null;
+    const avgRHTransit = validRHsTransit.length ? Math.round(validRHsTransit.reduce((a, b) => a + b, 0) / validRHsTransit.length) : null;
 
-    const dehumidifier = [...new Set(rows.map((r) => r.kondisi_dehumidifier).filter(Boolean))].join(', ') || 'OK';
+    const dehumidifier = [...new Set(rows.map((r) => r.kondisi_dehumidifier).filter(Boolean))].join(', ') || null;
     const ketList = [...new Set(rows.map((r) => r.keterangan).filter((v) => v && v !== '-' && v !== 'null'))];
 
     const startDate = first.stamp || first.tanggal;
@@ -71,9 +71,9 @@ async function getPackingFlow(batch, tahun, tower) {
       berat_box: `${kgPerBox} kg/box`,
       total_output: `${totalOkBox.toLocaleString()} Box (${totalOutputKg.toLocaleString()} kg)`,
       total_output_kg: totalOutputKg,
-      suhu_rh_packing: `${avgTemp}°C / ${avgRH}%`,
-      suhu_rh_transit: `${avgTempTransit}°C / ${avgRHTransit}%`,
-      dehumidifier,
+      suhu_rh_packing: (avgTemp && avgRH) ? `${avgTemp}°C / ${avgRH}%` : '-',
+      suhu_rh_transit: (avgTempTransit && avgRHTransit) ? `${avgTempTransit}°C / ${avgRHTransit}%` : '-',
+      dehumidifier: dehumidifier || '-',
       abnormalitas: ketList.length ? ketList.join('; ') : 'tidak ada',
       columns: TABLE_COLUMNS_MAP[packingTable] || [],
       raw_rows: rows,

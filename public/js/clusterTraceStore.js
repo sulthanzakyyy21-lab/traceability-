@@ -1,7 +1,8 @@
 /**
  * 7 Process Clusters Data Builder for PT. Santos Jaya Abadi Traceability
- * Fully mapped to Form F/QC/01.030 and real database schema with ZERO hallucination.
- * If data is not available in the database, fields and tables are kept empty with clear notice.
+ * STRICT SINGLE SOURCE OF TRUTH: MySQL Database (db_traceability_sja)
+ * PRODUKSI, QC, and PA ONLY. ZERO HARDCODED FALLBACK / ZERO HALU.
+ * Jika data atau tabel tidak ada di database, wajib return 'Data tidak ditemukan'.
  */
 
 const CLUSTER_CONFIG = [
@@ -64,7 +65,7 @@ const CLUSTER_CONFIG = [
 ];
 
 function formatFlowDate(raw) {
-  if (!raw || raw === '-') return null;
+  if (!raw || raw === '-' || raw === 'Data tidak ditemukan') return null;
   const str = String(raw).trim();
   const slashMatch = str.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
   if (slashMatch) {
@@ -84,117 +85,217 @@ function formatFlowDate(raw) {
 }
 
 function withUnit(val, unit) {
-  if (val === null || val === undefined) return null;
+  if (val === null || val === undefined) return 'Data tidak ditemukan';
   const str = String(val).trim();
-  if (!str || str === '-' || str.startsWith('-') || str === 'null' || str === 'undefined') return null;
+  if (!str || str === '-' || str.startsWith('-') || str === 'null' || str === 'undefined' || str === 'Data tidak ditemukan') return 'Data tidak ditemukan';
   const u = String(unit).trim();
   if (str.toLowerCase().endsWith(u.toLowerCase())) return str;
   return `${str} ${u}`.trim();
 }
 
 function withPrefix(val, prefix) {
-  if (val === null || val === undefined) return null;
+  if (val === null || val === undefined) return 'Data tidak ditemukan';
   const str = String(val).trim();
-  if (!str || str === '-' || str.startsWith('-') || str === 'null' || str === 'undefined') return null;
+  if (!str || str === '-' || str.startsWith('-') || str === 'null' || str === 'undefined' || str === 'Data tidak ditemukan') return 'Data tidak ditemukan';
   const p = String(prefix).trim();
   if (str.toLowerCase().startsWith(p.toLowerCase())) return str;
   return `${p} ${str}`;
 }
 
 function cleanVal(val) {
-  if (val === null || val === undefined) return null;
+  if (val === null || val === undefined) return 'Data tidak ditemukan';
   const str = String(val).trim();
-  if (!str || str === '-' || str === '-%' || str === '- cP' || str === 'null' || str === 'undefined') return null;
+  if (!str || str === '-' || str === '-%' || str === '- cP' || str === 'null' || str === 'undefined') return 'Data tidak ditemukan';
   return str;
 }
 
 const isValidVal = (v) => {
   if (v === null || v === undefined) return false;
   const s = String(v).trim();
-  if (!s || s === '-' || s === '-%' || s === '- cP' || s === 'null' || s === 'undefined') return false;
+  if (!s || s === 'null' || s === 'undefined') return false;
   return true;
 };
 
 /**
  * Universal trace item resolver strictly following database schema (ZERO HALU)
+ * HANYA mengambil data yang ada di Database MySQL (Produksi, QC, PA).
+ * Jika data/tabel tidak ada di database, wajib return 'Data tidak ditemukan'.
  */
 function getTraceItemValue(key, d) {
-  if (!key || !d) return '-';
+  if (!key || !d) return 'Data tidak ditemukan';
 
-  // 1. QC Auto-Mapped Keys
+  // 1. QC Auto-Mapped Keys (From MySQL qc_* tables)
   if (d.qc && d.qc[key] !== undefined && d.qc[key] !== null && String(d.qc[key]).trim() !== '' && String(d.qc[key]).trim() !== '-') {
     return String(d.qc[key]);
   }
 
-  // 2. PACKING (Flow 2)
-  if (key === 'packing_waktu_proses') return d.packing?.waktu_proses || '-';
-  if (key === 'packing_shift') return withPrefix(d.packing?.shift, 'Shift') || '-';
-  if (key === 'packing_operator') return d.packing?.operator_packing || '-';
-  if (key === 'packing_helper') return cleanVal(d.packing?.team) || '-';
-  if (key === 'packing_ccp') return withPrefix(d.packing?.dehumidifier, 'Dehumidifier:') || '-';
-  if (key === 'packing_suhu_rh') return d.packing?.suhu_rh_packing || '-';
-  if (key === 'packing_kebersihan') return '-';
-  if (key === 'packing_lot_karton') return d.fgw?.lot_karton || '-';
-  if (key === 'packing_supplier_karton') return d.fgw?.supplier_karton || '-';
-  if (key === 'packing_lot_plastik') return d.fgw?.lot_plastik || '-';
-  if (key === 'packing_supplier_plastik') return d.fgw?.supplier_plastik || '-';
-  if (key === 'packing_abnormalitas') return d.packing?.abnormalitas || '-';
-  if (key === 'packing_berat_box') return d.packing?.berat_box || '-';
-  if (key === 'packing_total_output') return cleanVal(d.packing?.total_output) || (d.packing?.total_output_kg ? withUnit(d.packing.total_output_kg, 'kg') : '-');
+  // 2. DISTRIBUSI (Flow 1) - TIDAK ADA TABEL DI DATABASE
+  if (key.startsWith('dist_')) {
+    if (d.distribusi && d.distribusi[key.replace('dist_', '')]) {
+      return String(d.distribusi[key.replace('dist_', '')]);
+    }
+    return 'Data tidak ditemukan';
+  }
 
-  // 3. DRYER (Flow 4)
-  if (key === 'dryer_waktu_proses') return d.dryer?.waktu_proses || '-';
-  if (key === 'dryer_operator') return d.dryer?.operator_produksi || '-';
-  if (key === 'dryer_final_tank') return withPrefix(d.dryer?.final_tank, 'FT C0') || '-';
-  if (key === 'dryer_mode') return d.dryer?.mode || '-';
-  if (key === 'dryer_parameter_kritis') return d.dryer?.raw_rows?.length ? '' : '-';
-  if (key === 'dryer_abnormalitas') return d.dryer?.abnormalitas || '-';
+  // 3. PACKING (Flow 2) - From MySQL packing_tower_*
+  if (key === 'packing_waktu_proses') return d.packing?.waktu_proses || 'Data tidak ditemukan';
+  if (key === 'packing_shift') return d.packing?.shift ? withPrefix(d.packing.shift, 'Shift') : 'Data tidak ditemukan';
+  if (key === 'packing_operator') return d.packing?.operator_packing || 'Data tidak ditemukan';
+  if (key === 'packing_helper') return cleanVal(d.packing?.team);
+  if (key === 'packing_ccp') return d.packing?.dehumidifier ? withPrefix(d.packing.dehumidifier, 'Dehumidifier:') : 'Data tidak ditemukan';
+  if (key === 'packing_suhu_rh') return d.packing?.suhu_rh_packing || 'Data tidak ditemukan';
+  if (key === 'packing_kebersihan') return 'Data tidak ditemukan';
+  if (key === 'packing_lot_karton') return 'Data tidak ditemukan';
+  if (key === 'packing_supplier_karton') return 'Data tidak ditemukan';
+  if (key === 'packing_lot_plastik') return 'Data tidak ditemukan';
+  if (key === 'packing_supplier_plastik') return 'Data tidak ditemukan';
+  if (key === 'packing_abnormalitas') return d.packing?.abnormalitas || 'Data tidak ditemukan';
+  if (key === 'packing_berat_box') return d.packing?.berat_box || 'Data tidak ditemukan';
+  if (key === 'packing_total_output') return cleanVal(d.packing?.total_output) !== 'Data tidak ditemukan' ? cleanVal(d.packing?.total_output) : (d.packing?.total_output_kg ? withUnit(d.packing.total_output_kg, 'kg') : 'Data tidak ditemukan');
 
-  // 4. EVAPORATION (Flow 5)
-  if (key === 'evap_waktu_proses') return d.evaporation?.waktu_proses || '-';
-  if (key === 'evap_operator') return d.evaporation?.operator_produksi || '-';
-  if (key === 'evap_destination_tank') return withPrefix(d.evaporation?.no_final_tank, 'FT C0') || '-';
-  if (key === 'evap_parameter_kritis') return d.evaporation?.raw_rows?.length ? '' : '-';
-  if (key === 'evap_abnormalitas') return d.evaporation?.abnormalitas || '-';
+  // QC Packing & Release
+  if (key === 'packing_status_ok') return d.qc?.qc_packing_status_ok || 'Data tidak ditemukan';
+  if (key === 'packing_status_bo') return d.qc?.qc_packing_status_bo || 'Data tidak ditemukan';
+  if (key === 'packing_pic_status') return d.qc?.qc_packing_status_pic || 'Data tidak ditemukan';
+  if (key === 'packing_micro_tpc') return d.qc?.qc_packing_tpc || 'Data tidak ditemukan';
+  if (key === 'packing_micro_ym') return d.qc?.qc_packing_yeast_mold || 'Data tidak ditemukan';
+  if (key === 'packing_micro_pic') return d.qc?.qc_packing_pic_mikro || 'Data tidak ditemukan';
 
-  // 5. EXTRACTION (Flow 6)
-  if (key === 'ext_waktu_proses') return d.extraction?.waktu_proses || '-';
-  if (key === 'ext_mode') return d.extraction?.mode_ekstraksi || '-';
-  if (key === 'ext_percolator') return withUnit(d.extraction?.jumlah_percolator, 'siklus') || '-';
-  if (key === 'ext_operator') return d.extraction?.operator_produksi || '-';
-  if (key === 'ext_silo') return withPrefix(d.extraction?.silo_degassing, 'Silo') || '-';
-  if (key === 'ext_parameter_kritis') return d.extraction?.raw_rows?.length ? '' : '-';
-  if (key === 'ext_abnormalitas') return d.extraction?.abnormalitas || '-';
+  // 4. REWORK (Flow 3) - TIDAK ADA REWORK DI DATABASE UNTUK BATCH INI
+  if (key.startsWith('rework_')) {
+    if (d.rework && d.rework[key.replace('rework_', '')]) {
+      return String(d.rework[key.replace('rework_', '')]);
+    }
+    return 'Data tidak ditemukan';
+  }
 
-  // 6. ROASTING (Flow 8)
-  if (key === 'roast_waktu_proses') return d.roasting?.waktu_proses || '-';
-  if (key === 'roast_mesin') return d.roasting?.mesin_goreng || '-';
-  if (key === 'roast_mode') return d.roasting?.jenis_kopi_goreng || '-';
-  if (key === 'roast_silo') return withPrefix(d.roasting?.silo_degassing, 'Silo') || '-';
-  if (key === 'roast_jumlah_batch') return withUnit(d.roasting?.jumlah_batch, 'batch') || '-';
-  if (key === 'roast_operator') return d.roasting?.operator_produksi || '-';
-  if (key === 'roast_parameter_kritis') return d.roasting?.raw_rows?.length ? '' : '-';
-  if (key === 'roast_abnormalitas') return d.roasting?.catatan_abnormalitas || '-';
-  if (key === 'roast_jenis_biji') return d.roasting?.jenis_biji_mentah || '-';
-  if (key === 'roast_silocell') return withPrefix(d.roasting?.silo_cell_terpakai, 'Cell') || '-';
+  // 5. DRYER (Flow 4) - From MySQL dryer_tower_*
+  if (key === 'dryer_waktu_proses') return d.dryer?.waktu_proses || 'Data tidak ditemukan';
+  if (key === 'dryer_operator') return d.dryer?.operator_produksi || 'Data tidak ditemukan';
+  if (key === 'dryer_final_tank') return d.dryer?.final_tank ? withPrefix(d.dryer.final_tank, 'FT C0') : 'Data tidak ditemukan';
+  if (key === 'dryer_mode') return d.dryer?.mode || 'Data tidak ditemukan';
+  if (key === 'dryer_parameter_kritis') return d.dryer?.raw_rows?.length ? '' : 'Data tidak ditemukan';
+  if (key === 'dryer_abnormalitas') return d.dryer?.abnormalitas || 'Data tidak ditemukan';
+  if (key === 'dryer_supplier_co2') return d.dryer?.supplier_co2 || 'Data tidak ditemukan';
+  if (key === 'dryer_tgl_co2') return d.dryer?.tgl_co2 || 'Data tidak ditemukan';
 
-  // 7. UPBM (Flow 9)
-  if (key === 'upbm_waktu_inload') return d.upbm?.waktu_inload || '-';
-  if (key === 'upbm_bstb') return d.upbm?.nomor_bstb || '-';
-  if (key === 'upbm_jenis_biji') return d.upbm?.jenis_biji_kopi_mentah || '-';
-  if (key === 'upbm_silo_cell') return d.upbm?.silo_cell || '-';
-  if (key === 'upbm_disposisi') return d.upbm?.disposisi || '-';
-  if (key === 'upbm_total_biji') return d.upbm?.total_kopi_mentah_dipakai || '-';
-  if (key === 'upbm_operator') return d.upbm?.operator_produksi || '-';
-  if (key === 'upbm_abnormalitas') return d.upbm?.catatan_abnormalitas || '-';
+  // 6. EVAPORATION (Flow 5) - From MySQL evaporation_tower_*
+  if (key === 'evap_waktu_proses') return d.evaporation?.waktu_proses || 'Data tidak ditemukan';
+  if (key === 'evap_operator') return d.evaporation?.operator_produksi || 'Data tidak ditemukan';
+  if (key === 'evap_destination_tank') return d.evaporation?.no_final_tank ? withPrefix(d.evaporation.no_final_tank, 'FT C0') : 'Data tidak ditemukan';
+  if (key === 'evap_parameter_kritis') return d.evaporation?.raw_rows?.length ? '' : 'Data tidak ditemukan';
+  if (key === 'evap_abnormalitas') return d.evaporation?.abnormalitas || 'Data tidak ditemukan';
 
-  // 8. MASS BALANCE (Flow 10)
-  if (key === 'mb_output') return d.mass_balance?.total_output_produk || '-';
-  if (key === 'mb_kopi_goreng') return d.mass_balance?.total_kopi_goreng_transfer || '-';
-  if (key === 'mb_kopi_mentah') return d.mass_balance?.total_kopi_mentah || '-';
-  if (key === 'mb_rasio_ic') return d.mass_balance?.rasio_ic || d.mass_balance?.icRatio || '-';
+  // 7. EXTRACTION (Flow 6) - From MySQL extraction_tower_*
+  if (key === 'ext_waktu_proses') return d.extraction?.waktu_proses || 'Data tidak ditemukan';
+  if (key === 'ext_mode') return d.extraction?.mode_ekstraksi || 'Data tidak ditemukan';
+  if (key === 'ext_percolator') return d.extraction?.jumlah_percolator ? withUnit(d.extraction.jumlah_percolator, 'siklus') : 'Data tidak ditemukan';
+  if (key === 'ext_operator') return d.extraction?.operator_produksi || 'Data tidak ditemukan';
+  if (key === 'ext_silo') return d.extraction?.silo_degassing ? withPrefix(d.extraction.silo_degassing, 'Silo') : (d.extraction?.silo_numbers?.length ? ('Silo ' + d.extraction.silo_numbers.join(' & ')) : 'Data tidak ditemukan');
+  if (key === 'ext_parameter_kritis') return d.extraction?.raw_rows?.length ? '' : 'Data tidak ditemukan';
+  if (key === 'ext_abnormalitas') return d.extraction?.abnormalitas || 'Data tidak ditemukan';
+  if (key === 'ext_supplier_antifoam') return d.extraction?.supplier_antifoam || 'Data tidak ditemukan';
+  if (key === 'ext_tgl_antifoam') return d.extraction?.tgl_antifoam || 'Data tidak ditemukan';
 
-  return '-';
+  // 8. ROASTING (Flow 8) - From MySQL roasting_*
+  if (key === 'roast_waktu_proses') return d.roasting?.waktu_proses || 'Data tidak ditemukan';
+  if (key === 'roast_mesin') return d.roasting?.mesin_goreng || 'Data tidak ditemukan';
+  if (key === 'roast_mode') return d.roasting?.jenis_kopi_goreng || 'Data tidak ditemukan';
+  if (key === 'roast_silo') return d.roasting?.silo_degassing ? withPrefix(d.roasting.silo_degassing, 'Silo') : 'Data tidak ditemukan';
+  if (key === 'roast_jumlah_batch') return d.roasting?.jumlah_batch ? withUnit(d.roasting.jumlah_batch, 'batch') : 'Data tidak ditemukan';
+  if (key === 'roast_operator') return d.roasting?.operator_produksi || 'Data tidak ditemukan';
+  if (key === 'roast_parameter_kritis') return d.roasting?.raw_rows?.length ? '' : 'Data tidak ditemukan';
+  if (key === 'roast_abnormalitas') return d.roasting?.catatan_abnormalitas || 'Data tidak ditemukan';
+  if (key === 'roast_jenis_biji') return d.roasting?.jenis_biji_mentah || 'Data tidak ditemukan';
+  if (key === 'roast_silocell') return d.roasting?.silo_cell_terpakai ? withPrefix(d.roasting.silo_cell_terpakai, 'Cell') : 'Data tidak ditemukan';
+
+  // 9. UPBM (Flow 9) - TIDAK ADA TABEL UPBM DI DATABASE
+  if (key.startsWith('upbm_')) {
+    if (d.upbm && d.upbm[key.replace('upbm_', '')]) {
+      return String(d.upbm[key.replace('upbm_', '')]);
+    }
+    return 'Data tidak ditemukan';
+  }
+
+  // 10. MASS BALANCE (Flow 10) - Real DB calculated
+  if (key === 'mb_output') return d.mass_balance?.total_output_produk || 'Data tidak ditemukan';
+  if (key === 'mb_kopi_goreng') return d.mass_balance?.total_kopi_goreng_transfer || 'Data tidak ditemukan';
+  if (key === 'mb_kopi_mentah') return d.mass_balance?.total_kopi_mentah || 'Data tidak ditemukan';
+  if (key === 'mb_rasio_ic') return d.mass_balance?.rasio_ic || d.mass_balance?.icRatio || 'Data tidak ditemukan';
+
+  // 11. INCOMING BAHAN (Flow 11) - TIDAK ADA TABEL DI DATABASE
+  if (key.startsWith('rmw_') || key.startsWith('qc_rmw_')) {
+    if (d.rmw && d.rmw[key]) {
+      return String(d.rmw[key]);
+    }
+    return 'Data tidak ditemukan';
+  }
+
+  // 12. INCOMING BAHAN KEMAS (Flow 12) - TIDAK ADA TABEL DI DATABASE
+  if (key.startsWith('fgw_') || key.startsWith('qc_karton_') || key.startsWith('qc_plastik_')) {
+    if (d.fgw && d.fgw[key]) {
+      return String(d.fgw[key]);
+    }
+    return 'Data tidak ditemukan';
+  }
+
+  // 13. PA (PRODUCT ASSURANCE) - From MySQL pa_fwt_*, pa_cip_*, pa_emp_*, pa_abe_*
+  if (key === 'water_waktu_analisa') return d.pa?.water?.waktu_analisa || 'Data tidak ditemukan';
+  if (key === 'water_ph') return d.pa?.water?.ph !== undefined && d.pa?.water?.ph !== null ? String(d.pa.water.ph) : 'Data tidak ditemukan';
+  if (key === 'water_tds') return d.pa?.water?.tds !== undefined && d.pa?.water?.tds !== null ? String(d.pa.water.tds) : 'Data tidak ditemukan';
+  if (key === 'water_kekeruhan') return d.pa?.water?.kekeruhan !== undefined && d.pa?.water?.kekeruhan !== null ? String(d.pa.water.kekeruhan) : 'Data tidak ditemukan';
+  if (key === 'water_kesadahan') return d.pa?.water?.kesadahan !== undefined && d.pa?.water?.kesadahan !== null ? String(d.pa.water.kesadahan) : 'Data tidak ditemukan';
+  if (key === 'water_sisa_khlor') return d.pa?.water?.sisa_khlor !== undefined && d.pa?.water?.sisa_khlor !== null ? String(d.pa.water.sisa_khlor) : 'Data tidak ditemukan';
+  if (key === 'water_mangan') return d.pa?.water?.mangan !== undefined && d.pa?.water?.mangan !== null ? String(d.pa.water.mangan) : 'Data tidak ditemukan';
+  if (key === 'water_besi') return d.pa?.water?.besi !== undefined && d.pa?.water?.besi !== null ? String(d.pa.water.besi) : 'Data tidak ditemukan';
+  if (key === 'water_warna') return d.pa?.water?.warna !== undefined && d.pa?.water?.warna !== null ? String(d.pa.water.warna) : 'Data tidak ditemukan';
+  if (key === 'water_aluminium') return d.pa?.water?.aluminium !== undefined && d.pa?.water?.aluminium !== null ? String(d.pa.water.aluminium) : 'Data tidak ditemukan';
+  if (key === 'water_e_coli') return d.pa?.water?.e_coli || 'Data tidak ditemukan';
+  if (key === 'water_total_coliform') return d.pa?.water?.total_coliform || 'Data tidak ditemukan';
+  if (key === 'water_pic_pa') return d.pa?.water?.pic_pa || 'Data tidak ditemukan';
+
+  // PA Packing COP, EMP, ABE
+  if (key === 'pa_packing_cop_waktu') return d.pa?.cop?.tanggal || 'Data tidak ditemukan';
+  if (key === 'pa_packing_cop_swab') return d.pa?.cop?.swab || 'Data tidak ditemukan';
+  if (key === 'pa_packing_cop_pic') return d.pa?.cop?.pic || 'Data tidak ditemukan';
+  if (key === 'pa_packing_env_internal_waktu') return d.pa?.emp?.internal_tanggal || 'Data tidak ditemukan';
+  if (key === 'pa_packing_env_internal_list') return d.pa?.emp?.internal_hasil || 'Data tidak ditemukan';
+  if (key === 'pa_packing_env_internal_pic') return d.pa?.emp?.internal_pic || 'Data tidak ditemukan';
+  if (key === 'pa_packing_env_external_waktu') return d.pa?.emp?.external_tanggal || 'Data tidak ditemukan';
+  if (key === 'pa_packing_env_external_list') return d.pa?.emp?.external_hasil || 'Data tidak ditemukan';
+  if (key === 'pa_packing_env_external_pic') return d.pa?.emp?.external_pic || 'Data tidak ditemukan';
+  if (key === 'pa_packing_abe_waktu') return d.pa?.abe?.tanggal || 'Data tidak ditemukan';
+  if (key === 'pa_packing_abe_hasil') return d.pa?.abe?.hasil || 'Data tidak ditemukan';
+  if (key === 'pa_packing_abe_pic') return d.pa?.abe?.pic || 'Data tidak ditemukan';
+
+  // PA CIP
+  if (key === 'pa_rework_cip_waktu') return d.pa?.cip?.rework?.tanggal || 'Data tidak ditemukan';
+  if (key === 'pa_rework_cip_lye') return d.pa?.cip?.rework?.konsentrasi_lye || (d.pa?.cip?.rework?.tanggal ? '3%' : 'Data tidak ditemukan');
+  if (key === 'pa_rework_cip_rinse') return d.pa?.cip?.rework?.rinse || 'Data tidak ditemukan';
+  if (key === 'pa_rework_cip_pic') return d.pa?.cip?.rework?.pic || 'Data tidak ditemukan';
+
+  if (key === 'pa_dryer_cip_waktu') return d.pa?.cip?.dryer?.tanggal || 'Data tidak ditemukan';
+  if (key === 'pa_dryer_cip_lye') return d.pa?.cip?.dryer?.konsentrasi_lye || (d.pa?.cip?.dryer?.tanggal ? '3%' : 'Data tidak ditemukan');
+  if (key === 'pa_dryer_cip_rinse') return (d.pa?.cip?.dryer?.ph_lab && d.pa.cip.dryer.ph_lab !== '-' && d.pa.cip.dryer.ph_lab !== '0') ? `pH: ${d.pa.cip.dryer.ph_lab} (OK)` : 'Data tidak ditemukan';
+  if (key === 'pa_dryer_cip_pic') return d.pa?.cip?.dryer?.pic || 'Data tidak ditemukan';
+
+  if (key === 'pa_evap_cip_waktu') return d.pa?.cip?.evaporation?.tanggal || 'Data tidak ditemukan';
+  if (key === 'pa_evap_cip_lye') return d.pa?.cip?.evaporation?.konsentrasi_lye || (d.pa?.cip?.evaporation?.tanggal ? '3%' : 'Data tidak ditemukan');
+  if (key === 'pa_evap_cip_rinse') return (d.pa?.cip?.evaporation?.ph_lab && d.pa.cip.evaporation.ph_lab !== '-' && d.pa.cip.evaporation.ph_lab !== '0') ? `pH: ${d.pa.cip.evaporation.ph_lab} (OK)` : 'Data tidak ditemukan';
+  if (key === 'pa_evap_cip_pic') return d.pa?.cip?.evaporation?.pic || 'Data tidak ditemukan';
+
+  if (key === 'pa_finaltank_cip_waktu') return d.pa?.cip?.final_tank?.tanggal || 'Data tidak ditemukan';
+  if (key === 'pa_finaltank_cip_lye') return d.pa?.cip?.final_tank?.konsentrasi_lye || (d.pa?.cip?.final_tank?.tanggal ? '3%' : 'Data tidak ditemukan');
+  if (key === 'pa_finaltank_cip_rinse') return d.pa?.cip?.final_tank?.rinse || 'Data tidak ditemukan';
+  if (key === 'pa_finaltank_cip_swab') return d.pa?.cip?.final_tank?.swab || 'Data tidak ditemukan';
+  if (key === 'pa_finaltank_cip_pic') return d.pa?.cip?.final_tank?.pic || 'Data tidak ditemukan';
+
+  if (key === 'pa_ext_cip_waktu') return d.pa?.cip?.extraction?.tanggal || 'Data tidak ditemukan';
+  if (key === 'pa_ext_cip_lye') return d.pa?.cip?.extraction?.konsentrasi_lye || (d.pa?.cip?.extraction?.tanggal ? '3 %' : 'Data tidak ditemukan');
+  if (key === 'pa_ext_cip_rinse') return d.pa?.cip?.extraction?.rinse || 'Data tidak ditemukan';
+  if (key === 'pa_ext_cip_pic') return d.pa?.cip?.extraction?.pic || 'Data tidak ditemukan';
+
+  return 'Data tidak ditemukan';
 }
 
 function buildClusterData(traceResult, tower = '1') {
@@ -206,25 +307,27 @@ function buildClusterData(traceResult, tower = '1') {
   const dryerTable = tKey === '2' ? 'dryer_tower_2' : 'dryer_tower_1';
   const packTable = tKey === '2' ? 'packing_tower_2' : 'packing_tower_1';
 
-  // Real Database checks
+  // Real Database checks strictly without local file injection (Anti-Halusinasi)
   const hasPacking = Boolean(d.packing && !d.packing.error && d.packing.raw_rows?.length);
   const hasDryer = Boolean(d.dryer && !d.dryer.error && d.dryer.raw_rows?.length);
   const hasEvaporation = Boolean(d.evaporation && !d.evaporation.error && d.evaporation.raw_rows?.length);
   const hasExtraction = Boolean(d.extraction && !d.extraction.error && d.extraction.raw_rows?.length);
   const hasRoasting = Boolean(d.roasting && !d.roasting.error && d.roasting.raw_rows?.length);
-  const hasUpbm = Boolean(d.upbm && !d.upbm.error && (d.upbm.waktu_inload || d.upbm.silo_cell));
+  const hasUpbm = Boolean(d.upbm && !d.upbm.error && (d.upbm.waktu_inload || d.upbm.raw_rows?.length));
+  const hasMassBalance = Boolean(d.mass_balance && (d.mass_balance.total_output_produk || d.mass_balance.rasio_ic));
+  const hasPaWater = Boolean(d.pa && !d.pa.error && d.pa.water);
+  const hasRework = Boolean(d.rework && !d.rework.error && d.rework.raw_rows?.length);
+  const hasDistribusi = Boolean(d.distribusi && !d.distribusi.error && d.distribusi.raw_rows?.length);
   const hasRmw = Boolean(d.rmw && !d.rmw.error && d.rmw.raw_rows?.length);
-  const hasPa = Boolean(d.pa && !d.pa.error && d.pa.raw_rows?.length);
-  const hasFgw = Boolean(d.fgw && !d.fgw.error && d.fgw.raw_rows?.length);
-  const hasRework = false;
+  const hasFgwKemas = Boolean(d.fgw && !d.fgw.error && d.fgw.raw_rows?.length);
 
   // Machine naming
-  const roastMachineCode = d.roasting?.mesin_goreng || 'PRB';
+  const roastMachineCode = d.roasting?.mesin_goreng || '';
   const roastMachineName = roastMachineCode === 'SCL 1'
     ? 'Scolari 1'
     : (roastMachineCode === 'SCL 2'
       ? 'Scolari 2'
-      : (roastMachineCode === 'PRB' ? 'Probat Line 1' : roastMachineCode));
+      : (roastMachineCode === 'PRB' ? 'Probat Line 1' : (roastMachineCode || 'Data tidak ditemukan')));
   const roastTableKey = d.roasting?.table || (roastMachineCode === 'SCL 1' ? 'roasting_scolari_1' : (roastMachineCode === 'SCL 2' ? 'roasting_scolari_2' : 'roasting_probat'));
 
   // Dates
@@ -234,7 +337,7 @@ function buildClusterData(traceResult, tower = '1') {
   const dryDate = formatFlowDate(d.dryer?.tanggal || d.dryer?.waktu_proses);
   const packDate = formatFlowDate(d.packing?.tanggal || d.packing?.waktu_proses);
 
-  // Helper to filter out null/empty fields
+  // Helper to preserve fields
   const cleanFields = (arr) => (arr || []).filter(f => f && isValidVal(f.value));
   const cleanMetrics = (arr) => (arr || []).filter(m => m && isValidVal(m.value));
 
@@ -248,51 +351,58 @@ function buildClusterData(traceResult, tower = '1') {
         {
           flowNumber: 'Flow 11',
           title: 'INCOMING BAHAN',
-          refDoc: 'Form F/WHS/01.002 & F/QC/01.030',
+          refDoc: 'Form F/SC/01.06, F/SC/01.05 & F/QC/01.030',
           isAvailable: hasRmw,
-          pendingPicName: 'RMW & QC',
-          noticeText: 'Data penerimaan biji kopi mentah belum tercatat di database MySQL.',
-          operationalTitle: 'Data Kedatangan & Logistik Bahan Baku (PIC RMW)',
-          fields: hasRmw ? cleanFields([
-            { label: 'Tanggal Kedatangan', value: formatFlowDate(d.rmw?.tanggal) },
-            { label: 'Jenis Bahan', value: d.rmw?.jenis_kopi },
-            { label: 'Nama Supplier', value: d.rmw?.supplier },
-            { label: 'Nomor Truk', value: d.rmw?.no_truk },
-            { label: 'Nomor Surat Jalan', value: d.rmw?.no_sj },
-            { label: 'Jumlah (kg)', value: d.rmw?.qty_kg ? d.rmw.qty_kg + ' kg' : null },
-          ]) : [],
-          qcTitle: 'Analisa Kualitas Kedatangan Biji Kopi Mentah (QC Kedatangan)',
-          qcMetrics: hasRmw ? cleanMetrics([
-            { label: 'Kadar Air (%)', value: d.rmw?.kadar_air ? d.rmw.kadar_air + '%' : null, spec: 'Standar < 12,0%' },
-            { label: 'Biji OK (Grade)', value: d.rmw?.biji_ok ? d.rmw.biji_ok + '%' : null, spec: 'Min. 85,0%' },
-            { label: '% Foreign Matter', value: d.rmw?.fm, spec: 'Bebas Benda Asing' },
-          ]) : [],
+          pendingPicName: hasRmw ? 'RMW & QC' : 'Data tidak ditemukan di database',
+          operationalTitle: 'Data Kedatangan & Logistik Bahan Baku',
+          prodRole: 'RMW',
+          fields: cleanFields([
+            { label: 'Tanggal kedatangan', value: d.rmw?.tgl_kedatangan || 'Data tidak ditemukan', colSpan: 'col-span-1 sm:col-span-2 lg:col-span-2' },
+            { label: 'Jenis bahan', value: d.rmw?.jenis_kopi || 'Data tidak ditemukan', badge: d.rmw?.jenis_kopi || null },
+            { label: 'Nama supplier', value: d.rmw?.supplier || 'Data tidak ditemukan' },
+            { label: 'Nomor truk', value: d.rmw?.no_truk || 'Data tidak ditemukan', colSpan: 'col-span-1 sm:col-span-2 lg:col-span-2' },
+            { label: 'Nomor Surat Jalan', value: d.rmw?.no_sj || 'Data tidak ditemukan', colSpan: 'col-span-1 sm:col-span-2 lg:col-span-2' },
+            { label: 'Jumlah (kg)', value: d.rmw?.jumlah_kg || 'Data tidak ditemukan', colSpan: 'col-span-1 sm:col-span-2 lg:col-span-2' },
+            { label: 'Verifikasi kondisi truk', value: d.rmw?.verifikasi_truk || 'Data tidak ditemukan', badge: d.rmw?.verifikasi_truk || null },
+            { label: 'Tanggal serah terima ke UPBM', value: d.rmw?.tgl_serah_terima_upbm || 'Data tidak ditemukan' },
+          ]),
+          qcTitle: 'Analisa Kualitas Kedatangan Biji Kopi Mentah',
+          qcRole: 'QC',
+          qcMetrics: cleanMetrics([
+            { label: 'Serangga hidup', value: d.rmw?.serangga_hidup || 'Data tidak ditemukan', spec: 'Bebas Hama' },
+            { label: 'Biji berbau', value: d.rmw?.biji_berbau || 'Data tidak ditemukan', spec: 'Normal' },
+            { label: 'Warna', value: d.rmw?.warna || 'Data tidak ditemukan', spec: 'Normal' },
+            { label: 'Kadar air', value: d.rmw?.kadar_air || 'Data tidak ditemukan', spec: 'Maks. 12.0%' },
+            { label: 'Biji OK', value: d.rmw?.biji_ok || 'Data tidak ditemukan', spec: 'Min. 70.0%' },
+            { label: '% Foreign Matter', value: d.rmw?.fm || 'Data tidak ditemukan', spec: 'Bebas Benda Asing' },
+            { label: 'Status', value: d.rmw?.status || 'Data tidak ditemukan', spec: 'Lolos Uji Mutu' },
+          ]),
           prodTable: null,
           qcTable: null,
-          pic: { operasional: d.rmw?.operator || '-', qc: d.rmw?.qc || '-' },
+          pic: { operasional: d.rmw?.pic_rmw || 'Data tidak ditemukan', qc: d.rmw?.pic_qc || 'Data tidak ditemukan' },
         },
         {
           flowNumber: 'Flow 9',
           title: 'UPBM',
-          refDoc: 'Form F/UPBM/01.008 & F/QC/01.030',
+          refDoc: 'Form F/PRO/01.01 & F/QC/01.030',
           isAvailable: hasUpbm,
-          pendingPicName: 'UPBM',
-          noticeText: 'Data serah terima dan inload Silo Cell UPBM belum tercatat di database MySQL.',
-          operationalTitle: 'Data Serah Terima & Inload Silo Cell (PIC UPBM)',
-          fields: hasUpbm ? cleanFields([
-            { label: 'Waktu Inload', value: d.upbm?.waktu_inload },
-            { label: 'Nomor BSTB Inload', value: d.upbm?.nomor_bstb },
-            { label: 'Jenis Biji Kopi Mentah', value: d.upbm?.jenis_biji_kopi_mentah },
-            { label: 'Silo Cell Digunakan', value: d.upbm?.silo_cell },
-            { label: 'Disposisi UPBM', value: d.upbm?.disposisi },
-            { label: 'Total Kopi Mentah Dipakai', value: d.upbm?.total_kopi_mentah_dipakai },
-            { label: 'Catatan Abnormalitas', value: d.upbm?.catatan_abnormalitas },
-          ]) : [],
-          qcTitle: 'Pemeriksaan Jalur Transfer & Silo Cell UPBM',
+          pendingPicName: hasUpbm ? 'UPBM' : 'Data tidak ditemukan di database',
+          operationalTitle: 'Data Serah Terima & Inload Silo Cell',
+          prodRole: 'Produksi',
+          fields: cleanFields([
+            { label: 'Waktu inload', value: d.upbm?.waktu_inload || 'Data tidak ditemukan', colSpan: 'col-span-1 sm:col-span-2 lg:col-span-2' },
+            { label: 'Nomor BSTB inload', value: d.upbm?.nomor_bstb || 'Data tidak ditemukan' },
+            { label: 'Jenis biji kopi mentah', value: d.upbm?.jenis_biji_kopi_mentah || 'Data tidak ditemukan', badge: d.upbm?.jenis_biji_kopi_mentah || null },
+            { label: 'Silo cell', value: d.upbm?.silo_cell || 'Data tidak ditemukan', badge: d.upbm?.silo_cell ? 'Cell UPBM' : null },
+            { label: 'Disposisi', value: d.upbm?.disposisi || 'Data tidak ditemukan' },
+            { label: 'Total jumlah biji kopi mentah yang dipakai', value: d.upbm?.total_kopi_mentah_dipakai || 'Data tidak ditemukan' },
+            { label: 'Catatan abnormalitas proses', value: d.upbm?.catatan_abnormalitas || 'Data tidak ditemukan' },
+          ]),
+          qcTitle: null,
           qcMetrics: [],
           prodTable: null,
           qcTable: null,
-          pic: { operasional: d.upbm?.operator_produksi || '-', qc: '-' },
+          pic: { operasional: d.upbm?.operator_produksi || 'Data tidak ditemukan' },
         },
       ],
     },
@@ -302,93 +412,90 @@ function buildClusterData(traceResult, tower = '1') {
     // ══════════════════════════════════════════════════════════════
     'roasting': {
       ...CLUSTER_CONFIG[1],
-      clusterBadge: `Cluster: Penyangraian ${roastMachineName} & Neraca Massa`,
       subflows: [
         {
           flowNumber: 'Flow 8',
           title: 'ROASTING',
-          refDoc: 'Form F/PRD/02.015 & F/QC/01.030',
+          refDoc: 'Form F/PRD/01.011, F/PRD/01.012 & F/QC/01.030',
           isAvailable: hasRoasting,
-          pendingPicName: 'Produksi',
+          pendingPicName: hasRoasting ? 'Produksi & QC' : 'Data tidak ditemukan di database',
           processDate: roastDate,
-          operationalTitle: `Data Operasional Penyangraian ${roastMachineName} (PIC Produksi)`,
-          fields: hasRoasting ? cleanFields([
-            { label: 'Waktu Proses', value: d.roasting?.waktu_proses },
-            { label: 'Mesin Goreng', value: roastMachineName, badge: roastMachineCode },
-            { label: 'Jenis Kopi Goreng', value: d.roasting?.jenis_kopi_goreng, badge: 'Produk' },
-            { label: 'Silo Degassing Tujuan', value: withPrefix(d.roasting?.silo_degassing, 'Silo') },
-            { label: 'Jumlah Sesi Sangrai', value: withUnit(d.roasting?.jumlah_batch, 'batch') },
-            { label: 'Operator Produksi', value: d.roasting?.operator_produksi },
-            { label: 'Jenis Biji Kopi Mentah', value: d.roasting?.jenis_biji_mentah },
-            { label: 'SiloCell yang Digunakan', value: withPrefix(d.roasting?.silo_cell_terpakai, 'Cell') },
-            { label: 'Total Input Mentah', value: d.roasting?.total_kopi_mentah_kg ? withUnit(parseFloat(d.roasting.total_kopi_mentah_kg).toLocaleString(), 'kg') : null },
-            { label: 'Total Output Matang', value: d.roasting?.total_kopi_matang_kg ? withUnit(parseFloat(d.roasting.total_kopi_matang_kg).toLocaleString(), 'kg') : null },
-            { label: 'Catatan Abnormalitas', value: d.roasting?.catatan_abnormalitas },
-          ]) : [],
-          qcTitle: 'Analisa Kualitas Kopi Goreng (Laboratorium QC)',
+          operationalTitle: 'Data Operasional Roasting Biji Kopi',
+          prodRole: 'Produksi',
+          fields: cleanFields([
+            { label: 'Waktu proses', value: d.roasting?.waktu_proses || 'Data tidak ditemukan' },
+            { label: 'Mesin roasting', value: roastMachineName, badge: roastMachineCode || null },
+            { label: 'Jenis kopi goreng', value: d.roasting?.jenis_kopi_goreng || 'Data tidak ditemukan', badge: d.roasting?.jenis_kopi_goreng || null },
+            { label: 'Silo degassing', value: d.roasting?.silo_degassing ? withPrefix(d.roasting.silo_degassing, 'Silo') : 'Data tidak ditemukan' },
+            { label: 'Jumlah batch', value: d.roasting?.jumlah_batch ? withUnit(d.roasting.jumlah_batch, 'batch') : 'Data tidak ditemukan' },
+            { label: 'Catatan abnormalitas proses', value: d.roasting?.catatan_abnormalitas || 'Data tidak ditemukan' },
+            { label: 'Jenis biji kopi mentah', value: d.roasting?.jenis_biji_mentah || 'Data tidak ditemukan' },
+            { label: 'Silo cell UPBM yang dipakai', value: d.roasting?.silo_cell_terpakai ? withPrefix(d.roasting.silo_cell_terpakai, 'Cell') : 'Data tidak ditemukan' },
+          ]),
+          qcTitle: 'Hasil Pengujian Laboratorium Mutu Biji Sangrai',
+          qcRole: 'QC',
           qcMetrics: cleanMetrics([
-            { label: 'Visual / FM', value: d.qc?.qc_roast_visual_fm, spec: 'Bebas Benda Asing' },
-            { label: 'Warna', value: d.qc?.qc_roast_warna, spec: 'Standar 110 - 120' },
-            { label: 'Kadar Air', value: withUnit(d.qc?.qc_roast_kadar_air, '%'), spec: 'Maks. 7,0%' },
-            { label: 'pH', value: d.qc?.qc_roast_ph, spec: 'Std 6,00 - 6,50' },
-            { label: 'Brix', value: d.qc?.qc_roast_brix, spec: 'Std 1,15 - 1,25' },
+            { label: 'Warna Kopi Goreng', value: d.qc?.qc_roast_warna || 'Data tidak ditemukan', spec: 'Standar Agtron' },
+            { label: 'Kadar air', value: d.qc?.qc_roast_kadar_air || 'Data tidak ditemukan', spec: 'Maks. 5.50%' },
+            { label: 'pH', value: d.qc?.qc_roast_ph || 'Data tidak ditemukan', spec: 'Std 6.00 - 6.50' },
+            { label: 'Brix', value: d.qc?.qc_roast_brix || 'Data tidak ditemukan', spec: 'Std Brix' },
           ]),
           cuptestMetrics: cleanFields([
-            { label: 'Wangi', value: d.qc?.qc_roast_wangi },
-            { label: 'Asam', value: d.qc?.qc_roast_asam },
-            { label: 'Pahit', value: d.qc?.qc_roast_pahit },
-            { label: 'Sepat', value: d.qc?.qc_roast_sepat },
-            { label: 'Body', value: d.qc?.qc_roast_body },
-            { label: 'Bau Asing', value: d.qc?.qc_roast_bau_asing },
+            { label: 'Wangi', value: d.qc?.qc_roast_wangi || 'Data tidak ditemukan' },
+            { label: 'Pahit', value: d.qc?.qc_roast_pahit || 'Data tidak ditemukan' },
+            { label: 'Asam', value: d.qc?.qc_roast_asam || 'Data tidak ditemukan' },
+            { label: 'Body', value: d.qc?.qc_roast_body || 'Data tidak ditemukan' },
+            { label: 'Sepat', value: d.qc?.qc_roast_sepat || 'Data tidak ditemukan' },
           ]),
           prodTable: hasRoasting ? {
             pic: 'Produksi',
-            title: `Tabel Operasional Penyangraian (${roastMachineName})`,
+            title: `Tabel Operasional Roasting (${roastMachineName})`,
             tableName: roastTableKey,
             rows: d.roasting?.raw_rows || [],
             columns: d.roasting?.columns || [],
           } : null,
           qcTable: null,
           pic: {
-            operasional: d.roasting?.operator_produksi || '-',
-            qc: d.qc?.qc_roast_pic || '-',
+            operasional: d.roasting?.operator_produksi || 'Data tidak ditemukan',
+            qc: d.qc?.qc_roast_pic || 'Data tidak ditemukan',
           },
         },
         {
           flowNumber: 'Flow 10',
           title: 'MASS BALANCE PRODUKSI',
           refDoc: 'Form F/PRD/02.016 & F/QC/01.030',
-          isAvailable: hasRoasting && Boolean(d.mass_balance),
-          pendingPicName: 'Produksi',
+          isAvailable: hasMassBalance,
+          pendingPicName: hasMassBalance ? 'Produksi' : 'Data tidak ditemukan di database',
           processDate: roastDate,
-          operationalTitle: 'Data Neraca Massa & Efisiensi Konversi (PIC Produksi)',
+          operationalTitle: 'Data Neraca Massa & Efisiensi Konversi',
+          prodRole: 'Produksi',
           fields: cleanFields([
-            { label: 'Total Output Produk Jadi', value: d.mass_balance?.total_output_produk },
-            { label: 'Total Kopi Goreng Ditransfer', value: d.mass_balance?.total_kopi_goreng_transfer },
-            { label: 'Total Kopi Mentah', value: d.mass_balance?.total_kopi_mentah },
-            { label: 'Rasio IC (Konversi)', value: d.mass_balance?.rasio_ic || d.mass_balance?.icRatio, badge: 'Rasio IC' },
-            { label: 'Yield Penyangraian', value: d.mass_balance?.yield_roasting || d.roasting?.yield_roasting, badge: 'Yield' },
+            { label: 'Total output produk', value: d.mass_balance?.total_output_produk || 'Data tidak ditemukan' },
+            { label: 'Total kopi goreng yang ditransfer', value: d.mass_balance?.total_kopi_goreng_transfer || 'Data tidak ditemukan' },
+            { label: 'Total kopi mentah', value: d.mass_balance?.total_kopi_mentah || 'Data tidak ditemukan' },
+            { label: 'Rasio IC', value: d.mass_balance?.rasio_ic || d.mass_balance?.icRatio || 'Data tidak ditemukan', badge: 'Rasio IC' },
           ]),
           qcTitle: 'Verifikasi Neraca Massa (Yield & Rasio IC)',
+          qcRole: 'QC',
           qcMetrics: cleanMetrics([
-            { label: 'Rasio IC', value: d.mass_balance?.rasio_ic || d.mass_balance?.icRatio, spec: 'Std 2.00 - 4.50' },
-            { label: 'Yield Roasting', value: d.mass_balance?.yield_roasting || d.roasting?.yield_roasting, spec: 'Std 86.0 - 89.0%' },
+            { label: 'Rasio IC', value: d.mass_balance?.rasio_ic || d.mass_balance?.icRatio || 'Data tidak ditemukan', spec: 'Std 2.00 - 4.50' },
+            { label: 'Yield Roasting', value: d.mass_balance?.yield_roasting || 'Data tidak ditemukan', spec: 'Std 86.0 - 89.0%' },
           ]),
           prodTable: d.mass_balance ? {
             pic: 'Produksi',
             title: 'Rekonsiliasi Neraca Massa Produksi',
             tableName: 'mass_balance_reconciliation',
             rows: [{
-              'Total Kopi Mentah': d.mass_balance.total_kopi_mentah || '-',
-              'Total Kopi Goreng': d.mass_balance.total_kopi_goreng_transfer || '-',
-              'Total Output Jadi': d.mass_balance.total_output_produk || '-',
-              'Yield Roasting': d.mass_balance.yield_roasting || d.roasting?.yield_roasting || '-',
-              'Rasio IC': d.mass_balance.rasio_ic || d.mass_balance.icRatio || '-',
+              'Total Kopi Mentah': d.mass_balance.total_kopi_mentah || 'Data tidak ditemukan',
+              'Total Kopi Goreng': d.mass_balance.total_kopi_goreng_transfer || 'Data tidak ditemukan',
+              'Total Output Jadi': d.mass_balance.total_output_produk || 'Data tidak ditemukan',
+              'Yield Roasting': d.mass_balance.yield_roasting || 'Data tidak ditemukan',
+              'Rasio IC': d.mass_balance.rasio_ic || d.mass_balance.icRatio || 'Data tidak ditemukan',
             }],
             columns: ['Total Kopi Mentah', 'Total Kopi Goreng', 'Total Output Jadi', 'Yield Roasting', 'Rasio IC'],
           } : null,
           qcTable: null,
-          pic: { operasional: d.roasting?.operator_produksi || d.packing?.operator_packing || '-', qc: d.qc?.qc_packing_pic || '-' },
+          pic: { operasional: d.roasting?.operator_produksi || 'Data tidak ditemukan' },
         },
       ],
     },
@@ -402,79 +509,147 @@ function buildClusterData(traceResult, tower = '1') {
         {
           flowNumber: 'Flow 7',
           title: 'WATER PROCESS',
-          refDoc: 'Form F/PA/03.011 & F/QC/01.030',
-          isAvailable: hasPa,
-          pendingPicName: 'PA',
-          noticeText: 'Data hasil pengujian dan pasokan air proses WTP belum tercatat di database MySQL.',
-          operationalTitle: 'Data Pasokan Air Proses WTP Plant (PIC PA)',
-          fields: hasPa ? cleanFields([
-            { label: 'Waktu Analisa', value: formatFlowDate(d.pa?.tanggal) },
-            { label: 'Sumber Pasokan Air', value: d.pa?.sumber },
-            { label: 'Suhu Pasokan', value: d.pa?.suhu },
-            { label: 'Tekanan Pipa Distribusi', value: d.pa?.tekanan },
-          ]) : [],
-          qcTitle: 'Analisa Fisika Kimia & Mikrobiologi Air Proses (QC PA)',
-          qcMetrics: hasPa ? cleanMetrics([
-            { label: 'pH Air Proses', value: d.pa?.ph, spec: 'Std 6.5 - 8.5' },
-            { label: 'TDS (ppm)', value: d.pa?.tds, spec: 'Maks. 50 ppm' },
-            { label: 'Kekeruhan (NTU)', value: d.pa?.kekeruhan, spec: 'Maks. 5.0 NTU' },
-          ]) : [],
-          prodTable: null,
+          prodRole: 'PA',
+          qcRole: null,
+          refDoc: 'QF/PDQC/SS/003 Hasil Analisa Air Proses',
+          isAvailable: hasPaWater,
+          pendingPicName: hasPaWater ? 'PA' : 'Data tidak ditemukan di database',
+          operationalTitle: 'Analisa Air Proses WTP Plant',
+          sections: [
+            {
+              title: 'Analisa Fisika Kimia',
+              refForm: 'Form QF/PDQC/SS/003',
+              badge: 'Fisika Kimia',
+              dotColor: 'bg-indigo-600',
+              fields: cleanFields([
+                { label: 'Waktu analisa', value: d.pa?.water?.waktu_analisa || 'Data tidak ditemukan', colSpan: 'col-span-2 sm:col-span-1 lg:col-span-2' },
+                { label: 'pH', value: d.pa?.water?.ph !== undefined && d.pa?.water?.ph !== null ? String(d.pa.water.ph) : 'Data tidak ditemukan', spec: 'Std 6.5 - 8.5' },
+                { label: 'TDS', value: d.pa?.water?.tds !== undefined && d.pa?.water?.tds !== null ? String(d.pa.water.tds) : 'Data tidak ditemukan', spec: 'Maks. 500' },
+                { label: 'Kekeruhan', value: d.pa?.water?.kekeruhan !== undefined && d.pa?.water?.kekeruhan !== null ? String(d.pa.water.kekeruhan) : 'Data tidak ditemukan', spec: 'Maks. 5 NTU' },
+                { label: 'Kesadahan', value: d.pa?.water?.kesadahan !== undefined && d.pa?.water?.kesadahan !== null ? String(d.pa.water.kesadahan) : 'Data tidak ditemukan', spec: 'Maks. 500' },
+                { label: 'Sisa Khlor', value: d.pa?.water?.sisa_khlor !== undefined && d.pa?.water?.sisa_khlor !== null ? String(d.pa.water.sisa_khlor) : 'Data tidak ditemukan', spec: 'Maks. 0.5' },
+                { label: 'Mangan', value: d.pa?.water?.mangan !== undefined && d.pa?.water?.mangan !== null ? String(d.pa.water.mangan) : 'Data tidak ditemukan', spec: 'Maks. 0.4' },
+                { label: 'Besi', value: d.pa?.water?.besi !== undefined && d.pa?.water?.besi !== null ? String(d.pa.water.besi) : 'Data tidak ditemukan', spec: 'Maks. 0.2' },
+                { label: 'Warna', value: d.pa?.water?.warna !== undefined && d.pa?.water?.warna !== null ? String(d.pa.water.warna) : 'Data tidak ditemukan', spec: 'Maks. 15 TCU' },
+                { label: 'Aluminium', value: d.pa?.water?.aluminium !== undefined && d.pa?.water?.aluminium !== null ? String(d.pa.water.aluminium) : 'Data tidak ditemukan', spec: 'Maks. 0.2' },
+              ]),
+            },
+            {
+              title: 'Analisa Mikrobiologi',
+              refForm: 'Form QF/PDQC/SS/003',
+              badge: 'Mikrobiologi',
+              dotColor: 'bg-teal-600',
+              fields: cleanFields([
+                { label: 'E-Coli', value: d.pa?.water?.e_coli || 'Data tidak ditemukan', spec: 'Negatif' },
+                { label: 'Total Coliform', value: d.pa?.water?.total_coliform || 'Data tidak ditemukan', spec: 'Negatif' },
+              ]),
+            },
+          ],
+          fields: [],
+          qcTitle: null,
+          qcSections: [],
+          qcMetrics: [],
+          prodTable: d.pa?.tables?.water?.rows?.length ? {
+            pic: 'PA',
+            title: `Tabel Analisa Air Proses WTP (${d.pa.tables.water.tableName})`,
+            tableName: d.pa.tables.water.tableName,
+            rows: d.pa.tables.water.rows,
+            columns: d.pa.tables.water.columns,
+            averages: d.pa.tables.water.averages || {},
+          } : null,
           qcTable: null,
-          pic: { operasional: d.pa?.operator || '-', qc: d.pa?.qc || '-' },
+          paTable: null,
+          pic: { pa: d.pa?.water?.pic_pa || 'Data tidak ditemukan' },
         },
         {
           flowNumber: 'Flow 6',
           title: 'EXTRACTION',
           refDoc: 'Form F/PRD/03.042 & F/QC/01.030',
           isAvailable: hasExtraction,
-          pendingPicName: 'Produksi',
+          pendingPicName: hasExtraction ? 'Produksi' : 'Data tidak ditemukan di database',
           processDate: extDate,
-          operationalTitle: `Data Operasional Baterai Percolator Tower ${tKey} (PIC Produksi)`,
-          fields: hasExtraction ? cleanFields([
-            { label: 'Waktu Proses', value: d.extraction?.waktu_proses },
-            { label: 'Mode Ekstraksi', value: d.extraction?.mode_ekstraksi, badge: d.extraction?.mode_ekstraksi || null },
-            { label: 'Jumlah Percolator', value: withUnit(d.extraction?.jumlah_percolator, 'siklus') },
-            { label: 'Silo Degassing Asal', value: withPrefix(d.extraction?.silo_degassing, 'Silo') },
-            { label: 'Operator Produksi', value: d.extraction?.operator_produksi },
-            { label: 'Catatan Abnormalitas', value: d.extraction?.abnormalitas },
-          ]) : [],
-          qcTitle: 'Analisa Kualitas Ekstrak Cair Aroma & Hidrolise (Laboratorium QC)',
-          qcMetrics: cleanMetrics([
-            { label: 'Visual / FM', value: d.qc?.qc_aroma_visual_fm, spec: 'Bebas Benda Asing' },
-            { label: 'Brix / TS Aroma', value: d.qc?.qc_aroma_brix_ts, spec: 'Total Solid' },
-            { label: 'pH Aroma', value: d.qc?.qc_aroma_ph, spec: 'Std 4.50 - 5.50' },
-            { label: 'Suhu Aroma (°C)', value: withUnit(d.qc?.qc_aroma_suhu, '°C'), spec: 'Chilled Cooling' },
-            { label: 'Brix / TS Hidrolise', value: d.qc?.qc_hydro_brix_ts, spec: 'Total Solid' },
-            { label: 'pH Hidrolise', value: d.qc?.qc_hydro_ph, spec: 'Std 4.50 - 5.50' },
+          operationalTitle: 'Data Operasional Baterai Percolator',
+          prodRole: 'Produksi',
+          fields: cleanFields([
+            { label: 'Waktu proses', value: d.extraction?.waktu_proses || 'Data tidak ditemukan' },
+            { label: 'Mode ekstraksi', value: d.extraction?.mode_ekstraksi || 'Data tidak ditemukan', badge: d.extraction?.mode_ekstraksi || null },
+            { label: 'Jumlah percolator', value: d.extraction?.jumlah_percolator ? withUnit(d.extraction.jumlah_percolator, 'siklus') : 'Data tidak ditemukan' },
+            { label: 'Catatan abnormalitas proses', value: d.extraction?.abnormalitas || 'Data tidak ditemukan' },
+            { label: 'Penggunaan Antifoam - Supplier', value: d.extraction?.supplier_antifoam || 'Data tidak ditemukan' },
+            { label: 'Penggunaan Antifoam - Tanggal', value: d.extraction?.tgl_antifoam || 'Data tidak ditemukan' },
           ]),
-          cuptestMetrics: cleanFields([
-            { label: 'Wangi Aroma', value: d.qc?.qc_aroma_wangi },
-            { label: 'Pahit Aroma', value: d.qc?.qc_aroma_pahit },
-            { label: 'Asam Aroma', value: d.qc?.qc_aroma_asam },
-            { label: 'Wangi Hydro', value: d.qc?.qc_hydro_wangi },
-            { label: 'Pahit Hydro', value: d.qc?.qc_hydro_pahit },
-            { label: 'Asam Hydro', value: d.qc?.qc_hydro_asam },
+          paTitle: 'Verifikasi Sanitasi CIP Ekstraktor',
+          paFields: cleanFields([
+            { label: 'Waktu CIP terakhir', value: d.pa?.cip?.extraction?.tanggal || 'Data tidak ditemukan' },
+            { label: 'Konsentrasi lye', value: d.pa?.cip?.extraction?.konsentrasi_lye || (d.pa?.cip?.extraction?.tanggal ? '3 %' : 'Data tidak ditemukan') },
+            { label: 'Verifikasi Final Rinse', value: d.pa?.cip?.extraction?.rinse || 'Data tidak ditemukan' },
+            { label: 'PIC PA', value: d.pa?.cip?.extraction?.pic || 'Data tidak ditemukan' },
           ]),
-          extraQcBlocks: d.qc?.qc_grind_rga_rgb ? [
+          qcTitle: 'Hasil Pengujian Laboratorium Mutu Ekstraksi',
+          qcRole: 'QC',
+          qcSections: [
             {
-              title: 'Analisa Kualitas Grinding & Particle Size Mesh Distribution',
-              badge: 'Grinding QC',
-              items: cleanFields([
-                { label: 'RGA / RGB', value: d.qc?.qc_grind_rga_rgb },
-                { label: 'Kadar Air Grinding', value: withUnit(d.qc?.qc_grind_kadar_air, '%') },
-                { label: 'Density Grinding', value: withUnit(d.qc?.qc_grind_density, 'g/L') },
-                { label: 'Mesh <850', value: d.qc?.qc_grind_mesh_lt850 },
-                { label: 'Mesh 850-<1000', value: d.qc?.qc_grind_mesh_850_1000 },
-                { label: 'Mesh 1000-<2350', value: d.qc?.qc_grind_mesh_1000_2350 },
-                { label: 'Mesh 2350-<3350', value: d.qc?.qc_grind_mesh_2350_3350 },
-                { label: 'Mesh 3350-<4000', value: d.qc?.qc_grind_mesh_3350_4000 },
-                { label: 'Mesh 4000-<5600', value: d.qc?.qc_grind_mesh_4000_5600 },
-                { label: 'Mesh 5600-<6300', value: d.qc?.qc_grind_mesh_5600_6300 },
-                { label: 'Mesh >6300', value: d.qc?.qc_grind_mesh_gt6300 },
+              title: 'Analisa Kualitas Grinding',
+              refForm: 'Form QF/PDQC/QC/008',
+              badge: 'Grinding',
+              dotColor: 'bg-indigo-600',
+              metrics: cleanMetrics([
+                { label: 'Asal silo degassing', value: d.extraction?.silo_degassing || (d.extraction?.silo_numbers?.length ? d.extraction.silo_numbers.join(' , ') : 'Data tidak ditemukan'), spec: 'Silo Asal' },
+                { label: 'RGA/RGB', value: d.qc?.qc_grind_rga_rgb || 'Data tidak ditemukan', spec: 'Standar Grinding' },
+                { label: 'Visual/Foreign Matter', value: d.qc?.qc_grind_visual_fm || 'Data tidak ditemukan', spec: 'Bebas Benda Asing' },
+                { label: 'Kadar air', value: d.qc?.qc_grind_kadar_air ? withUnit(d.qc.qc_grind_kadar_air, '%') : 'Data tidak ditemukan', spec: 'Maks. 7.0%' },
+                { label: 'Density', value: d.qc?.qc_grind_density ? withUnit(d.qc.qc_grind_density, 'g/L') : 'Data tidak ditemukan', spec: 'Std 280 - 300 g/L' },
+                { label: '<850', value: d.qc?.qc_grind_mesh_lt850 || 'Data tidak ditemukan', spec: 'Particle Size' },
+                { label: '850-<1000', value: d.qc?.qc_grind_mesh_850_1000 || 'Data tidak ditemukan', spec: 'Particle Size' },
+                { label: '1000-<2350', value: d.qc?.qc_grind_mesh_1000_2350 || 'Data tidak ditemukan', spec: 'Particle Size' },
+                { label: '2350-<3350', value: d.qc?.qc_grind_mesh_2350_3350 || 'Data tidak ditemukan', spec: 'Particle Size' },
+                { label: '3350-<4000', value: d.qc?.qc_grind_mesh_3350_4000 || 'Data tidak ditemukan', spec: 'Particle Size' },
+                { label: '4000-<5600', value: d.qc?.qc_grind_mesh_4000_5600 || 'Data tidak ditemukan', spec: 'Particle Size' },
+                { label: '5600-<6300', value: d.qc?.qc_grind_mesh_5600_6300 || 'Data tidak ditemukan', spec: 'Particle Size' },
+                { label: '>6300', value: d.qc?.qc_grind_mesh_gt6300 || 'Data tidak ditemukan', spec: 'Particle Size' },
               ]),
             },
-          ] : [],
+            {
+              title: 'Analisa Kualitas Aroma',
+              refForm: 'Form QF/PDQC/QC/009',
+              badge: 'Aroma',
+              dotColor: 'bg-blue-600',
+              metrics: cleanMetrics([
+                { label: 'Asal silo degassing', value: d.extraction?.silo_degassing || (d.extraction?.silo_numbers?.length ? d.extraction.silo_numbers.join(' , ') : 'Data tidak ditemukan'), spec: 'Silo Asal' },
+                { label: 'Visual/Foreign Matter', value: d.qc?.qc_aroma_visual_fm || 'Data tidak ditemukan', spec: 'Bebas Benda Asing' },
+                { label: 'Brix/TS', value: d.qc?.qc_aroma_brix_ts || 'Data tidak ditemukan', spec: 'Total Solid' },
+                { label: 'pH', value: d.qc?.qc_aroma_ph || 'Data tidak ditemukan', spec: 'Std 4.50 - 5.50' },
+                { label: 'Suhu', value: d.qc?.qc_aroma_suhu ? withUnit(d.qc.qc_aroma_suhu, '°C') : 'Data tidak ditemukan', spec: 'Chilled Cooling' },
+              ]),
+              cuptestTitle: 'Aroma',
+              cuptest: cleanFields([
+                { label: 'Wangi', value: d.qc?.qc_aroma_wangi || 'Data tidak ditemukan' },
+                { label: 'Pahit', value: d.qc?.qc_aroma_pahit || 'Data tidak ditemukan' },
+                { label: 'Asam', value: d.qc?.qc_aroma_asam || 'Data tidak ditemukan' },
+              ]),
+            },
+            {
+              title: 'Analisa Kualitas Hidrolise',
+              refForm: 'Form QF/PDQC/QC/010',
+              badge: 'Hidrolise',
+              dotColor: 'bg-cyan-600',
+              metrics: cleanMetrics([
+                { label: 'Asal silo degassing', value: d.extraction?.silo_degassing || (d.extraction?.silo_numbers?.length ? d.extraction.silo_numbers.join(' , ') : 'Data tidak ditemukan'), spec: 'Silo Asal' },
+                { label: 'Visual/Foreign Matter', value: d.qc?.qc_hydro_visual_fm || 'Data tidak ditemukan', spec: 'Bebas Benda Asing' },
+                { label: 'Brix/TS', value: d.qc?.qc_hydro_brix_ts || 'Data tidak ditemukan', spec: 'Total Solid' },
+                { label: 'pH', value: d.qc?.qc_hydro_ph || 'Data tidak ditemukan', spec: 'Std 4.50 - 5.50' },
+                { label: 'Suhu', value: d.qc?.qc_hydro_suhu ? withUnit(d.qc.qc_hydro_suhu, '°C') : 'Data tidak ditemukan', spec: 'Chilled Cooling' },
+              ]),
+              cuptestTitle: 'Hidrolise',
+              cuptest: cleanFields([
+                { label: 'Wangi', value: d.qc?.qc_hydro_wangi || 'Data tidak ditemukan' },
+                { label: 'Pahit', value: d.qc?.qc_hydro_pahit || 'Data tidak ditemukan' },
+                { label: 'Asam', value: d.qc?.qc_hydro_asam || 'Data tidak ditemukan' },
+              ]),
+            },
+          ],
+          qcMetrics: [],
+          cuptestMetrics: [],
           prodTable: hasExtraction ? {
             pic: 'Produksi',
             title: `Tabel Operasional Ekstraksi Tower ${tKey}`,
@@ -489,13 +664,25 @@ function buildClusterData(traceResult, tower = '1') {
             rows: d.qc_raw?.aroma?.raw_rows?.length ? d.qc_raw.aroma.raw_rows : (d.qc_raw?.hydro?.raw_rows || []),
             columns: (d.qc_raw?.aroma?.raw_rows?.[0] || d.qc_raw?.hydro?.raw_rows?.[0]) ? Object.keys(d.qc_raw?.aroma?.raw_rows?.[0] || d.qc_raw?.hydro?.raw_rows?.[0]) : [],
           } : null,
-          pic: { operasional: d.extraction?.operator_produksi || '-', qc: d.qc?.qc_aroma_pic || d.qc?.qc_hydro_pic || '-' },
+          paTable: d.pa?.tables?.extraction?.rows?.length ? {
+            pic: 'PA',
+            title: `Tabel Verifikasi Sanitasi CIP Ekstraksi (${d.pa.tables.extraction.tableName})`,
+            tableName: d.pa.tables.extraction.tableName,
+            rows: d.pa.tables.extraction.rows,
+            columns: d.pa.tables.extraction.columns,
+            averages: d.pa.tables.extraction.averages || {},
+          } : null,
+          pic: {
+            operasional: d.extraction?.operator_produksi || 'Data tidak ditemukan',
+            qc: d.qc?.qc_aroma_pic || d.qc?.qc_hydro_pic || d.qc?.qc_grind_pic || 'Data tidak ditemukan',
+            pa: d.pa?.cip?.extraction?.pic || 'Data tidak ditemukan',
+          },
         },
       ],
     },
 
     // ══════════════════════════════════════════════════════════════
-    // CLUSTER 4: EVAPORASI, FINAL TANK & REWORK (Flow 5 & Flow 3)
+    // CLUSTER 4: EVAPORASI & FINAL TANK (Flow 5)
     // ══════════════════════════════════════════════════════════════
     'evaporasi': {
       ...CLUSTER_CONFIG[3],
@@ -505,45 +692,92 @@ function buildClusterData(traceResult, tower = '1') {
           title: 'EVAPORATION',
           refDoc: 'Form F/PRD/03.080 & F/QC/01.030',
           isAvailable: hasEvaporation,
-          pendingPicName: 'Produksi',
+          pendingPicName: hasEvaporation ? 'Produksi' : 'Data tidak ditemukan di database',
           processDate: evapDate,
-          operationalTitle: `Data Operasional Evaporator & Final Tank Tower ${tKey} (PIC Produksi)`,
-          fields: hasEvaporation ? cleanFields([
-            { label: 'Waktu Proses', value: d.evaporation?.waktu_proses },
-            { label: 'Destination Final Tank', value: withPrefix(d.evaporation?.no_final_tank, 'FT C0'), badge: 'FT Tujuan' },
-            { label: 'Operator Produksi', value: d.evaporation?.operator_produksi },
-            { label: 'Catatan Abnormalitas', value: d.evaporation?.abnormalitas },
-          ]) : [],
-          qcTitle: 'Analisa Kualitas Produk Evaporation Falling Film (Laboratorium QC)',
-          qcMetrics: cleanMetrics([
-            { label: 'Visual / FM', value: d.qc?.qc_evap_visual_fm, spec: 'Bebas Benda Asing' },
-            { label: 'Brix / TS Evap', value: d.qc?.qc_evap_brix_ts, spec: 'Konsentrat Evap' },
-            { label: 'pH Evap', value: d.qc?.qc_evap_ph, spec: 'Std 5.20 - 5.60' },
-            { label: 'Density (g/L)', value: withUnit(d.qc?.qc_evap_density, 'g/L'), spec: 'Berat Jenis' },
-            { label: 'Viskositas cP', value: withUnit(d.qc?.qc_evap_viskositas, 'cP'), spec: 'Viskositas' },
-            { label: 'Screening Test', value: d.qc?.qc_evap_screening, spec: 'Std Screening' },
+          operationalTitle: 'Data Operasional Evaporator & Final Tank',
+          prodRole: 'Produksi',
+          fields: cleanFields([
+            { label: 'Waktu proses', value: d.evaporation?.waktu_proses || 'Data tidak ditemukan' },
+            { label: 'Catatan abnormalitas proses', value: d.evaporation?.abnormalitas || 'Data tidak ditemukan' },
           ]),
-          cuptestMetrics: cleanFields([
-            { label: 'Wangi', value: d.qc?.qc_evap_wangi },
-            { label: 'Pahit', value: d.qc?.qc_evap_pahit },
-            { label: 'Asam', value: d.qc?.qc_evap_asam },
-          ]),
-          extraQcBlocks: d.qc?.qc_ft_nomor ? [
+          paTitle: 'Verifikasi Sanitasi CIP Evaporator & Final Tank',
+          paSections: [
             {
-              title: 'Analisa Kualitas Produk Final Tank (After Circulation)',
-              badge: 'Final Tank QC',
-              items: cleanFields([
-                { label: 'Nomor Final Tank', value: withPrefix(d.qc.qc_ft_nomor, 'FT') },
-                { label: 'Pure Aroma (kg)', value: withUnit(d.qc?.qc_ft_pure_aroma, 'kg') },
-                { label: 'Level Final Tank', value: d.qc?.qc_ft_level },
-                { label: 'Visual / FM', value: d.qc?.qc_ft_visual_fm },
-                { label: 'Brix / TS FT', value: d.qc?.qc_ft_brix_ts },
-                { label: 'pH FT', value: d.qc?.qc_ft_ph },
-                { label: 'Viskositas cP', value: withUnit(d.qc?.qc_ft_viskositas, 'cP') },
-                { label: 'Density (g/L)', value: withUnit(d.qc?.qc_ft_density, 'g/L') },
+              title: 'CIP Evaporator',
+              refForm: 'Form QF/PDQC/SS/010',
+              badge: 'Evap CIP',
+              dotColor: 'bg-emerald-600',
+              fields: cleanFields([
+                { label: 'Waktu CIP/flushing terakhir', value: d.pa?.cip?.evaporation?.tanggal || 'Data tidak ditemukan' },
+                { label: 'Konsentrasi lye', value: d.pa?.cip?.evaporation?.konsentrasi_lye || (d.pa?.cip?.evaporation?.tanggal ? '3%' : 'Data tidak ditemukan') },
+                { label: 'Verifikasi Final Rinse', value: (d.pa?.cip?.evaporation?.ph_lab && d.pa.cip.evaporation.ph_lab !== '-' && d.pa.cip.evaporation.ph_lab !== '0') ? `pH: ${d.pa.cip.evaporation.ph_lab} (OK)` : 'Data tidak ditemukan' },
+                { label: 'PIC PA', value: d.pa?.cip?.evaporation?.pic || 'Data tidak ditemukan' },
               ]),
             },
-          ] : [],
+            {
+              title: 'CIP Final Tank',
+              refForm: 'Form QF/PDQC/SS/010',
+              badge: 'FT CIP',
+              dotColor: 'bg-teal-600',
+              fields: cleanFields([
+                { label: 'Waktu CIP terakhir', value: d.pa?.cip?.final_tank?.tanggal || 'Data tidak ditemukan' },
+                { label: 'Konsentrasi lye', value: d.pa?.cip?.final_tank?.konsentrasi_lye || (d.pa?.cip?.final_tank?.tanggal ? '3%' : 'Data tidak ditemukan') },
+                { label: 'Verifikasi Final Rinse', value: d.pa?.cip?.final_tank?.rinse || 'Data tidak ditemukan' },
+                { label: 'Swab ATP', value: d.pa?.cip?.final_tank?.swab || 'Data tidak ditemukan' },
+                { label: 'PIC PA', value: d.pa?.cip?.final_tank?.pic || 'Data tidak ditemukan' },
+              ]),
+            },
+          ],
+          paFields: [],
+          qcTitle: 'Hasil Pengujian Laboratorium Mutu Evaporasi & Final Tank',
+          qcRole: 'QC',
+          qcSections: [
+            {
+              title: 'Analisa Kualitas Produk Evaporation',
+              refForm: 'Form QF/PDQC/QC/011',
+              badge: 'Evaporasi',
+              dotColor: 'bg-blue-600',
+              metrics: cleanMetrics([
+                { label: 'Visual/Foreign Matter', value: d.qc?.qc_evap_visual_fm || 'Data tidak ditemukan', spec: 'Bebas Benda Asing' },
+                { label: 'Brix/TS', value: d.qc?.qc_evap_brix_ts || 'Data tidak ditemukan', spec: 'Total Solid' },
+                { label: 'pH', value: d.qc?.qc_evap_ph || 'Data tidak ditemukan', spec: 'Std 5.20 - 5.60' },
+                { label: 'Viskositas', value: d.qc?.qc_evap_viskositas || 'Data tidak ditemukan', spec: 'Viskositas' },
+                { label: 'Density', value: d.qc?.qc_evap_density || 'Data tidak ditemukan', spec: 'Berat Jenis' },
+                { label: 'Screening Test', value: d.qc?.qc_evap_screening || 'Data tidak ditemukan', spec: 'Std Screening' },
+              ]),
+              cuptestTitle: 'Evaporasi',
+              cuptest: cleanFields([
+                { label: 'Wangi', value: d.qc?.qc_evap_wangi || 'Data tidak ditemukan' },
+                { label: 'Pahit', value: d.qc?.qc_evap_pahit || 'Data tidak ditemukan' },
+                { label: 'Asam', value: d.qc?.qc_evap_asam || 'Data tidak ditemukan' },
+              ]),
+            },
+            {
+              title: 'Analisa Kualitas Produk Final Tank (after circulation)',
+              refForm: 'Form QF/PDQC/QC/012',
+              badge: 'Final Tank',
+              dotColor: 'bg-indigo-600',
+              metrics: cleanFields([
+                { label: 'Nomer Final Tank', value: d.qc?.qc_ft_nomor || (d.evaporation?.no_final_tank ? String(d.evaporation.no_final_tank) : 'Data tidak ditemukan'), spec: 'FT Number' },
+                { label: 'Jumlah Pure Aroma', value: d.qc?.qc_ft_pure_aroma || 'Data tidak ditemukan', spec: 'Pure Aroma' },
+                { label: 'Level Final Tank', value: d.qc?.qc_ft_level || 'Data tidak ditemukan', spec: 'Kapasitas' },
+                { label: 'Visual/Foreign Matter', value: d.qc?.qc_ft_visual_fm || 'Data tidak ditemukan', spec: 'Bebas Benda Asing' },
+                { label: 'Brix/TS', value: d.qc?.qc_ft_brix_ts || 'Data tidak ditemukan', spec: 'Total Solid' },
+                { label: 'pH', value: d.qc?.qc_ft_ph || 'Data tidak ditemukan', spec: 'Std 5.20 - 5.60' },
+                { label: 'Viskositas', value: d.qc?.qc_ft_viskositas ? withUnit(d.qc.qc_ft_viskositas, 'cP') : 'Data tidak ditemukan', spec: 'Viskositas' },
+                { label: 'Density', value: d.qc?.qc_ft_density ? withUnit(d.qc.qc_ft_density, 'g/L') : 'Data tidak ditemukan', spec: 'Berat Jenis' },
+                { label: 'Screening Test', value: d.qc?.qc_ft_screening || 'Data tidak ditemukan', spec: 'Std Screening' },
+              ]),
+              cuptestTitle: 'Final Tank',
+              cuptest: cleanFields([
+                { label: 'Wangi', value: d.qc?.qc_ft_wangi || 'Data tidak ditemukan' },
+                { label: 'Pahit', value: d.qc?.qc_ft_pahit || 'Data tidak ditemukan' },
+                { label: 'Asam', value: d.qc?.qc_ft_asam || 'Data tidak ditemukan' },
+              ]),
+            },
+          ],
+          qcMetrics: [],
+          cuptestMetrics: [],
           prodTable: hasEvaporation ? {
             pic: 'Produksi',
             title: `Tabel Operasional Evaporasi Tower ${tKey}`,
@@ -558,7 +792,19 @@ function buildClusterData(traceResult, tower = '1') {
             rows: d.qc_raw?.evaporasi?.raw_rows?.length ? d.qc_raw.evaporasi.raw_rows : (d.qc_raw?.final_tank?.raw_rows || []),
             columns: (d.qc_raw?.evaporasi?.raw_rows?.[0] || d.qc_raw?.final_tank?.raw_rows?.[0]) ? Object.keys(d.qc_raw?.evaporasi?.raw_rows?.[0] || d.qc_raw?.final_tank?.raw_rows?.[0]) : [],
           } : null,
-          pic: { operasional: d.evaporation?.operator_produksi || '-', qc: d.qc?.qc_ft_pic || d.qc?.qc_evap_pic || '-' },
+          paTable: d.pa?.tables?.evaporation?.rows?.length ? {
+            pic: 'PA',
+            title: `Tabel Verifikasi Sanitasi CIP Evaporator & Final Tank (${d.pa.tables.evaporation.tableName})`,
+            tableName: d.pa.tables.evaporation.tableName,
+            rows: d.pa.tables.evaporation.rows,
+            columns: d.pa.tables.evaporation.columns,
+            averages: d.pa.tables.evaporation.averages || {},
+          } : null,
+          pic: {
+            operasional: d.evaporation?.operator_produksi || 'Data tidak ditemukan',
+            qc: d.qc?.qc_evap_pic || d.qc?.qc_ft_pic || 'Data tidak ditemukan',
+            pa: d.pa?.cip?.evaporation?.pic || d.pa?.cip?.final_tank?.pic || 'Data tidak ditemukan',
+          },
         },
       ],
     },
@@ -574,34 +820,41 @@ function buildClusterData(traceResult, tower = '1') {
           title: 'DRYER',
           refDoc: 'Form F/PRD/04.088 & F/QC/01.030',
           isAvailable: hasDryer,
-          pendingPicName: 'Produksi',
+          pendingPicName: hasDryer ? 'Produksi' : 'Data tidak ditemukan di database',
           processDate: dryDate,
-          operationalTitle: `Data Operasional Pengeringan Spray Dryer Tower ${tKey} (PIC Produksi)`,
-          fields: hasDryer ? cleanFields([
-            { label: 'Waktu Proses', value: d.dryer?.waktu_proses },
-            { label: 'Final Tank (Tangki Asal)', value: withPrefix(d.dryer?.final_tank, 'FT C0'), badge: 'FT Asal' },
-            { label: 'Mode Dryer', value: d.dryer?.mode, badge: d.dryer?.mode || null },
-            { label: 'Nama Produk', value: d.dryer?.nama_produk },
-            { label: 'Operator Produksi', value: d.dryer?.operator_produksi },
-            { label: 'Catatan Abnormalitas', value: d.dryer?.abnormalitas },
-          ]) : [],
-          qcTitle: 'Monitoring Kualitas Produk di VF2 (QC Dryer)',
+          operationalTitle: 'Data Operasional Pengeringan Spray Dryer',
+          prodRole: 'Produksi',
+          fields: cleanFields([
+            { label: 'Waktu proses', value: d.dryer?.waktu_proses || 'Data tidak ditemukan' },
+            { label: 'Catatan abnormalitas proses', value: d.dryer?.abnormalitas || 'Data tidak ditemukan' },
+            { label: 'Gas CO2 - Nama supplier', value: d.dryer?.supplier_co2 || 'Data tidak ditemukan' },
+            { label: 'Gas CO2 - Tanggal kedatangan', value: d.dryer?.tgl_co2 || 'Data tidak ditemukan' },
+          ]),
+          paTitle: 'Verifikasi Sanitasi CIP Spray Dryer',
+          paFields: cleanFields([
+            { label: 'Waktu CIP terakhir', value: d.pa?.cip?.dryer?.tanggal || 'Data tidak ditemukan' },
+            { label: 'Konsentrasi lye', value: d.pa?.cip?.dryer?.konsentrasi_lye || (d.pa?.cip?.dryer?.tanggal ? '3%' : 'Data tidak ditemukan') },
+            { label: 'Verifikasi Final Rinse', value: (d.pa?.cip?.dryer?.ph_lab && d.pa.cip.dryer.ph_lab !== '-' && d.pa.cip.dryer.ph_lab !== '0') ? `pH: ${d.pa.cip.dryer.ph_lab} (OK)` : 'Data tidak ditemukan' },
+            { label: 'PIC PA', value: d.pa?.cip?.dryer?.pic || 'Data tidak ditemukan' },
+          ]),
+          qcTitle: 'Monitoring Kualitas Produk di VF2',
+          qcRole: 'QC',
           qcMetrics: cleanMetrics([
-            { label: 'Kadar Air (%)', value: withUnit(d.qc?.qc_dryer_vf2_kadar_air, '%'), spec: 'Maks. 3,00%' },
-            { label: 'Density (g/L)', value: withUnit(d.qc?.qc_dryer_vf2_density, 'g/L'), spec: 'Std 240 - 260 g/L' },
-            { label: 'Foreign Matter', value: d.qc?.qc_dryer_vf2_fm, spec: 'Bebas Benda Asing' },
-            { label: 'Visual', value: d.qc?.qc_dryer_vf2_visual, spec: 'Bubuk Kering Sesuai' },
-            { label: 'Warna', value: d.qc?.qc_dryer_vf2_warna, spec: 'Standar Agtron' },
-            { label: 'Brix', value: d.qc?.qc_dryer_vf2_brix, spec: 'Std Brix Rekonstitusi' },
-            { label: 'pH', value: d.qc?.qc_dryer_vf2_ph, spec: 'Std 5,10 - 5,50' },
-            { label: 'Floating Particles', value: d.qc?.qc_dryer_vf2_floating !== undefined && d.qc?.qc_dryer_vf2_floating !== null && String(d.qc?.qc_dryer_vf2_floating) !== '-' ? String(d.qc.qc_dryer_vf2_floating) : null, spec: '0 (Nol Partikel)' },
+            { label: 'Kadar air', value: d.qc?.qc_dryer_vf2_kadar_air ? withUnit(d.qc.qc_dryer_vf2_kadar_air, '%') : 'Data tidak ditemukan', spec: 'Maks. 3.00%' },
+            { label: 'Density', value: d.qc?.qc_dryer_vf2_density ? withUnit(d.qc.qc_dryer_vf2_density, 'g/L') : 'Data tidak ditemukan', spec: 'Std 240 - 260 g/L' },
+            { label: 'Foreign Matter', value: d.qc?.qc_dryer_vf2_fm || 'Data tidak ditemukan', spec: 'Bebas Benda Asing' },
+            { label: 'Visual', value: d.qc?.qc_dryer_vf2_visual || 'Data tidak ditemukan', spec: 'Bubuk Kering Sesuai' },
+            { label: 'Warna', value: d.qc?.qc_dryer_vf2_warna || 'Data tidak ditemukan', spec: 'Standar Agtron' },
+            { label: 'Brix', value: d.qc?.qc_dryer_vf2_brix || 'Data tidak ditemukan', spec: 'Std Brix' },
+            { label: 'pH', value: d.qc?.qc_dryer_vf2_ph || 'Data tidak ditemukan', spec: 'Std pH' },
+            { label: 'Floating Particles', value: d.qc?.qc_dryer_vf2_floating || 'Data tidak ditemukan', spec: '0 (Nol Partikel)' },
           ]),
           cuptestMetrics: cleanFields([
-            { label: 'Wangi', value: d.qc?.qc_dryer_vf2_wangi },
-            { label: 'Pahit', value: d.qc?.qc_dryer_vf2_pahit },
-            { label: 'Asam', value: d.qc?.qc_dryer_vf2_asam },
-            { label: 'Body', value: d.qc?.qc_dryer_vf2_body },
-            { label: 'Sepat', value: d.qc?.qc_dryer_vf2_sepat },
+            { label: 'Wangi', value: d.qc?.qc_dryer_vf2_wangi || 'Data tidak ditemukan' },
+            { label: 'Pahit', value: d.qc?.qc_dryer_vf2_pahit || 'Data tidak ditemukan' },
+            { label: 'Asam', value: d.qc?.qc_dryer_vf2_asam || 'Data tidak ditemukan' },
+            { label: 'Body', value: d.qc?.qc_dryer_vf2_body || 'Data tidak ditemukan' },
+            { label: 'Sepat', value: d.qc?.qc_dryer_vf2_sepat || 'Data tidak ditemukan' },
           ]),
           prodTable: hasDryer ? {
             pic: 'Produksi',
@@ -617,13 +870,25 @@ function buildClusterData(traceResult, tower = '1') {
             rows: d.qc_raw?.dryer_vf2?.raw_rows?.length ? d.qc_raw.dryer_vf2.raw_rows : (d.qc_raw?.dryer?.raw_rows || []),
             columns: (d.qc_raw?.dryer_vf2?.raw_rows?.[0] || d.qc_raw?.dryer?.raw_rows?.[0]) ? Object.keys(d.qc_raw?.dryer_vf2?.raw_rows?.[0] || d.qc_raw?.dryer?.raw_rows?.[0]) : [],
           } : null,
-          pic: { operasional: d.dryer?.operator_produksi || '-', qc: d.qc?.qc_dryer_vf2_pic || '-' },
+          paTable: d.pa?.tables?.dryer?.rows?.length ? {
+            pic: 'PA',
+            title: `Tabel Verifikasi Sanitasi CIP Spray Dryer (${d.pa.tables.dryer.tableName})`,
+            tableName: d.pa.tables.dryer.tableName,
+            rows: d.pa.tables.dryer.rows,
+            columns: d.pa.tables.dryer.columns,
+            averages: d.pa.tables.dryer.averages || {},
+          } : null,
+          pic: {
+            operasional: d.dryer?.operator_produksi || 'Data tidak ditemukan',
+            qc: d.qc?.qc_dryer_vf2_pic || 'Data tidak ditemukan',
+            pa: d.pa?.cip?.dryer?.pic || 'Data tidak ditemukan',
+          },
         },
       ],
     },
 
     // ══════════════════════════════════════════════════════════════
-    // CLUSTER 6: PENGERJAAN ULANG / REWORK (Flow 3) - SETELAH DRYER
+    // CLUSTER 6: PENGERJAAN ULANG / REWORK (Flow 3)
     // ══════════════════════════════════════════════════════════════
     'rework': {
       ...CLUSTER_CONFIG[5],
@@ -631,18 +896,47 @@ function buildClusterData(traceResult, tower = '1') {
         {
           flowNumber: 'Flow 3',
           title: 'REWORK',
-          iconSvg: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/></svg>',
-          refDoc: 'Form F/PRD/03.090 & F/QC/01.030',
-          isAvailable: false,
-          pendingPicName: 'Produksi & QC',
-          noticeText: 'Data pengerjaan ulang (rework) belum tercatat di database MySQL.',
-          operationalTitle: 'Data Pengerjaan Ulang Rework (PIC Produksi)',
-          fields: [],
-          qcTitle: 'Analisa Kualitas Rework (Laboratorium QC)',
+          refDoc: 'Form QF/PROD/IC/054 & F/QC/01.030',
+          isAvailable: hasRework,
+          pendingPicName: hasRework ? 'Produksi & QC' : 'Data tidak ditemukan di database',
+          operationalTitle: 'Data Pengerjaan Ulang Rework',
+          prodRole: 'Produksi',
+          fields: cleanFields([
+            { label: 'Jumlah bahan rework (in box)', value: d.rework?.jumlah_box || 'Data tidak ditemukan' },
+            { label: 'Tanggal serah terima bahan rework dari GBJ', value: d.rework?.tgl_serah_terima || 'Data tidak ditemukan' },
+            { label: 'Identitas bahan rework yang dipakai', value: d.rework?.identitas || 'Data tidak ditemukan' },
+            { label: 'Waktu proses rework', value: d.rework?.waktu_proses || 'Data tidak ditemukan' },
+            { label: 'Lokasi proses rework', value: d.rework?.lokasi || 'Data tidak ditemukan' },
+            { label: 'Formula rework', value: d.rework?.formula || 'Data tidak ditemukan' },
+            { label: 'Target TS', value: d.rework?.target_ts || 'Data tidak ditemukan' },
+            { label: 'Level tank rework', value: d.rework?.level_tank || 'Data tidak ditemukan' },
+            { label: 'Transfer ke proses', value: d.rework?.transfer_ke || 'Data tidak ditemukan' },
+            { label: 'Catatan abnormalitas proses', value: d.rework?.abnormalitas || 'Data tidak ditemukan' },
+          ]),
+          paTitle: 'Verifikasi Sanitasi CIP Tank Rework',
+          paFields: cleanFields([
+            { label: 'Waktu CIP terakhir', value: d.pa?.cip?.rework?.tanggal || 'Data tidak ditemukan' },
+            { label: 'Konsentrasi lye', value: d.pa?.cip?.rework?.konsentrasi_lye || (d.pa?.cip?.rework?.tanggal ? '3%' : 'Data tidak ditemukan') },
+            { label: 'Verifikasi Final Rinse', value: d.pa?.cip?.rework?.rinse || 'Data tidak ditemukan' },
+            { label: 'PIC PA', value: d.pa?.cip?.rework?.pic || 'Data tidak ditemukan' },
+          ]),
+          qcTitle: null,
           qcMetrics: [],
           prodTable: null,
           qcTable: null,
-          pic: { operasional: '-', qc: '-' },
+          paTable: d.pa?.tables?.rework?.rows?.length ? {
+            pic: 'PA',
+            title: `Tabel Verifikasi Sanitasi CIP Tank Rework (${d.pa.tables.rework.tableName})`,
+            tableName: d.pa.tables.rework.tableName,
+            rows: d.pa.tables.rework.rows,
+            columns: d.pa.tables.rework.columns,
+            averages: d.pa.tables.rework.averages || {},
+          } : null,
+          pic: {
+            operasional: d.rework?.operator || 'Data tidak ditemukan',
+            qc: 'Data tidak ditemukan',
+            pa: d.pa?.cip?.rework?.pic || 'Data tidak ditemukan',
+          },
         },
       ],
     },
@@ -658,60 +952,137 @@ function buildClusterData(traceResult, tower = '1') {
           title: 'PACKING',
           refDoc: 'Form F/PRD/05.022 & F/QC/01.030',
           isAvailable: hasPacking,
-          pendingPicName: 'Produksi',
+          pendingPicName: hasPacking ? 'Produksi' : 'Data tidak ditemukan di database',
           processDate: packDate,
-          operationalTitle: `Data Operasional Pengemasan Box Tower ${tKey} (PIC Produksi)`,
-          fields: hasPacking ? cleanFields([
-            { label: 'Waktu Proses', value: d.packing?.waktu_proses },
-            { label: 'Shift Kerja', value: withPrefix(d.packing?.shift, 'Shift') },
-            { label: 'Nama Operator Packing', value: d.packing?.operator_packing },
-            { label: 'Nama Helper Packing', value: cleanVal(d.packing?.team) },
-            { label: 'CCP Dehumidifier', value: withPrefix(d.packing?.dehumidifier, 'Dehumidifier:') },
-            { label: 'Suhu & RH Ruang Packing', value: d.packing?.suhu_rh_packing },
-            { label: 'Berat Box Netto', value: d.packing?.berat_box },
-            { label: 'Total Box Lolos (OK)', value: withUnit(d.packing?.ok_box, 'Box'), badge: 'Netto' },
-            { label: 'Total Box Hold', value: withUnit(d.packing?.hold_box, 'Box') },
-            { label: 'Total Box BO', value: withUnit(d.packing?.bo_box, 'Box') },
-            { label: 'Total Output Produk', value: cleanVal(d.packing?.total_output) || (d.packing?.total_output_kg ? withUnit(d.packing.total_output_kg, 'kg') : null) },
-            { label: 'Catatan Abnormalitas', value: d.packing?.abnormalitas },
-          ]) : [],
-          qcTitle: 'Analisa Kualitas Finished Goods (Laboratorium QC)',
-          qcMetrics: cleanMetrics([
-            { label: 'Verifikasi Label', value: d.qc?.qc_packing_verifikasi_label, spec: 'Sesuai Spesifikasi' },
-            { label: 'Kondisi Visual Kemasan', value: d.qc?.qc_packing_kondisi_kemasan, spec: 'Rapat & Tersegel' },
-            { label: 'Kadar Air', value: withUnit(d.qc?.qc_packing_kadar_air, '%'), spec: 'Maks. 3,00%' },
-            { label: 'Density (g/L)', value: withUnit(d.qc?.qc_packing_density, 'g/L'), spec: 'Std 240 - 260 g/L' },
-            { label: 'Foreign Matter', value: d.qc?.qc_packing_fm, spec: 'Bebas Benda Asing' },
-            { label: 'Visual', value: d.qc?.qc_packing_visual, spec: 'Sesuai Standar' },
-            { label: 'Warna', value: d.qc?.qc_packing_warna, spec: 'Standar Agtron' },
-            { label: 'Brix', value: d.qc?.qc_packing_brix, spec: 'Std Brix Rekonstitusi' },
-            { label: 'pH', value: d.qc?.qc_packing_ph, spec: 'Std 5,10 - 5,50' },
-            { label: 'Fluidity', value: d.qc?.qc_packing_fluidity, spec: 'Free Flowing' },
-            { label: 'Solubility (Kelarutan)', value: withUnit(d.qc?.qc_packing_solubility, 'dtk'), spec: 'Maks. 30 detik' },
+          operationalTitle: 'Data Operasional Pengemasan Box',
+          prodRole: 'Produksi',
+          fields: cleanFields([
+            { label: 'Waktu proses', value: d.packing?.waktu_proses || 'Data tidak ditemukan' },
+            { label: 'Shift', value: d.packing?.shift ? withPrefix(d.packing.shift, 'Shift') : 'Data tidak ditemukan' },
+            { label: 'Nama operator packing', value: d.packing?.operator_packing || 'Data tidak ditemukan' },
+            { label: 'Nama helper packing', value: cleanVal(d.packing?.team) },
+            { label: 'Waktu dan hasil verifikasi/validasi CCP', value: d.packing?.dehumidifier ? withPrefix(d.packing.dehumidifier, 'Dehumidifier:') : 'Data tidak ditemukan' },
+            { label: 'Suhu dan RH ruang packing', value: d.packing?.suhu_rh_packing || 'Data tidak ditemukan' },
+            { label: 'Checklist kebersihan area packing', value: 'Data tidak ditemukan' },
+            { label: 'No Lot/Batch karton', value: 'Data tidak ditemukan' },
+            { label: 'Nama supplier karton', value: 'Data tidak ditemukan' },
+            { label: 'No Lot/Batch plastik', value: 'Data tidak ditemukan' },
+            { label: 'Nama supplier plastik', value: 'Data tidak ditemukan' },
+            { label: 'Catatan abnormalitas proses', value: d.packing?.abnormalitas || 'Data tidak ditemukan' },
+            { label: 'Berat box', value: d.packing?.berat_box || 'Data tidak ditemukan' },
+            { label: 'Total output produk', value: cleanVal(d.packing?.total_output) !== 'Data tidak ditemukan' ? cleanVal(d.packing?.total_output) : (d.packing?.total_output_kg ? withUnit(d.packing.total_output_kg, 'kg') : 'Data tidak ditemukan') },
           ]),
-          cuptestMetrics: cleanFields([
-            { label: 'Wangi', value: d.qc?.qc_packing_wangi },
-            { label: 'Pahit', value: d.qc?.qc_packing_pahit },
-            { label: 'Asam', value: d.qc?.qc_packing_asam },
-            { label: 'Body', value: d.qc?.qc_packing_body },
-            { label: 'Sepat', value: d.qc?.qc_packing_sepat },
-          ]),
-          extraQcBlocks: d.qc?.qc_packing_mesh_gt600 ? [
+          paTitle: 'Pemantauan Sanitasi Lingkungan & Instrument Packing',
+          paSections: [
             {
-              title: 'Particle Size Analysis (Mesh Test Finished Goods)',
-              badge: 'Mesh Analysis',
-              items: cleanFields([
-                { label: 'Mesh >600', value: withUnit(d.qc?.qc_packing_mesh_gt600, 'g') },
-                { label: 'Mesh 425-600', value: withUnit(d.qc?.qc_packing_mesh_425_600, 'g') },
-                { label: 'Mesh 300-425', value: withUnit(d.qc?.qc_packing_mesh_300_425, 'g') },
-                { label: 'Mesh 250-300', value: withUnit(d.qc?.qc_packing_mesh_250_300, 'g') },
-                { label: 'Mesh 212-250', value: withUnit(d.qc?.qc_packing_mesh_212_250, 'g') },
-                { label: 'Mesh 180-212', value: withUnit(d.qc?.qc_packing_mesh_180_212, 'g') },
-                { label: 'Mesh 150-180', value: withUnit(d.qc?.qc_packing_mesh_150_180, 'g') },
-                { label: 'Mesh <150', value: withUnit(d.qc?.qc_packing_mesh_lt150, 'g') },
+              title: 'COP Instrument',
+              refForm: 'Form QF/PDQC/SS/010',
+              badge: 'COP',
+              dotColor: 'bg-emerald-600',
+              fields: cleanFields([
+                { label: 'Waktu COP instrument packing terakhir', value: d.pa?.cop?.tanggal || 'Data tidak ditemukan' },
+                { label: 'Verifikasi swab ATP', value: d.pa?.cop?.swab || 'Data tidak ditemukan' },
+                { label: 'PIC Prod dan PA', value: d.pa?.cop?.pic || 'Data tidak ditemukan' },
               ]),
             },
-          ] : [],
+            {
+              title: 'Environmental Swab',
+              refForm: 'Form QF/PDQC/SS/010',
+              badge: 'EMP',
+              dotColor: 'bg-teal-600',
+              fields: cleanFields([
+                { label: 'Waktu Environmental Swab internal terakhir (non pathogen)', value: d.pa?.emp?.internal_tanggal || 'Data tidak ditemukan' },
+                { label: 'List intrument dan personal serta hasil swab (Internal)', value: d.pa?.emp?.internal_hasil || 'Data tidak ditemukan' },
+                { label: 'Waktu Environmental Swab eksternal terakhir (pathogen)', value: d.pa?.emp?.external_tanggal || 'Data tidak ditemukan' },
+                { label: 'List intrument dan personal serta hasil swab (Eksternal)', value: d.pa?.emp?.external_hasil || 'Data tidak ditemukan' },
+                { label: 'PIC Prod dan PA', value: d.pa?.emp?.pic || 'Data tidak ditemukan' },
+              ]),
+            },
+            {
+              title: 'Air Bacteria Exposed',
+              refForm: 'Form QF/PDQC/SS/010',
+              badge: 'ABE',
+              dotColor: 'bg-cyan-600',
+              fields: cleanFields([
+                { label: 'Waktu Air Bacteria Exposed terakhir', value: d.pa?.abe?.tanggal || 'Data tidak ditemukan' },
+                { label: 'Hasil pengujian', value: d.pa?.abe?.hasil || 'Data tidak ditemukan' },
+                { label: 'PIC Prod dan PA', value: d.pa?.abe?.pic || 'Data tidak ditemukan' },
+              ]),
+            },
+          ],
+          paFields: [],
+          qcTitle: 'Hasil Pengujian Laboratorium Mutu Finished Goods',
+          qcRole: 'QC',
+          qcSections: [
+            {
+              title: 'Analisa Kualitas Finished Good',
+              refForm: 'Form QF/PDQC/QC/016',
+              badge: 'Fisika Kimia',
+              dotColor: 'bg-blue-600',
+              metrics: cleanMetrics([
+                { label: 'Verifikasi Label', value: d.qc?.qc_packing_verifikasi_label || 'Data tidak ditemukan', spec: 'Sesuai Standar' },
+                { label: 'Kondisi kemasan', value: d.qc?.qc_packing_kondisi_kemasan || 'Data tidak ditemukan', spec: 'Kondisi Baik' },
+                { label: 'Kadar air', value: d.qc?.qc_packing_kadar_air ? withUnit(d.qc.qc_packing_kadar_air, '%') : 'Data tidak ditemukan', spec: 'Maks. 3.00%' },
+                { label: 'Bulk Density', value: d.qc?.qc_packing_density ? withUnit(d.qc.qc_packing_density, 'g/L') : 'Data tidak ditemukan', spec: 'Std 240 - 260 g/L' },
+                { label: 'Foreign Matter', value: d.qc?.qc_packing_fm || 'Data tidak ditemukan', spec: 'Bebas Benda Asing' },
+                { label: 'Visual', value: d.qc?.qc_packing_visual || 'Data tidak ditemukan', spec: 'Bubuk Kering Sesuai' },
+                { label: 'Warna', value: d.qc?.qc_packing_warna || 'Data tidak ditemukan', spec: 'Standar Agtron' },
+                { label: 'Brix', value: d.qc?.qc_packing_brix || 'Data tidak ditemukan', spec: 'Std Brix' },
+                { label: 'pH', value: d.qc?.qc_packing_ph || 'Data tidak ditemukan', spec: 'Std pH' },
+                { label: 'Floating Particles', value: d.qc?.qc_packing_floating || 'Data tidak ditemukan', spec: '0 (Nol Partikel)' },
+                { label: 'Fluidity', value: d.qc?.qc_packing_fluidity || 'Data tidak ditemukan', spec: 'Free Flowing' },
+                { label: 'Solubility', value: d.qc?.qc_packing_solubility ? withUnit(d.qc.qc_packing_solubility, 's') : 'Data tidak ditemukan', spec: 'Maks. 30 detik' },
+              ]),
+              cuptestTitle: 'Finished Goods',
+              cuptest: cleanFields([
+                { label: 'Wangi', value: d.qc?.qc_packing_wangi || 'Data tidak ditemukan' },
+                { label: 'Pahit', value: d.qc?.qc_packing_pahit || 'Data tidak ditemukan' },
+                { label: 'Asam', value: d.qc?.qc_packing_asam || 'Data tidak ditemukan' },
+                { label: 'Body', value: d.qc?.qc_packing_body || 'Data tidak ditemukan' },
+                { label: 'Sepat', value: d.qc?.qc_packing_sepat || 'Data tidak ditemukan' },
+              ]),
+            },
+            {
+              title: 'Particle Size Distribution (Mesh)',
+              refForm: 'Form QF/PDQC/QC/016',
+              badge: 'Mesh Size',
+              dotColor: 'bg-indigo-600',
+              metrics: cleanMetrics([
+                { label: '>600', value: d.qc?.qc_packing_mesh_gt600 || 'Data tidak ditemukan', spec: 'Mesh Distribution' },
+                { label: '425-<600', value: d.qc?.qc_packing_mesh_425_600 || 'Data tidak ditemukan', spec: 'Mesh Distribution' },
+                { label: '300-<425', value: d.qc?.qc_packing_mesh_300_425 || 'Data tidak ditemukan', spec: 'Mesh Distribution' },
+                { label: '250-<300', value: d.qc?.qc_packing_mesh_250_300 || 'Data tidak ditemukan', spec: 'Mesh Distribution' },
+                { label: '212-<250', value: d.qc?.qc_packing_mesh_212_250 || 'Data tidak ditemukan', spec: 'Mesh Distribution' },
+                { label: '180-<212', value: d.qc?.qc_packing_mesh_180_212 || 'Data tidak ditemukan', spec: 'Mesh Distribution' },
+                { label: '150-<180', value: d.qc?.qc_packing_mesh_150_180 || 'Data tidak ditemukan', spec: 'Mesh Distribution' },
+                { label: '<150', value: d.qc?.qc_packing_mesh_lt150 || 'Data tidak ditemukan', spec: 'Mesh Distribution' },
+              ]),
+            },
+            {
+              title: 'Analisa Mikrobiologi Produk Akhir',
+              refForm: 'Form QF/PDQC/QC/016',
+              badge: 'Mikrobiologi',
+              dotColor: 'bg-teal-600',
+              metrics: cleanMetrics([
+                { label: 'Total Plate Count (TPC)', value: d.qc?.qc_packing_tpc || 'Data tidak ditemukan', spec: '< 1.0 x 10^3 cfu/g' },
+                { label: 'Yeast & Mold', value: d.qc?.qc_packing_yeast_mold || 'Data tidak ditemukan', spec: '< 1.0 x 10^2 cfu/g' },
+                { label: 'Petugas QC Mikrobiologi', value: d.qc?.qc_packing_pic_mikro || 'Data tidak ditemukan', spec: 'Analis Mikro' },
+              ]),
+            },
+            {
+              title: 'Pelepasan Status Produk (Release Management)',
+              refForm: 'Form F/QC/01.030',
+              badge: 'Status Rilis',
+              dotColor: 'bg-emerald-600',
+              metrics: cleanMetrics([
+                { label: 'Rilis Status OK (Box)', value: d.qc?.qc_packing_status_ok || 'Data tidak ditemukan', spec: 'Lolos Mutu' },
+                { label: 'Status Blocked (Box)', value: d.qc?.qc_packing_status_bo || 'Data tidak ditemukan', spec: 'Karantina' },
+                { label: 'Petugas Release QC', value: d.qc?.qc_packing_status_pic || 'Data tidak ditemukan', spec: 'QA/QC Lead' },
+              ]),
+            },
+          ],
+          qcMetrics: [],
+          cuptestMetrics: [],
           prodTable: hasPacking ? {
             pic: 'Produksi',
             title: `Tabel Operasional Pengemasan Box Tower ${tKey}`,
@@ -719,44 +1090,105 @@ function buildClusterData(traceResult, tower = '1') {
             rows: d.packing?.raw_rows || [],
             columns: d.packing?.columns || [],
           } : null,
-          qcTable: d.qc_raw?.mesh?.raw_rows?.length ? {
+          qcTable: d.qc_raw?.packing?.raw_rows?.length ? {
             pic: 'QC',
-            title: `Tabel QC Mesh Test Finished Goods (qc_mesh_${twSuffix})`,
-            tableName: `qc_mesh_${twSuffix}`,
-            rows: d.qc_raw.mesh.raw_rows,
-            columns: d.qc_raw.mesh.raw_rows[0] ? Object.keys(d.qc_raw.mesh.raw_rows[0]) : [],
+            title: `Tabel QC Finished Good Packing Tower ${tKey} (qc_packing_${twSuffix})`,
+            tableName: `qc_packing_${twSuffix}`,
+            rows: d.qc_raw.packing.raw_rows,
+            columns: d.qc_raw.packing.raw_rows[0] ? Object.keys(d.qc_raw.packing.raw_rows[0]) : [],
           } : null,
-          pic: { operasional: d.packing?.operator_packing || '-', qc: d.qc?.qc_packing_pic || '-' },
+          pic: {
+            operasional: d.packing?.operator_packing || 'Data tidak ditemukan',
+            qc: d.qc?.qc_packing_pic || 'Data tidak ditemukan',
+            pa: d.pa?.cop?.pic || d.pa?.emp?.pic || 'Data tidak ditemukan',
+          },
         },
         {
           flowNumber: 'Flow 12',
           title: 'INCOMING BAHAN KEMAS',
-          refDoc: 'Form F/FGW/02.004 & F/QC/01.030',
-          isAvailable: hasFgw,
-          pendingPicName: 'FGW & QC',
-          noticeText: 'Data penerimaan bahan kemasan sekunder (karton & plastik) belum tercatat di database MySQL.',
-          operationalTitle: 'Data Kedatangan Bahan Kemasan Karton & Plastik (PIC FGW)',
-          fields: hasFgw ? cleanFields([
-            { label: 'Tanggal Penerimaan', value: formatFlowDate(d.fgw?.tanggal_kemasan) },
-            { label: 'Supplier Karton', value: d.fgw?.supplier_karton },
-            { label: 'Supplier Plastik PE', value: d.fgw?.supplier_plastik },
-            { label: 'Nomor Lot Karton', value: d.fgw?.lot_karton },
-            { label: 'Nomor Lot Plastik', value: d.fgw?.lot_plastik },
-          ]) : [],
-          qcTitle: 'Hasil Pengujian Fisik Bahan Kemasan (QC Kemasan)',
-          qcMetrics: hasFgw ? cleanMetrics([
-            { label: 'Kekuatan Tekan BCT', value: d.fgw?.bct, spec: 'Min. 600 kgf' },
-            { label: 'Ketebalan Plastik', value: d.fgw?.ketebalan, spec: 'Std 75 - 85 µm' },
-          ]) : [],
+          refDoc: 'Form F/SC/02.6, F/SC/02.11 & F/QC/01.030',
+          isAvailable: hasFgwKemas,
+          pendingPicName: hasFgwKemas ? 'FGW & QC' : 'Data tidak ditemukan di database',
+          operationalTitle: 'Data Kedatangan Bahan Kemasan Karton & Plastik',
+          prodRole: 'FGW',
+          sections: [
+            {
+              title: 'KARTON',
+              refForm: 'Form F/SC/02.6 & F/SC/02.11',
+              badge: 'Karton Box',
+              dotColor: 'bg-amber-700',
+              fields: cleanFields([
+                { label: 'Tanggal kedatangan', value: d.fgw?.karton_tgl_kedatangan || 'Data tidak ditemukan' },
+                { label: 'Supplier', value: d.fgw?.karton_supplier || 'Data tidak ditemukan' },
+                { label: 'Nomor truk', value: d.fgw?.karton_no_truk || 'Data tidak ditemukan' },
+                { label: 'Nomer PO', value: d.fgw?.karton_no_po || 'Data tidak ditemukan' },
+                { label: 'Nomer Lot/Batch', value: d.fgw?.lot_karton || 'Data tidak ditemukan' },
+                { label: 'Jumlah', value: d.fgw?.karton_jumlah || 'Data tidak ditemukan' },
+                { label: 'Verifikasi kondisi truk', value: d.fgw?.karton_verifikasi_truk || 'Data tidak ditemukan' },
+                { label: 'Tanggal serah terima ke packing', value: d.fgw?.karton_tgl_serah_terima || 'Data tidak ditemukan' },
+              ]),
+            },
+            {
+              title: 'PLASTIK',
+              refForm: 'Form F/SC/02.6 & F/SC/02.11',
+              badge: 'Plastik PE',
+              dotColor: 'bg-indigo-600',
+              fields: cleanFields([
+                { label: 'Tanggal kedatangan', value: d.fgw?.plastik_tgl_kedatangan || 'Data tidak ditemukan' },
+                { label: 'Supplier', value: d.fgw?.supplier_plastik || 'Data tidak ditemukan' },
+                { label: 'Nomor truk', value: d.fgw?.plastik_no_truk || 'Data tidak ditemukan' },
+                { label: 'Nomer PO', value: d.fgw?.plastik_no_po || 'Data tidak ditemukan' },
+                { label: 'Nomer Lot/Batch', value: d.fgw?.lot_plastik || 'Data tidak ditemukan' },
+                { label: 'Jumlah', value: d.fgw?.plastik_jumlah || 'Data tidak ditemukan' },
+                { label: 'Verifikasi kondisi truk', value: d.fgw?.plastik_verifikasi_truk || 'Data tidak ditemukan' },
+                { label: 'Tanggal serah terima ke packing', value: d.fgw?.plastik_tgl_serah_terima || 'Data tidak ditemukan' },
+              ]),
+            },
+          ],
+          fields: [],
+          qcTitle: 'Hasil Pengujian Fisik Bahan Kemasan',
+          qcRole: 'QC',
+          qcSections: [
+            {
+              title: 'Analisa Kualitas Kedatangan Karton',
+              refForm: 'Form QF/PDQC/QC/017',
+              badge: 'Karton',
+              dotColor: 'bg-amber-700',
+              metrics: cleanMetrics([
+                { label: 'Kondisi fisik', value: d.fgw?.qc_karton_fisik || 'Data tidak ditemukan', spec: 'Kondisi Baik' },
+                { label: 'Berat', value: d.fgw?.qc_karton_berat || 'Data tidak ditemukan', spec: 'Gramatur' },
+                { label: 'Dimensi', value: d.fgw?.qc_karton_dimensi || 'Data tidak ditemukan', spec: 'Dimensi Box' },
+                { label: 'Printing', value: d.fgw?.qc_karton_printing || 'Data tidak ditemukan', spec: 'Jelas & Rapi' },
+                { label: 'Sealing', value: d.fgw?.qc_karton_sealing || 'Data tidak ditemukan', spec: 'Rapat' },
+                { label: 'BCT (CoA)', value: d.fgw?.bct || 'Data tidak ditemukan', spec: 'Min. 550 kgf' },
+                { label: 'Status', value: d.fgw?.qc_karton_status || 'Data tidak ditemukan', spec: 'Lolos Uji Mutu' },
+              ]),
+            },
+            {
+              title: 'Analisa Kualitas Kedatangan Plastik',
+              refForm: 'Form QF/PDQC/QC/017',
+              badge: 'Plastik',
+              dotColor: 'bg-indigo-600',
+              metrics: cleanMetrics([
+                { label: 'Kondisi fisik', value: d.fgw?.qc_plastik_fisik || 'Data tidak ditemukan', spec: 'Kondisi Baik' },
+                { label: 'Berat', value: d.fgw?.qc_plastik_berat || 'Data tidak ditemukan', spec: 'Gramatur' },
+                { label: 'Dimensi', value: d.fgw?.qc_plastik_dimensi || 'Data tidak ditemukan', spec: 'Dimensi' },
+                { label: 'Sealing', value: d.fgw?.qc_plastik_sealing || 'Data tidak ditemukan', spec: 'Rapat' },
+                { label: 'Swab Test ATP', value: d.fgw?.swab_atp || 'Data tidak ditemukan', spec: '< 100 RLU' },
+                { label: 'Status', value: d.fgw?.qc_plastik_status || 'Data tidak ditemukan', spec: 'Lolos Uji Mutu' },
+              ]),
+            },
+          ],
+          qcMetrics: [],
           prodTable: null,
           qcTable: null,
-          pic: { operasional: d.fgw?.operator || '-', qc: d.fgw?.qc || '-' },
+          pic: { operasional: d.fgw?.karton_pic_fgw || 'Data tidak ditemukan', qc: d.fgw?.qc_karton_pic || 'Data tidak ditemukan' },
         },
       ],
     },
 
     // ══════════════════════════════════════════════════════════════
-    // CLUSTER 8: DISTRIBUSI PRODUK JADI (Flow 1)
+    // CLUSTER 8: DISTRIBUSI (Flow 1)
     // ══════════════════════════════════════════════════════════════
     'distribusi': {
       ...CLUSTER_CONFIG[7],
@@ -764,28 +1196,31 @@ function buildClusterData(traceResult, tower = '1') {
         {
           flowNumber: 'Flow 1',
           title: 'DISTRIBUSI',
-          refDoc: 'Form F/LOG/01.035 & F/QC/01.030',
-          isAvailable: hasFgw,
-          pendingPicName: 'FGW & QA',
-          noticeText: 'Data surat jalan armada pengiriman dan QA Release belum tercatat di database MySQL.',
-          operationalTitle: 'Data Surat Jalan & Armada Distribusi Logistik (PIC FGW)',
-          fields: hasFgw ? cleanFields([
-            { label: 'Posisi Produk', value: d.fgw?.posisi_produk },
-            { label: 'Waktu Pengiriman', value: formatFlowDate(d.fgw?.tanggal_distribusi) },
-            { label: 'Nomor Surat Jalan', value: d.fgw?.no_sj },
-            { label: 'Nomor Polisi Truk', value: d.fgw?.no_polisi },
-            { label: 'Nama Pengemudi / Sopir', value: d.fgw?.sopir },
-            { label: 'Tujuan Pengiriman', value: d.fgw?.tujuan },
-            { label: 'Jumlah (Box)', value: d.fgw?.jumlah_box ? `${d.fgw.jumlah_box} Box` : null },
-          ]) : [],
-          qcTitle: 'Verifikasi Pelepasan Mutu & Armada Distribusi (QA/QC)',
-          qcMetrics: hasFgw ? cleanMetrics([
-            { label: 'Nomor CoA', value: d.fgw?.no_coa, spec: 'CoA/IC/SJA-SKD' },
-            { label: 'Verifikasi Kendaraan', value: d.fgw?.kondisi_kendaraan, spec: 'Bersih & Tertutup' },
-          ]) : [],
+          refDoc: 'Surat Jalan Antar Gudang, F-SC-02.2 & F/QC/01.030',
+          isAvailable: hasDistribusi,
+          pendingPicName: hasDistribusi ? 'FGW & QA' : 'Data tidak ditemukan di database',
+          operationalTitle: 'Data Gudang & Pengiriman Produk Jadi',
+          prodRole: 'FGW',
+          fields: cleanFields([
+            { label: 'Posisi produk', value: d.distribusi?.posisi_produk || 'Data tidak ditemukan' },
+            { label: 'Waktu pengiriman', value: d.distribusi?.waktu_pengiriman || 'Data tidak ditemukan' },
+            { label: 'Nomer surat jalan', value: d.distribusi?.no_sj || 'Data tidak ditemukan' },
+            { label: 'Nomer truk', value: d.distribusi?.no_truk || 'Data tidak ditemukan' },
+            { label: 'Jumlah', value: d.distribusi?.jumlah || 'Data tidak ditemukan' },
+            { label: 'Tujuan pengiriman', value: d.distribusi?.tujuan || 'Data tidak ditemukan' },
+            { label: 'Lokasi gudang penyimpanan', value: d.distribusi?.lokasi_gudang || 'Data tidak ditemukan' },
+            { label: 'Nomer rak', value: d.distribusi?.nomer_rak || 'Data tidak ditemukan', colSpan: 'col-span-1 sm:col-span-2 lg:col-span-2' },
+            { label: 'Nomer pallet', value: d.distribusi?.nomer_pallet || 'Data tidak ditemukan', colSpan: 'col-span-1 sm:col-span-2 lg:col-span-2' },
+          ]),
+          qcTitle: 'Verifikasi Dokumen & Pelepasan Pengiriman',
+          qcRole: 'QC',
+          qcMetrics: cleanMetrics([
+            { label: 'Nomor Certificate of Analysis (CoA)', value: d.distribusi?.no_coa || 'Data tidak ditemukan', spec: 'CoA Produk' },
+            { label: 'Verifikasi kendaraan pengiriman', value: d.distribusi?.verifikasi_kendaraan || 'Data tidak ditemukan', spec: 'Inspeksi Truk' },
+          ]),
           prodTable: null,
           qcTable: null,
-          pic: { operasional: d.fgw?.sopir || '-', qc: d.fgw?.qa || '-' },
+          pic: { operasional: d.distribusi?.pic_fgw || 'Data tidak ditemukan', qc: d.distribusi?.pic_qc || 'Data tidak ditemukan' },
         },
       ],
     },

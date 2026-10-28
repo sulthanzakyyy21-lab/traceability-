@@ -54,7 +54,7 @@ async function getDryerFlow(batch, tahun, tower) {
       operator_produksi: uniqueJoin(rows.map((r) => r.Nama)) || '-',
       final_tank: finalTankNo,
       final_tank_raw: finalTanks.join(', '),
-      mode: [...new Set(rows.map((r) => r.Mode).filter(Boolean))].join(', ') || 'IC1',
+      mode: [...new Set(rows.map((r) => r.Mode).filter(Boolean))].join(', ') || null,
       columns: dryerColumns,
       raw_rows: rows,
     };

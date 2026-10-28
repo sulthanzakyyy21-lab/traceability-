@@ -15,52 +15,52 @@ const FLOW_SECTIONS = [
           {
             "label": "Posisi produk",
             "isHeader": false,
-            "key": null
+            "key": "dist_posisi_produk"
           },
           {
             "label": "Waktu pengiriman",
             "isHeader": false,
-            "key": null
+            "key": "dist_waktu_pengiriman"
           },
           {
             "label": "Nomer surat jalan",
             "isHeader": false,
-            "key": null
+            "key": "dist_no_sj"
           },
           {
             "label": "Nomer truk",
             "isHeader": false,
-            "key": null
+            "key": "dist_no_truk"
           },
           {
             "label": "Jumlah",
             "isHeader": false,
-            "key": null
+            "key": "dist_jumlah"
           },
           {
             "label": "Tujuan pengiriman",
             "isHeader": false,
-            "key": null
+            "key": "dist_tujuan"
           },
           {
             "label": "Lokasi gudang penyimpanan",
             "isHeader": false,
-            "key": null
+            "key": "dist_lokasi_gudang"
           },
           {
             "label": "Nomer rak",
             "isHeader": false,
-            "key": null
+            "key": "dist_no_rak"
           },
           {
             "label": "Nomer pallet",
             "isHeader": false,
-            "key": null
+            "key": "dist_no_pallet"
           },
           {
             "label": "PIC FGW",
             "isHeader": false,
-            "key": null
+            "key": "dist_pic_fgw"
           }
         ]
       },
@@ -73,17 +73,17 @@ const FLOW_SECTIONS = [
           {
             "label": "Nomor Certificate of Analysis (CoA)",
             "isHeader": false,
-            "key": null
+            "key": "dist_no_coa"
           },
           {
             "label": "Verifikasi kendaraan pengiriman",
             "isHeader": false,
-            "key": null
+            "key": "dist_verifikasi_kendaraan"
           },
           {
             "label": "PIC QC",
             "isHeader": false,
-            "key": null
+            "key": "dist_pic_qc"
           }
         ]
       }
@@ -383,22 +383,22 @@ const FLOW_SECTIONS = [
           {
             "label": "Waktu COP instrument packing terakhir",
             "isHeader": false,
-            "key": null
+            "key": "pa_packing_cop_waktu"
           },
           {
             "label": "Verifikasi swab ATP",
             "isHeader": false,
-            "key": null
+            "key": "pa_packing_cop_swab"
           },
           {
             "label": "PIC Prod dan PA",
             "isHeader": false,
-            "key": null
+            "key": "pa_packing_cop_pic"
           }
         ]
       },
       {
-        "pic": "",
+        "pic": "PA",
         "docs": [
           "- F/QC.2.35 Environment Monitoring Program"
         ],
@@ -411,37 +411,37 @@ const FLOW_SECTIONS = [
           {
             "label": "Waktu Environmental Swab internal terakhir (non pathogen)",
             "isHeader": false,
-            "key": null
+            "key": "pa_packing_env_internal_waktu"
           },
           {
             "label": "List intrument dan personal serta hasil swab",
             "isHeader": false,
-            "key": null
+            "key": "pa_packing_env_internal_list"
           },
           {
             "label": "PIC Prod dan PA",
             "isHeader": false,
-            "key": null
+            "key": "pa_packing_env_internal_pic"
           },
           {
             "label": "Waktu Environmental Swab eksternal terakhir (pathogen)",
             "isHeader": false,
-            "key": null
+            "key": "pa_packing_env_external_waktu"
           },
           {
             "label": "List intrument dan personal serta hasil swab",
             "isHeader": false,
-            "key": null
+            "key": "pa_packing_env_external_list"
           },
           {
             "label": "PIC Prod dan PA",
             "isHeader": false,
-            "key": null
+            "key": "pa_packing_env_external_pic"
           }
         ]
       },
       {
-        "pic": "",
+        "pic": "PA",
         "docs": [
           "- F/QC.2.5 Air Bacteria Expose"
         ],
@@ -454,17 +454,17 @@ const FLOW_SECTIONS = [
           {
             "label": "Waktu Air Bacteria Exposed terakhir",
             "isHeader": false,
-            "key": null
+            "key": "pa_packing_abe_waktu"
           },
           {
             "label": "Hasil Air Bacteria Exposed",
             "isHeader": false,
-            "key": null
+            "key": "pa_packing_abe_hasil"
           },
           {
             "label": "PIC Prod dan PA",
             "isHeader": false,
-            "key": null
+            "key": "pa_packing_abe_pic"
           }
         ]
       }
@@ -484,57 +484,57 @@ const FLOW_SECTIONS = [
           {
             "label": "Jumlah bahan rework (in box)",
             "isHeader": false,
-            "key": null
+            "key": "rework_jumlah_box"
           },
           {
             "label": "Tanggal serah terima bahan rework dari GBJ",
             "isHeader": false,
-            "key": null
+            "key": "rework_tgl_serah_terima"
           },
           {
             "label": "Identitas bahan rework yang dipakai",
             "isHeader": false,
-            "key": null
+            "key": "rework_identitas"
           },
           {
             "label": "Waktu proses",
             "isHeader": false,
-            "key": null
+            "key": "rework_waktu_proses"
           },
           {
             "label": "Lokasi rework (Tower 1/Tower 2)",
             "isHeader": false,
-            "key": null
+            "key": "rework_lokasi"
           },
           {
             "label": "Formula disposisi",
             "isHeader": false,
-            "key": null
+            "key": "rework_formula"
           },
           {
             "label": "Target TS",
             "isHeader": false,
-            "key": null
+            "key": "rework_target_ts"
           },
           {
             "label": "Level tank rework",
             "isHeader": false,
-            "key": null
+            "key": "rework_level_tank"
           },
           {
             "label": "Transfer hasil rework ke",
             "isHeader": false,
-            "key": null
+            "key": "rework_transfer_ke"
           },
           {
             "label": "Catatan abnormalitas proses",
             "isHeader": false,
-            "key": null
+            "key": "rework_abnormalitas"
           },
           {
             "label": "Operator produksi",
             "isHeader": false,
-            "key": null
+            "key": "rework_operator"
           }
         ]
       },
@@ -552,22 +552,22 @@ const FLOW_SECTIONS = [
           {
             "label": "Waktu CIP terakhir",
             "isHeader": false,
-            "key": null
+            "key": "pa_rework_cip_waktu"
           },
           {
             "label": "Konsentrasi lye",
             "isHeader": false,
-            "key": null
+            "key": "pa_rework_cip_lye"
           },
           {
             "label": "Verifikasi Final Rinse",
             "isHeader": false,
-            "key": null
+            "key": "pa_rework_cip_rinse"
           },
           {
             "label": "PIC PA",
             "isHeader": false,
-            "key": null
+            "key": "pa_rework_cip_pic"
           }
         ]
       },
@@ -695,12 +695,12 @@ const FLOW_SECTIONS = [
           {
             "label": "Nama supplier",
             "isHeader": false,
-            "key": null
+            "key": "dryer_supplier_co2"
           },
           {
             "label": "Tanggal kedatangan",
             "isHeader": false,
-            "key": null
+            "key": "dryer_tgl_co2"
           }
         ]
       },
@@ -718,22 +718,22 @@ const FLOW_SECTIONS = [
           {
             "label": "Waktu CIP terakhir",
             "isHeader": false,
-            "key": null
+            "key": "pa_dryer_cip_waktu"
           },
           {
             "label": "Konsentrasi lye",
             "isHeader": false,
-            "key": null
+            "key": "pa_dryer_cip_lye"
           },
           {
             "label": "Verifikasi Final Rinse",
             "isHeader": false,
-            "key": null
+            "key": "pa_dryer_cip_rinse"
           },
           {
             "label": "PIC PA",
             "isHeader": false,
-            "key": null
+            "key": "pa_dryer_cip_pic"
           }
         ]
       },
@@ -879,22 +879,22 @@ const FLOW_SECTIONS = [
           {
             "label": "Waktu CIP/flushing terakhir",
             "isHeader": false,
-            "key": null
+            "key": "pa_evap_cip_waktu"
           },
           {
             "label": "Konsentrasi lye",
             "isHeader": false,
-            "key": null
+            "key": "pa_evap_cip_lye"
           },
           {
             "label": "Verifikasi Final Rinse",
             "isHeader": false,
-            "key": null
+            "key": "pa_evap_cip_rinse"
           },
           {
             "label": "PIC PA",
             "isHeader": false,
-            "key": null
+            "key": "pa_evap_cip_pic"
           }
         ]
       },
@@ -1063,27 +1063,27 @@ const FLOW_SECTIONS = [
           {
             "label": "Waktu CIP terakhir",
             "isHeader": false,
-            "key": null
+            "key": "pa_finaltank_cip_waktu"
           },
           {
             "label": "Konsentrasi lye",
             "isHeader": false,
-            "key": null
+            "key": "pa_finaltank_cip_lye"
           },
           {
             "label": "Verifikasi Final Rinse",
             "isHeader": false,
-            "key": null
+            "key": "pa_finaltank_cip_rinse"
           },
           {
             "label": "Swab ATP",
             "isHeader": false,
-            "key": null
+            "key": "pa_finaltank_cip_swab"
           },
           {
             "label": "PIC PA",
             "isHeader": false,
-            "key": null
+            "key": "pa_finaltank_cip_pic"
           }
         ]
       }
@@ -1144,12 +1144,12 @@ const FLOW_SECTIONS = [
           {
             "label": "Nama supplier",
             "isHeader": false,
-            "key": null
+            "key": "ext_supplier_antifoam"
           },
           {
             "label": "Tanggal kedatangan",
             "isHeader": false,
-            "key": null
+            "key": "ext_tgl_antifoam"
           }
         ]
       },
@@ -1167,22 +1167,22 @@ const FLOW_SECTIONS = [
           {
             "label": "Waktu CIP terakhir",
             "isHeader": false,
-            "key": null
+            "key": "pa_ext_cip_waktu"
           },
           {
             "label": "Konsentrasi lye",
             "isHeader": false,
-            "key": null
+            "key": "pa_ext_cip_lye"
           },
           {
             "label": "Verifikasi Final Rinse",
             "isHeader": false,
-            "key": null
+            "key": "pa_ext_cip_rinse"
           },
           {
             "label": "PIC PA",
             "isHeader": false,
-            "key": null
+            "key": "pa_ext_cip_pic"
           }
         ]
       },
@@ -1408,52 +1408,52 @@ const FLOW_SECTIONS = [
           {
             "label": "Waktu analisa",
             "isHeader": false,
-            "key": null
+            "key": "water_waktu_analisa"
           },
           {
             "label": "pH",
             "isHeader": false,
-            "key": null
+            "key": "water_ph"
           },
           {
             "label": "TDS",
             "isHeader": false,
-            "key": null
+            "key": "water_tds"
           },
           {
             "label": "Kekeruhan",
             "isHeader": false,
-            "key": null
+            "key": "water_kekeruhan"
           },
           {
             "label": "Kesadahan",
             "isHeader": false,
-            "key": null
+            "key": "water_kesadahan"
           },
           {
             "label": "Sisa Khlor",
             "isHeader": false,
-            "key": null
+            "key": "water_sisa_khlor"
           },
           {
             "label": "Mangan",
             "isHeader": false,
-            "key": null
+            "key": "water_mangan"
           },
           {
             "label": "Besi",
             "isHeader": false,
-            "key": null
+            "key": "water_besi"
           },
           {
             "label": "Warna",
             "isHeader": false,
-            "key": null
+            "key": "water_warna"
           },
           {
             "label": "Aluminium",
             "isHeader": false,
-            "key": null
+            "key": "water_aluminium"
           },
           {
             "label": "Analisa Mikrobiologi",
@@ -1463,17 +1463,17 @@ const FLOW_SECTIONS = [
           {
             "label": "E-Coli",
             "isHeader": false,
-            "key": null
+            "key": "water_e_coli"
           },
           {
             "label": "Total Coliform",
             "isHeader": false,
-            "key": null
+            "key": "water_total_coliform"
           },
           {
             "label": "PIC PA",
             "isHeader": false,
-            "key": null
+            "key": "water_pic_pa"
           }
         ]
       }
@@ -1724,47 +1724,47 @@ const FLOW_SECTIONS = [
           {
             "label": "Tanggal kedatangan",
             "isHeader": false,
-            "key": null
+            "key": "rmw_tgl_kedatangan"
           },
           {
             "label": "Jenis bahan",
             "isHeader": false,
-            "key": null
+            "key": "rmw_jenis_bahan"
           },
           {
             "label": "Nama supplier",
             "isHeader": false,
-            "key": null
+            "key": "rmw_supplier"
           },
           {
             "label": "Nomor truk",
             "isHeader": false,
-            "key": null
+            "key": "rmw_no_truk"
           },
           {
             "label": "Nomor Surat Jalan",
             "isHeader": false,
-            "key": null
+            "key": "rmw_no_sj"
           },
           {
             "label": "Jumlah (kg)",
             "isHeader": false,
-            "key": null
+            "key": "rmw_jumlah_kg"
           },
           {
             "label": "Verifikasi kondisi truk",
             "isHeader": false,
-            "key": null
+            "key": "rmw_verifikasi_truk"
           },
           {
             "label": "Tanggal serah terima ke UPBM",
             "isHeader": false,
-            "key": null
+            "key": "rmw_tgl_serah_terima_upbm"
           },
           {
             "label": "PIC RMW",
             "isHeader": false,
-            "key": null
+            "key": "rmw_pic_rmw"
           }
         ]
       },
@@ -1783,42 +1783,42 @@ const FLOW_SECTIONS = [
           {
             "label": "Serangga hidup",
             "isHeader": false,
-            "key": null
+            "key": "qc_rmw_serangga_hidup"
           },
           {
             "label": "Biji berbau",
             "isHeader": false,
-            "key": null
+            "key": "qc_rmw_biji_berbau"
           },
           {
             "label": "Warna",
             "isHeader": false,
-            "key": null
+            "key": "qc_rmw_warna"
           },
           {
             "label": "Kadar air",
             "isHeader": false,
-            "key": null
+            "key": "qc_rmw_kadar_air"
           },
           {
             "label": "Biji OK",
             "isHeader": false,
-            "key": null
+            "key": "qc_rmw_biji_ok"
           },
           {
             "label": "% Foreign Matter",
             "isHeader": false,
-            "key": null
+            "key": "qc_rmw_fm"
           },
           {
             "label": "Status",
             "isHeader": false,
-            "key": null
+            "key": "qc_rmw_status"
           },
           {
             "label": "PIC QC",
             "isHeader": false,
-            "key": null
+            "key": "qc_rmw_pic"
           }
         ]
       }
@@ -1843,47 +1843,47 @@ const FLOW_SECTIONS = [
           {
             "label": "Tanggal kedatangan",
             "isHeader": false,
-            "key": null
+            "key": "fgw_karton_tgl_kedatangan"
           },
           {
             "label": "Supplier",
             "isHeader": false,
-            "key": null
+            "key": "fgw_karton_supplier"
           },
           {
             "label": "Nomor truk",
             "isHeader": false,
-            "key": null
+            "key": "fgw_karton_no_truk"
           },
           {
             "label": "Nomer PO",
             "isHeader": false,
-            "key": null
+            "key": "fgw_karton_no_po"
           },
           {
             "label": "Nomer Lot/Batch",
             "isHeader": false,
-            "key": null
+            "key": "fgw_karton_no_lot"
           },
           {
             "label": "Jumlah",
             "isHeader": false,
-            "key": null
+            "key": "fgw_karton_jumlah"
           },
           {
             "label": "Verifikasi kondisi truk",
             "isHeader": false,
-            "key": null
+            "key": "fgw_karton_verifikasi_truk"
           },
           {
             "label": "Tanggal serah terima ke packing",
             "isHeader": false,
-            "key": null
+            "key": "fgw_karton_tgl_serah_terima"
           },
           {
             "label": "PIC FGW",
             "isHeader": false,
-            "key": null
+            "key": "fgw_karton_pic"
           }
         ]
       },
@@ -1901,42 +1901,42 @@ const FLOW_SECTIONS = [
           {
             "label": "Kondisi fisik",
             "isHeader": false,
-            "key": null
+            "key": "qc_karton_fisik"
           },
           {
             "label": "Berat",
             "isHeader": false,
-            "key": null
+            "key": "qc_karton_berat"
           },
           {
             "label": "Dimensi",
             "isHeader": false,
-            "key": null
+            "key": "qc_karton_dimensi"
           },
           {
             "label": "Printing",
             "isHeader": false,
-            "key": null
+            "key": "qc_karton_printing"
           },
           {
             "label": "Sealing",
             "isHeader": false,
-            "key": null
+            "key": "qc_karton_sealing"
           },
           {
             "label": "BCT (CoA)",
             "isHeader": false,
-            "key": null
+            "key": "qc_karton_bct"
           },
           {
             "label": "Status",
             "isHeader": false,
-            "key": null
+            "key": "qc_karton_status"
           },
           {
             "label": "PIC QC",
             "isHeader": false,
-            "key": null
+            "key": "qc_karton_pic"
           }
         ]
       },
@@ -1955,47 +1955,47 @@ const FLOW_SECTIONS = [
           {
             "label": "Tanggal kedatangan",
             "isHeader": false,
-            "key": null
+            "key": "fgw_plastik_tgl_kedatangan"
           },
           {
             "label": "Supplier",
             "isHeader": false,
-            "key": null
+            "key": "fgw_plastik_supplier"
           },
           {
             "label": "Nomor truk",
             "isHeader": false,
-            "key": null
+            "key": "fgw_plastik_no_truk"
           },
           {
             "label": "Nomer PO",
             "isHeader": false,
-            "key": null
+            "key": "fgw_plastik_no_po"
           },
           {
             "label": "Nomer Lot/Batch",
             "isHeader": false,
-            "key": null
+            "key": "fgw_plastik_no_lot"
           },
           {
             "label": "Jumlah",
             "isHeader": false,
-            "key": null
+            "key": "fgw_plastik_jumlah"
           },
           {
             "label": "Verifikasi kondisi truk",
             "isHeader": false,
-            "key": null
+            "key": "fgw_plastik_verifikasi_truk"
           },
           {
             "label": "Tanggal serah terima ke packing",
             "isHeader": false,
-            "key": null
+            "key": "fgw_plastik_tgl_serah_terima"
           },
           {
             "label": "PIC GBJ",
             "isHeader": false,
-            "key": null
+            "key": "fgw_plastik_pic"
           }
         ]
       },
@@ -2013,37 +2013,37 @@ const FLOW_SECTIONS = [
           {
             "label": "Kondisi fisik",
             "isHeader": false,
-            "key": null
+            "key": "qc_plastik_fisik"
           },
           {
             "label": "Berat",
             "isHeader": false,
-            "key": null
+            "key": "qc_plastik_berat"
           },
           {
             "label": "Dimensi",
             "isHeader": false,
-            "key": null
+            "key": "qc_plastik_dimensi"
           },
           {
             "label": "Sealing",
             "isHeader": false,
-            "key": null
+            "key": "qc_plastik_sealing"
           },
           {
             "label": "Swab Test ATP",
             "isHeader": false,
-            "key": null
+            "key": "qc_plastik_swab_atp"
           },
           {
             "label": "Status",
             "isHeader": false,
-            "key": null
+            "key": "qc_plastik_status"
           },
           {
             "label": "PIC QC",
             "isHeader": false,
-            "key": null
+            "key": "qc_plastik_pic"
           }
         ]
       }

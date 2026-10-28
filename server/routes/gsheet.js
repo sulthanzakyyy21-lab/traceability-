@@ -9,11 +9,12 @@ const {
   syncSingleTable,
   getSyncStatus,
 } = require('../services/googleSheetService');
+const { verifyToken, requireRole } = require('../middleware/auth');
 
 const SyncBodySchema = z.object({
   sheetId: z.string().optional().nullable(),
   tower: z.enum(['1', '2', 'all', 'both']).optional().default('all'),
-  division: z.enum(['qc', 'produksi', 'all']).optional().default('all'),
+  division: z.enum(['qc', 'produksi', 'pa', 'all']).optional().default('all'),
   force: z.boolean().optional().default(false),
 });
 
@@ -21,8 +22,8 @@ router.get('/status', (req, res) => {
   res.json(getSyncStatus());
 });
 
-// POST /api/gsheet/sync-all — Sync tables (Produksi, QC, or Both)
-router.post('/sync-all', async (req, res) => {
+// POST /api/gsheet/sync-all — Sync tables (Khusus Super Admin)
+router.post('/sync-all', verifyToken, requireRole('admin'), async (req, res) => {
   try {
     const bodyResult = SyncBodySchema.safeParse(req.body);
     const tower = bodyResult.success && bodyResult.data.tower ? bodyResult.data.tower : 'all';
@@ -30,6 +31,9 @@ router.post('/sync-all', async (req, res) => {
     const sheetId = bodyResult.success ? bodyResult.data.sheetId : null;
     const force = bodyResult.success && req.body && req.body.force !== undefined ? Boolean(bodyResult.data.force) : true;
     const summary = await syncUnifiedTables({ division, tower, customSheetId: sheetId, force });
+    if (!summary.success) {
+      return res.status(500).json({ error: summary.error || 'Gagal sinkronisasi Google Sheets', ...summary });
+    }
     res.json(summary);
   } catch (err) {
     console.error('Google Sheet Unified Sync Error:', err);
@@ -37,8 +41,8 @@ router.post('/sync-all', async (req, res) => {
   }
 });
 
-// POST /api/gsheet/sync-unified — Dedicated unified endpoint
-router.post('/sync-unified', async (req, res) => {
+// POST /api/gsheet/sync-unified — Dedicated unified endpoint (Khusus Super Admin)
+router.post('/sync-unified', verifyToken, requireRole('admin'), async (req, res) => {
   try {
     const bodyResult = SyncBodySchema.safeParse(req.body);
     const tower = bodyResult.success && bodyResult.data.tower ? bodyResult.data.tower : 'all';
@@ -46,6 +50,9 @@ router.post('/sync-unified', async (req, res) => {
     const sheetId = bodyResult.success ? bodyResult.data.sheetId : null;
     const force = bodyResult.success && req.body && req.body.force !== undefined ? Boolean(bodyResult.data.force) : true;
     const summary = await syncUnifiedTables({ division, tower, customSheetId: sheetId, force });
+    if (!summary.success) {
+      return res.status(500).json({ error: summary.error || 'Gagal sinkronisasi Google Sheets', ...summary });
+    }
     res.json(summary);
   } catch (err) {
     console.error('Google Sheet Unified Sync Error:', err);
@@ -53,8 +60,8 @@ router.post('/sync-unified', async (req, res) => {
   }
 });
 
-// POST /api/gsheet/sync-prod — Sync Production tables (Roasting, Ekstraksi, Evaporasi, Dryer, Packing)
-router.post('/sync-prod', async (req, res) => {
+// POST /api/gsheet/sync-prod — Sync Production tables (Khusus Super Admin)
+router.post('/sync-prod', verifyToken, requireRole('admin'), async (req, res) => {
   try {
     const summary = await syncAllProdTables({ force: true });
     res.json(summary);
@@ -64,8 +71,20 @@ router.post('/sync-prod', async (req, res) => {
   }
 });
 
-// POST /api/gsheet/sync/:tableName — Sync specific table (QC or Produksi)
-router.post('/sync/:tableName', async (req, res) => {
+// POST /api/gsheet/sync-pa — Sync PA tables (Khusus Super Admin)
+router.post('/sync-pa', verifyToken, requireRole('admin'), async (req, res) => {
+  try {
+    const { syncAllPaTables } = require('../services/googleSheetPaService');
+    const summary = await syncAllPaTables({ force: true, tower: req.body?.tower || 'all', customSheetId: req.body?.sheetId || null });
+    res.json(summary);
+  } catch (err) {
+    console.error('Google Sheet PA Sync Error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/gsheet/sync/:tableName — Sync specific table (Khusus Super Admin)
+router.post('/sync/:tableName', verifyToken, requireRole('admin'), async (req, res) => {
   try {
     const paramValidation = TableNameParamSchema.safeParse(req.params);
     if (!paramValidation.success) {

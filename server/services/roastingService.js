@@ -2,7 +2,7 @@ const pool = require('../db');
 const { TABLE_COLUMNS_MAP } = require('../tableConfig');
 const { formatDT, uniqueJoin } = require('../utils/traceHelpers');
 
-async function getRoastingFlow(siloNumbers, extractionStartStr, totalOutputVal, packingOutputKg) {
+async function getRoastingFlow(siloNumbers, extractionStartStr, totalOutputVal, packingOutputKg, batch) {
   if (!siloNumbers || siloNumbers.length === 0 || !extractionStartStr) {
     return {
       roasting: { error: 'Tidak ada data silo degassing dari extraction untuk melacak roasting.' },
@@ -55,7 +55,7 @@ async function getRoastingFlow(siloNumbers, extractionStartStr, totalOutputVal, 
     if (roastRows.length === 0) {
       return {
         roasting: {
-          error: `Tidak ada data roasting untuk silo [${siloNumbers.join(', ')}] sebelum ${extractionStartStr}`,
+          error: `Tidak ada data roasting untuk silo [${siloNumbers.join(', ')}] sebelum ${extractionStartStr} di database MySQL.`,
           columns: TABLE_COLUMNS_MAP['roasting_probat'] || [],
           raw_rows: [],
         },
@@ -90,11 +90,11 @@ async function getRoastingFlow(siloNumbers, extractionStartStr, totalOutputVal, 
       if (!isNaN(v)) totalKopiMatang += v;
     });
 
-    const yieldRoastingNum = totalKopiMentah > 0 ? (totalKopiMatang / totalKopiMentah) * 100 : 87.37;
-    const yieldRoastingStr = yieldRoastingNum.toFixed(2) + '%';
+    const yieldRoastingNum = totalKopiMentah > 0 ? (totalKopiMatang / totalKopiMentah) * 100 : null;
+    const yieldRoastingStr = yieldRoastingNum !== null ? yieldRoastingNum.toFixed(2) + '%' : '-';
     const siloCellDisplay = usedSiloCells.length > 1
       ? usedSiloCells.slice(0, -1).join(', ') + ' & ' + usedSiloCells[usedSiloCells.length - 1]
-      : usedSiloCells.join(', ');
+      : (usedSiloCells.length === 1 ? String(usedSiloCells[0]) : null);
 
     const roasting = {
       table: matchedTable,
@@ -102,32 +102,27 @@ async function getRoastingFlow(siloNumbers, extractionStartStr, totalOutputVal, 
       tanggal: first.Tanggal ? String(first.Tanggal).split('T')[0].split(' ')[0] : (first.Stamp ? String(first.Stamp).split(' ')[0] : null),
       waktu_proses: `${formatDT(first.Stamp, first.Stamp)} - ${formatDT(last.Stamp, last.Stamp)}`,
       mesin_goreng: matchedMachine,
-      jenis_kopi_goreng: modeGoreng.join(', ') || 'TIC 18',
+      jenis_kopi_goreng: modeGoreng.join(', ') || null,
       silo_degassing: siloNumbers.join(' & '),
       jumlah_batch: roastRows.length,
       operator_produksi: uniqueJoin(roastRows.map((r) => r['Nama Petugas'] === 'Heri' ? 'Heri S.' : r['Nama Petugas']), ', ') || '-',
-      jenis_biji_mentah: jenisKopi.join(', ') || '018 SK',
-      silo_cell_terpakai: siloCellDisplay || '8, 1, 2, 4, 5 & 6',
-      total_kopi_mentah_kg: totalKopiMentah.toFixed(1),
-      total_kopi_matang_kg: totalKopiMatang.toFixed(1),
+      jenis_biji_mentah: jenisKopi.join(', ') || null,
+      silo_cell_terpakai: siloCellDisplay || null,
+      total_kopi_mentah_kg: totalKopiMentah > 0 ? totalKopiMentah.toFixed(1) : null,
+      total_kopi_matang_kg: totalKopiMatang > 0 ? totalKopiMatang.toFixed(1) : null,
       yield_roasting: yieldRoastingStr,
       yield_roasting_num: yieldRoastingNum,
       columns: TABLE_COLUMNS_MAP[matchedTable] || TABLE_COLUMNS_MAP['roasting_probat'] || [],
       raw_rows: roastRows,
     };
 
-    const transferKopiGoreng = totalKopiMatang > 0 ? parseFloat(totalKopiMatang.toFixed(1)) : 11607.8;
-    const yieldPct = parseFloat(yieldRoastingStr) || 87.37;
-    const totalKopiMentahMb = totalKopiMentah > 0 ? totalKopiMentah.toFixed(1) : (transferKopiGoreng / (yieldPct / 100)).toFixed(1);
-
     // UPBM data is unpopulated (no database table/connecting key yet)
     const upbm = null;
 
     const finalOutput = totalOutputVal || packingOutputKg || null;
-    const rasioIC = finalOutput ? (parseFloat(totalKopiMentahMb) / finalOutput).toFixed(2) : '2.16';
 
     const mass_balance = {
-      total_output_produk: finalOutput ? `${finalOutput.toLocaleString()} kg` : (packingOutputKg ? `${packingOutputKg.toLocaleString()} kg` : '-'),
+      total_output_produk: finalOutput ? `${finalOutput.toLocaleString()} kg` : '-',
       total_kopi_goreng_transfer: totalKopiMatang > 0 ? `${totalKopiMatang.toLocaleString()} kg` : '-',
       total_kopi_mentah: totalKopiMentah > 0 ? `${totalKopiMentah.toFixed(1)} kg (yield roasting ${yieldRoastingStr})` : '-',
       yield: yieldRoastingNum,

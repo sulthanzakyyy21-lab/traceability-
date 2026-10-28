@@ -1,0 +1,90 @@
+/**
+ * Metadata definitions for PA (Product Assurance) tables
+ * SJA Traceability System - Form F/QC/01.030
+ */
+const PA_TABLE_METADATA = {
+  pa_fwt_t1: {
+    key: 'pa_fwt_t1',
+    label: 'Feed Water Tank T1 (Water Process)',
+    flow: 'WATER PROCESS',
+    pic: 'PA',
+    tower: 'Tower 1',
+    sheetName: 'FWT T1',
+    gid: '0',
+    docNo: 'QF/PDQC/SS/003',
+  },
+  pa_fwt_t2: {
+    key: 'pa_fwt_t2',
+    label: 'Feed Water Tank T2 (Water Process)',
+    flow: 'WATER PROCESS',
+    pic: 'PA',
+    tower: 'Tower 2',
+    sheetName: 'FWT T2',
+    gid: '547010875',
+    docNo: 'QF/PDQC/SS/003',
+  },
+  pa_cip_t1: {
+    key: 'pa_cip_t1',
+    label: 'CIP Sanitasi Alat T1',
+    flow: 'EXTRACTION',
+    pic: 'PA',
+    tower: 'Tower 1',
+    sheetName: 'CIP T1',
+    gid: '1098252307',
+    docNo: 'QF/PDQC/SS/010',
+  },
+  pa_cip_t2: {
+    key: 'pa_cip_t2',
+    label: 'CIP Sanitasi Alat T2',
+    flow: 'EXTRACTION',
+    pic: 'PA',
+    tower: 'Tower 2',
+    sheetName: 'CIP T2',
+    gid: '421463944',
+    docNo: 'QF/PDQC/SS/010',
+  },
+  pa_emp_t1: {
+    key: 'pa_emp_t1',
+    label: 'Environmental Swab T1 (Packing)',
+    flow: 'PACKING',
+    pic: 'PA',
+    tower: 'Tower 1',
+    sheetName: 'EMP T1',
+    gid: '1510652778',
+    docNo: 'F/QC.2.35',
+  },
+  pa_emp_t2: {
+    key: 'pa_emp_t2',
+    label: 'Environmental Swab T2 (Packing)',
+    flow: 'PACKING',
+    pic: 'PA',
+    tower: 'Tower 2',
+    sheetName: 'EMP T2',
+    gid: '566601296',
+    docNo: 'F/QC.2.35',
+  },
+  pa_abe_t1: {
+    key: 'pa_abe_t1',
+    label: 'Air Bacteria Exposed T1 (Packing)',
+    flow: 'PACKING',
+    pic: 'PA',
+    tower: 'Tower 1',
+    sheetName: 'ABE TI',
+    gid: '1253124175',
+    docNo: 'F/QC.2.5',
+  },
+  pa_abe_t2: {
+    key: 'pa_abe_t2',
+    label: 'Air Bacteria Exposed T2 (Packing)',
+    flow: 'PACKING',
+    pic: 'PA',
+    tower: 'Tower 2',
+    sheetName: 'ABE T2',
+    gid: '590380202',
+    docNo: 'F/QC.2.5',
+  },
+};
+
+module.exports = {
+  PA_TABLE_METADATA,
+};

@@ -281,6 +281,103 @@ describe('Traceability System - Automated Monitoring & Validation', () => {
     assert.strictEqual(isQcSheet('random_other_sheet'), false, 'Sheet non-QC tidak boleh dikenali sebagai QC');
   });
 
+  // ══════════════════════════════════════════════════════════════
+  // Test Case 9: Autentikasi Pengguna & Hak Akses (RBAC)
+  // ══════════════════════════════════════════════════════════════
+  test('TC-9: Autentikasi Pengguna & Hak Akses (Role-Based Access Control)', async () => {
+    const { loginUser } = require('../server/services/authService');
+    const { requireRole } = require('../server/middleware/auth');
+
+    // 1. Validasi 4 Akun Default
+    const roles = [
+      { user: 'admin', pass: 'admin123', expectedRole: 'admin' },
+      { user: 'operator.prod', pass: 'prod123', expectedRole: 'produksi' },
+      { user: 'analis.qc', pass: 'qc123', expectedRole: 'qc' },
+      { user: 'viewer', pass: 'view123', expectedRole: 'viewer' },
+    ];
+
+    for (const r of roles) {
+      const res = await loginUser(r.user, r.pass);
+      assert.ok(res.token, `Token JWT harus digenerate untuk user ${r.user}`);
+      assert.strictEqual(res.user.role, r.expectedRole, `Role untuk ${r.user} harus ${r.expectedRole}`);
+    }
+
+    // 2. Proteksi Password Salah
+    await assert.rejects(
+      async () => {
+        await loginUser('admin', 'wrong_password_xyz');
+      },
+      /Username atau password salah/,
+      'Password salah harus ditolak'
+    );
+
+    // 3. Middleware Role Enforcement Check
+    const adminCheck = requireRole('produksi');
+    let calledNext = false;
+    let errorStatus = null;
+
+    const mockReqAdmin = { user: { role: 'admin' } };
+    const mockRes = {
+      status: (code) => {
+        errorStatus = code;
+        return { json: () => {} };
+      },
+    };
+
+    // Admin selalu lolos
+    adminCheck(mockReqAdmin, mockRes, () => { calledNext = true; });
+    assert.strictEqual(calledNext, true, 'Role admin harus selalu diizinkan');
+
+    // Viewer ditolak jika butuh role produksi
+    calledNext = false;
+    errorStatus = null;
+    const mockReqViewer = { user: { role: 'viewer' } };
+    adminCheck(mockReqViewer, mockRes, () => { calledNext = true; });
+    assert.strictEqual(calledNext, false, 'Role viewer tidak boleh lolos ke aksi produksi');
+    assert.strictEqual(errorStatus, 403, 'Akses yang tidak diizinkan harus mengembalikan status HTTP 403');
+  });
+
+  // ══════════════════════════════════════════════════════════════
+  // Test Case 10: Integrasi 8 Tabel PA (Product Assurance)
+  // ══════════════════════════════════════════════════════════════
+  test('TC-10: Konfigurasi 8 Tabel PA (Product Assurance) & Integrasi Form F/QC/01.030', async () => {
+    const requiredPaTables = [
+      'pa_fwt_t1', 'pa_fwt_t2',
+      'pa_cip_t1', 'pa_cip_t2',
+      'pa_emp_t1', 'pa_emp_t2',
+      'pa_abe_t1', 'pa_abe_t2',
+    ];
+
+    assert.strictEqual(requiredPaTables.length, 8, 'Harus ada tepat 8 tabel PA');
+
+    for (const tbl of requiredPaTables) {
+      assert.ok(ALLOWED_TABLES.includes(tbl), `Tabel PA "${tbl}" wajib terdaftar di ALLOWED_TABLES`);
+      const cols = TABLE_COLUMNS_MAP[tbl];
+      assert.ok(Array.isArray(cols) && cols.length > 0, `Tabel PA "${tbl}" harus memiliki kolom di TABLE_COLUMNS_MAP`);
+      assert.ok(TABLE_METADATA[tbl], `Tabel PA "${tbl}" wajib terdaftar di TABLE_METADATA`);
+      assert.strictEqual(TABLE_METADATA[tbl].pic, 'PA', `PIC untuk tabel PA "${tbl}" harus bernilai "PA"`);
+    }
+
+    const { getWaterProcessFlow, getPaFlow } = require('../server/services/paService');
+    const water = await getWaterProcessFlow('Tower 1', '2026-08-22 08:00:00');
+    assert.ok(water, 'Water process data harus berhasil ditarik');
+    assert.ok(water.waktu_analisa, 'Waktu analisa water process harus tersedia');
+    assert.ok(water.ph, 'pH air proses harus tersedia');
+    assert.ok(water.tds, 'TDS air proses harus tersedia');
+    assert.strictEqual(water.e_coli, 'Negatif', 'E-Coli air proses harus Negatif');
+    assert.strictEqual(water.total_coliform, 'Negatif', 'Total Coliform air proses harus Negatif');
+
+    const paFlow = await getPaFlow('370', 2026, 'Tower 1', '2026-08-22 08:00:00', '2026-08-22');
+    assert.ok(paFlow, 'getPaFlow harus mengembalikan objek flow PA');
+    assert.ok(paFlow.water, 'paFlow harus memuat water process data');
+    assert.ok(paFlow.cip, 'paFlow harus memuat objek CIP sanitasi');
+    assert.ok(paFlow.cip.extraction, 'paFlow harus memuat CIP ekstraksi');
+    assert.ok(paFlow.cip.evaporation, 'paFlow harus memuat CIP evaporasi');
+    assert.ok(paFlow.cip.dryer, 'paFlow harus memuat CIP dryer');
+    assert.ok(paFlow.cip.rework, 'paFlow harus memuat CIP rework');
+  });
+
 });
+
 
 

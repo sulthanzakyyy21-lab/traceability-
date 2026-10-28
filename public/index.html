@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" data-theme="light">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -36,12 +36,23 @@
     };
   </script>
   <link rel="stylesheet" href="css/industrial-theme.css" />
-  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-  <script src="flowSections.js"></script>
-  <script src="js/pipelineData.js"></script>
-  <script src="js/clusterTraceStore.js"></script>
+  <script src="js/vue.global.js"></script>
+  <script>
+    if (typeof Vue === 'undefined') {
+      document.write('<script src="https://unpkg.com/vue@3/dist/vue.global.js"><\/script>');
+    }
+  </script>
+  <script src="js/authStore.js?v=4"></script>
+  <script src="flowSections.js?v=4"></script>
+  <script src="js/pipelineData.js?v=4"></script>
+  <script src="js/clusterTraceStore.js?v=4"></script>
 
   <style>
+    /* ── PREVENT FLASH OF UNCOMPILED TEMPLATE / MODALS BEFORE VUE MOUNTS ── */
+    [v-cloak] {
+      display: none !important;
+    }
+
     /* ── SCOPE TIMES NEW ROMAN EXCLUSIVELY TO OFFICIAL AUDIT PRINTABLE FORM ── */
     #form-document,
     #form-document *,
@@ -51,8 +62,8 @@
     }
 
     body {
-      background: #0b1120;
-      color: #f8fafc;
+      background: #fbfaf8;
+      color: #1c1917;
       font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
       line-height: 1.4;
     }
@@ -345,7 +356,19 @@
       background: #ffffff;
       border-right: 1px solid #e7e5e4;
       box-shadow: 1px 0 10px -2px rgba(60, 36, 21, 0.04);
-      transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: width 0.25s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s, border-color 0.2s;
+    }
+    .app-sidebar.is-collapsed {
+      background: transparent !important;
+      border-right: none !important;
+      box-shadow: none !important;
+    }
+    .app-sidebar nav {
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    .app-sidebar nav::-webkit-scrollbar {
+      display: none;
     }
     .sidebar-item {
       display: flex;
@@ -363,23 +386,38 @@
       border: 1px solid transparent;
       position: relative;
     }
-    .sidebar-item svg { width: 15px; height: 15px; }
+    .sidebar-item svg { width: 16px; height: 16px; }
     .sidebar-item-collapsed {
-      width: 36px;
-      height: 36px;
+      width: 40px !important;
+      height: 40px !important;
       padding: 0 !important;
       margin: 0 auto !important;
       justify-content: center !important;
-      border-radius: 10px !important;
+      border-radius: 12px !important;
+      border: none !important;
+      background: transparent !important;
+    }
+    .sidebar-item-collapsed svg {
+      width: 18px !important;
+      height: 18px !important;
     }
     .sidebar-item:hover {
       background: #f4ede6;
       color: #3c2415;
     }
+    .sidebar-item-collapsed:hover {
+      background: rgba(0, 0, 0, 0.06) !important;
+      color: #1c1917 !important;
+    }
     .sidebar-item.active {
       background: #4a2c1d;
       color: #ffffff;
       box-shadow: 0 2px 8px -2px rgba(74, 44, 29, 0.3);
+    }
+    .sidebar-item-collapsed.active {
+      background: #4a2c1d !important;
+      color: #ffffff !important;
+      box-shadow: 0 2px 8px -1px rgba(74, 44, 29, 0.28) !important;
     }
     .sidebar-item.active .sidebar-subtext {
       color: #d5c2ad !important;
@@ -389,21 +427,24 @@
     }
     .sidebar-gemini-tooltip {
       position: absolute;
-      left: 100%;
+      left: calc(100% + 10px);
       top: 50%;
-      transform: translateY(-50%) translateX(12px);
+      transform: translateY(-50%);
       background: #1c1917;
-      border: 1px solid rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.15);
       color: #ffffff;
-      padding: 6px 10px;
+      padding: 6px 11px;
       border-radius: 8px;
       white-space: nowrap;
       pointer-events: none;
       opacity: 0;
       visibility: hidden;
-      transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.35);
-      z-index: 100;
+      display: none;
+      box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.45);
+      z-index: 99999;
+      /* Tampil instan tanpa delay sama sekali */
+      transition: none !important;
+      animation: none !important;
     }
     .sidebar-gemini-tooltip::before {
       content: '';
@@ -415,9 +456,9 @@
       border-right-color: #1c1917;
     }
     .group:hover .sidebar-gemini-tooltip {
-      opacity: 1;
-      visibility: visible;
-      transform: translateY(-50%) translateX(8px);
+      opacity: 1 !important;
+      visibility: visible !important;
+      display: block !important;
     }
 
     /* Print styles */
@@ -443,17 +484,131 @@
   </style>
 </head>
 <body class="min-h-screen bg-[#fbfaf8] font-sans antialiased text-stone-900 ambient-pattern">
-<div id="app" class="min-h-screen flex flex-row">
+<div id="app" v-cloak class="min-h-screen">
 
-  <!-- ── SIDEBAR NAVIGATION (COLLAPSIBLE RAIL WITH HOVER TOOLTIPS) ── -->
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <!-- HALAMAN LOGIN UTAMA (SISTEM TRACEABILITY PT. SANTOS JAYA ABADI)-->
+  <!-- Ditampilkan saat pengguna belum terautentikasi                 -->
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <div
+    v-if="!authIsLoggedIn"
+    class="min-h-screen relative flex items-center justify-center p-4 sm:p-6 select-none bg-stone-900 bg-cover bg-center"
+    style="background-image: url('/images/login-bg.jpg');"
+  >
+    <!-- Dark Warm Coffee Tint Overlay for Maximum Readability & Contrast -->
+    <div class="absolute inset-0 bg-gradient-to-br from-stone-950/80 via-stone-900/65 to-black/85 backdrop-blur-[2px]"></div>
+
+    <!-- Login Card (Industrial Coffee Clean Design) -->
+    <div class="relative z-10 w-full max-w-md bg-white/95 backdrop-blur-md rounded-3xl border border-stone-200/80 shadow-2xl overflow-hidden p-6 sm:p-8 space-y-6">
+      
+      <!-- Brand & Title Header -->
+      <div class="text-center space-y-2.5">
+        <div class="w-16 h-16 rounded-2xl bg-[#4a2c1d] flex items-center justify-center font-black text-white text-lg shadow-md mx-auto tracking-wider border-2 border-[#6d422a]/40">
+          SJA
+        </div>
+        <div>
+          <h1 class="text-xl sm:text-2xl font-black text-stone-900 tracking-tight">PT. Santos Jaya Abadi</h1>
+          <p class="text-[11px] font-extrabold text-[#4a2c1d] uppercase tracking-widest mt-0.5">Sistem Traceability &amp; Penelusuran Mutu</p>
+        </div>
+        <p class="text-xs text-stone-500 max-w-xs mx-auto leading-relaxed">
+          Silakan masukkan kredensial akun resmi Anda untuk mengakses sistem traceability dan operasional mutu.
+        </p>
+      </div>
+
+      <!-- Login Form Credentials (Tanpa Isi Cepat) -->
+      <form @submit.prevent="submitLogin" class="space-y-4">
+        <div class="space-y-3.5">
+          <div>
+            <label class="block text-xs font-bold text-stone-700 mb-1.5 flex items-center justify-between">
+              <span>Username Pengguna</span>
+              <span class="text-[10px] text-stone-400 font-normal">Kredensial SJA</span>
+            </label>
+            <div class="relative">
+              <input
+                v-model="loginForm.username"
+                type="text"
+                required
+                autocomplete="username"
+                placeholder="Masukkan username Anda"
+                class="w-full pl-10 pr-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#4a2c1d]/30 focus:border-[#4a2c1d] focus:bg-white transition-all shadow-2xs"
+              />
+              <svg class="w-4 h-4 text-stone-400 absolute left-3.5 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-stone-700 mb-1.5 flex items-center justify-between">
+              <span>Kata Sandi (Password)</span>
+              <span class="text-[10px] text-stone-400 font-normal">Kerahasiaan terjaga</span>
+            </label>
+            <div class="relative">
+              <input
+                v-model="loginForm.password"
+                type="password"
+                required
+                autocomplete="current-password"
+                placeholder="Masukkan kata sandi Anda"
+                class="w-full pl-10 pr-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#4a2c1d]/30 focus:border-[#4a2c1d] focus:bg-white transition-all shadow-2xs"
+              />
+              <svg class="w-4 h-4 text-stone-400 absolute left-3.5 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Error Alert -->
+        <div v-if="loginError" class="p-3 rounded-xl bg-red-50 border border-red-200 text-red-800 text-xs font-medium flex items-center gap-2">
+          <svg class="w-4 h-4 text-red-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+          <span>{{ loginError }}</span>
+        </div>
+
+        <!-- Submit Button (Solid Primary) -->
+        <button
+          type="submit"
+          :disabled="loginLoading"
+          class="w-full py-3 bg-[#4a2c1d] hover:bg-[#3b2317] text-white font-bold rounded-xl text-xs sm:text-sm shadow-md transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
+        >
+          <svg v-if="loginLoading" class="w-4 h-4 spin text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10" stroke-width="4" stroke="currentColor" class="opacity-25"></circle>
+            <path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" class="opacity-75"></path>
+          </svg>
+          <span>{{ loginLoading ? 'Memverifikasi Kredensial...' : 'Masuk ke Sistem Traceability' }}</span>
+        </button>
+      </form>
+
+      <!-- Footer Info -->
+      <div class="pt-2 border-t border-stone-200/80 flex items-center justify-center gap-1.5 text-[11px] text-stone-400">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+        </svg>
+        <span>Sesi Terenkripsi &middot; PT. Santos Jaya Abadi &copy; 2026</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <!-- DASHBOARD UTAMA (SETELAH PENGGUNA TERAUTENTIKASI)             -->
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <div v-else class="min-h-screen flex flex-row">
+
+  <!-- ── SIDEBAR NAVIGATION (COLLAPSIBLE RAIL WITH INSTANT HOVER TOOLTIPS & ZERO BORDER WHEN COLLAPSED) ── -->
   <aside
-    :class="sidebarOpen ? 'w-64' : 'w-20'"
+    :class="sidebarOpen ? 'w-64 bg-white border-r border-stone-200 shadow-xs' : 'w-16 is-collapsed bg-transparent border-r-0 shadow-none'"
     class="app-sidebar no-print flex-shrink-0 flex flex-col sticky top-0 h-screen select-none z-30 transition-all duration-300 ease-in-out"
   >
     <!-- Brand / Toggle Header -->
     <div
-      class="h-16 flex items-center border-b border-stone-200/80 bg-white transition-all duration-300"
-      :class="sidebarOpen ? 'justify-between px-4' : 'justify-center px-0'"
+      class="h-16 flex items-center transition-all duration-300"
+      :class="sidebarOpen ? 'justify-between px-4 border-b border-stone-200/80 bg-white' : 'justify-center px-0 border-b-0 bg-transparent'"
     >
       <!-- Expanded Brand Header -->
       <template v-if="sidebarOpen">
@@ -467,9 +622,9 @@
           </div>
         </div>
         <button
+          type="button"
           @click="sidebarOpen = false"
           class="text-stone-400 hover:text-stone-800 p-1.5 rounded-lg hover:bg-stone-100 transition-all cursor-pointer flex-shrink-0"
-          title="Collapse Sidebar"
         >
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
             <polyline points="15 18 9 12 15 6"></polyline>
@@ -477,28 +632,30 @@
         </button>
       </template>
 
-      <!-- Collapsed Toggle Button -->
+      <!-- Collapsed Toggle Button (Clean Floating Icon, No Box Border, No White Background) -->
       <template v-else>
-        <button
-          @click="sidebarOpen = true"
-          class="w-10 h-10 rounded-xl bg-stone-50 hover:bg-[#4a2c1d] text-[#4a2c1d] hover:text-white flex items-center justify-center transition-all duration-200 cursor-pointer shadow-2xs group relative border border-stone-200"
-          title="Expand Navigation"
-        >
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-            <line x1="3" y1="12" x2="21" y2="12"></line>
-            <line x1="3" y1="6" x2="21" y2="6"></line>
-            <line x1="3" y1="18" x2="21" y2="18"></line>
-          </svg>
+        <div class="relative group">
+          <button
+            type="button"
+            @click="sidebarOpen = true"
+            class="w-10 h-10 rounded-xl bg-transparent hover:bg-stone-200/60 text-stone-600 hover:text-stone-950 flex items-center justify-center transition-colors cursor-pointer border-0"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <line x1="3" y1="12" x2="21" y2="12"></line>
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+          </button>
           <div class="sidebar-gemini-tooltip">
-            <div class="font-bold text-xs text-white">Expand Navigation</div>
+            <div class="font-bold text-xs text-white">Buka Navigasi</div>
             <div class="text-[10px] text-stone-300 font-normal">PT. Santos Jaya Abadi</div>
           </div>
-        </button>
+        </div>
       </template>
     </div>
 
     <!-- Navigation Menu Items -->
-    <nav class="flex-1 py-4 px-2 space-y-1.5 overflow-y-auto overflow-x-hidden">
+    <nav class="flex-1 py-4 px-2 space-y-2 overflow-y-auto overflow-x-hidden bg-transparent">
       <div v-show="sidebarOpen" class="px-2 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-stone-400">
         Main Menu
       </div>
@@ -535,7 +692,7 @@
       <div class="relative group">
         <button
           type="button"
-          @click="activeTab = 'pipeline'"
+          @click="navigateToPipeline"
           :class="[
             activeTab === 'pipeline' ? 'active' : '',
             !sidebarOpen ? 'sidebar-item-collapsed' : ''
@@ -551,12 +708,12 @@
           </svg>
           <div v-if="sidebarOpen" class="flex-1 min-w-0">
             <div class="truncate">Batch Traceability</div>
-            <div class="text-[10px] text-stone-500 sidebar-subtext font-normal truncate">End-to-End Journey</div>
+            <div class="text-[10px] text-stone-500 sidebar-subtext font-normal truncate">Direktori &amp; Penelusuran</div>
           </div>
         </button>
         <div v-if="!sidebarOpen" class="sidebar-gemini-tooltip">
           <div class="font-bold text-xs text-white">Batch Traceability</div>
-          <div class="text-[10px] text-stone-300 font-normal">End-to-End Journey</div>
+          <div class="text-[10px] text-stone-300 font-normal">Direktori &amp; Penelusuran</div>
         </div>
       </div>
 
@@ -564,7 +721,7 @@
       <div class="relative group">
         <button
           type="button"
-          @click="activeTab = 'report'"
+          @click="navigateToReport"
           :class="[
             activeTab === 'report' ? 'active' : '',
             !sidebarOpen ? 'sidebar-item-collapsed' : ''
@@ -646,8 +803,28 @@
       </div>
     </nav>
 
-    <!-- Sidebar Bottom Status -->
-    <div class="p-3 border-t border-stone-200/80 bg-stone-50 text-[11px]">
+    <!-- Sidebar Bottom Status & Logout -->
+    <div
+      class="p-3 transition-colors space-y-2.5"
+      :class="sidebarOpen ? 'border-t border-stone-200/80 bg-stone-50 text-[11px]' : 'border-t-0 bg-transparent text-[11px]'"
+    >
+      <!-- Logout Button (Sidebar Expanded) -->
+      <button
+        v-if="sidebarOpen && authIsLoggedIn"
+        type="button"
+        @click="logoutAuth"
+        class="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl border border-red-200/80 bg-red-50/70 hover:bg-red-100/80 hover:border-red-300 text-red-700 font-bold text-xs transition-all shadow-2xs cursor-pointer active:scale-98"
+        title="Keluar dari sistem dan kembali ke Halaman Login"
+      >
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+          <polyline points="16 17 21 12 16 7"></polyline>
+          <line x1="21" y1="12" x2="9" y2="12"></line>
+        </svg>
+        <span>Keluar (Logout)</span>
+      </button>
+
+      <!-- Database Status (Sidebar Expanded) -->
       <div v-if="sidebarOpen" class="space-y-1">
         <div class="flex items-center justify-between text-stone-500 text-[10.5px]">
           <span>Database:</span>
@@ -660,11 +837,34 @@
           db_traceability_sja @ MySQL
         </div>
       </div>
-      <div v-else class="relative group flex justify-center py-1">
-        <span class="w-2.5 h-2.5 rounded-full inline-block cursor-pointer shadow-xs" :class="dbConnected ? 'bg-emerald-500 ring-2 ring-emerald-500/20' : 'bg-red-500 ring-2 ring-red-500/20'"></span>
-        <div class="sidebar-gemini-tooltip">
-          <div class="font-bold text-xs text-white">Database: {{ dbConnected ? 'Active' : 'Offline' }}</div>
-          <div class="text-[10px] text-stone-300 font-normal font-mono">db_traceability_sja @ MySQL</div>
+
+      <!-- Collapsed State: Icons for Logout and DB -->
+      <div v-else class="flex flex-col items-center gap-2 py-1">
+        <!-- Logout Button (Sidebar Collapsed) -->
+        <button
+          v-if="authIsLoggedIn"
+          type="button"
+          @click="logoutAuth"
+          class="relative group w-8 h-8 rounded-lg flex items-center justify-center text-red-600 hover:text-red-700 hover:bg-red-100/70 border border-transparent hover:border-red-200 transition-colors cursor-pointer"
+          title="Keluar (Logout)"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+            <polyline points="16 17 21 12 16 7"></polyline>
+            <line x1="21" y1="12" x2="9" y2="12"></line>
+          </svg>
+          <div class="sidebar-gemini-tooltip">
+            <div class="font-bold text-xs text-white">Keluar (Logout)</div>
+            <div class="text-[10px] text-red-200 font-normal">Akhiri sesi akun saat ini</div>
+          </div>
+        </button>
+
+        <div class="relative group flex justify-center py-1">
+          <span class="w-2.5 h-2.5 rounded-full inline-block cursor-pointer shadow-xs transition-transform hover:scale-125" :class="dbConnected ? 'bg-emerald-500 ring-2 ring-emerald-500/20' : 'bg-red-500 ring-2 ring-red-500/20'"></span>
+          <div class="sidebar-gemini-tooltip">
+            <div class="font-bold text-xs text-white">Database: {{ dbConnected ? 'Active' : 'Offline' }}</div>
+            <div class="text-[10px] text-stone-300 font-normal font-mono">db_traceability_sja @ MySQL</div>
+          </div>
         </div>
       </div>
     </div>
@@ -676,22 +876,24 @@
     <!-- Topbar Header -->
     <header class="h-16 bg-white/90 backdrop-blur-md border-b border-stone-200 text-stone-900 no-print flex items-center justify-between px-4 sm:px-6 z-20 shadow-xs flex-shrink-0">
       <div class="flex items-center gap-3">
-        <button
-          @click="sidebarOpen = !sidebarOpen"
-          class="text-stone-500 hover:text-stone-900 p-2 rounded-lg hover:bg-stone-100 transition-colors cursor-pointer flex items-center justify-center"
-          :title="sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'"
-        >
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-            <line x1="3" y1="12" x2="21" y2="12"></line>
-            <line x1="3" y1="6" x2="21" y2="6"></line>
-            <line x1="3" y1="18" x2="21" y2="18"></line>
-          </svg>
-        </button>
         <div class="flex items-center gap-2">
-          <span class="text-xs font-bold uppercase tracking-wider text-stone-900">
+          <!-- Interactive Breadcrumb: Batch Traceability returns to Directory -->
+          <button
+            v-if="activeTab === 'pipeline'"
+            type="button"
+            @click="navigateToPipeline"
+            class="text-xs font-extrabold uppercase tracking-wider text-stone-900 hover:text-[#4a2c1d] transition-colors cursor-pointer flex items-center gap-1.5 group text-left"
+            title="Klik untuk kembali ke Direktori Work Order"
+          >
+            <span class="group-hover:underline">Batch Traceability</span>
+            <span v-if="activeSession" class="text-stone-400 font-normal text-[11px] normal-case flex items-center gap-1">
+              <span>&rsaquo;</span>
+              <span class="font-extrabold text-[#4a2c1d] bg-amber-50 border border-amber-200/90 px-1.5 py-0.5 rounded font-mono">{{ activeSession.code || activeSession.id }}</span>
+            </span>
+          </button>
+          <span v-else class="text-xs font-bold uppercase tracking-wider text-stone-900">
             {{
               activeTab === 'dashboard' ? 'Dashboard' :
-              activeTab === 'pipeline' ? 'Batch Traceability' :
               activeTab === 'report' ? 'Quality Audit Report' :
               activeTab === 'sync' ? 'Data Ingestion' : 'Data Explorer'
             }}
@@ -711,7 +913,7 @@
       <div class="flex items-center gap-3 text-xs">
         <button
           v-if="activeTab === 'pipeline'"
-          @click="activeTab = 'report'"
+          @click="navigateToReport"
           class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-stone-100 hover:bg-stone-200 border border-stone-300 text-stone-800 font-bold rounded-lg shadow-2xs transition-all cursor-pointer text-xs btn-action"
         >
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -737,6 +939,34 @@
         <div class="flex items-center gap-1.5 px-2.5 py-1 bg-stone-100 border border-stone-200 rounded-lg text-stone-700 text-[11px] font-mono">
           <span :class="dbConnected ? 'bg-emerald-500' : 'bg-red-500'" class="w-2 h-2 rounded-full inline-block"></span>
           <span class="font-semibold">MySQL SJA</span>
+        </div>
+
+        <!-- User Role Profile Badge & Login Trigger -->
+        <div class="flex items-center gap-2 pl-2 border-l border-stone-200">
+          <button
+            type="button"
+            @click="openLoginModal"
+            class="flex items-center gap-2 px-2.5 py-1 rounded-lg border border-stone-200 hover:border-stone-400 bg-stone-50 hover:bg-white cursor-pointer transition-all shadow-2xs group"
+            :title="'Ganti Akun / Login (Role: ' + authRole.toUpperCase() + ')'"
+          >
+            <span
+              class="px-1.5 py-0.5 rounded text-[10px] font-extrabold uppercase tracking-wide border shadow-2xs"
+              :class="{
+                'bg-red-100 text-red-900 border-red-300': authRole === 'admin',
+                'bg-blue-100 text-blue-900 border-blue-300': authRole === 'produksi',
+                'bg-amber-100 text-amber-900 border-amber-300': authRole === 'qc',
+                'bg-stone-200 text-stone-800 border-stone-300': authRole === 'viewer'
+              }"
+            >
+              {{ authRole === 'admin' ? 'SUPER ADMIN' : authRole === 'produksi' ? 'PIC PRODUKSI' : authRole === 'qc' ? 'PIC QC' : 'VIEWER' }}
+            </span>
+            <span class="text-xs font-semibold text-stone-800 max-w-[120px] truncate hidden md:inline">
+              {{ authUser?.full_name || 'Tamu / Auditor' }}
+            </span>
+            <svg class="w-3.5 h-3.5 text-stone-400 group-hover:text-stone-700 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </button>
         </div>
       </div>
     </header>
@@ -1134,12 +1364,13 @@
                     </svg>
                   </button>
 
-                  <!-- Hapus Sesi -->
+                  <!-- Hapus Sesi (Khusus Super Admin) -->
                   <button
+                    v-if="authRole === 'admin'"
                     type="button"
                     @click="deleteSession(session.id)"
                     class="clean-btn g text-xs py-2 px-2.5 shadow-2xs hover:bg-red-50 hover:text-red-700 text-stone-400"
-                    title="Hapus sesi work order ini"
+                    title="Hapus sesi work order ini (Khusus Super Admin)"
                   >
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                       <polyline points="3 6 5 6 21 6"></polyline>
@@ -1157,30 +1388,37 @@
       <div v-else class="space-y-4">
         
         <!-- Bar Navigasi Sesi Aktif & Switcher -->
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-1">
-          <div class="flex items-center gap-2 flex-wrap">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 pt-0.5">
+          <div class="flex items-center gap-2.5 flex-wrap">
+            <!-- Tombol Navigasi Kembali yang Menonjol & Elegan -->
             <button
               type="button"
               @click="backToWorkOrderList"
-              class="clean-btn g text-xs py-1.5 px-3 flex items-center gap-1.5 hover:bg-stone-100 font-bold text-stone-800"
-              title="Kembali ke daftar seluruh Work Order Traceability"
+              class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#4a2c1d] hover:bg-[#3c2415] text-white font-bold text-xs shadow-sm hover:shadow transition-all cursor-pointer group shrink-0"
+              title="Kembali ke Direktori Seluruh Sesi Work Order Traceability"
             >
-              <span>&larr;</span>
-              <span>Kembali ke Daftar Work Order</span>
+              <svg class="w-4 h-4 text-amber-200 transition-transform group-hover:-translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              <span>Kembali ke Direktori Work Order</span>
             </button>
+
             <span class="text-stone-300 hidden sm:inline">&bull;</span>
-            <div class="flex items-center gap-1.5 text-xs text-stone-600">
-              <span>Sesi Aktif:</span>
-              <span class="font-bold text-stone-900 bg-stone-100 border border-stone-200 px-2 py-0.5 rounded">
+
+            <!-- Sesi Aktif Info Badge -->
+            <div class="flex items-center gap-1.5 text-xs text-stone-600 bg-white border border-stone-200/90 rounded-xl px-2.5 py-1.5 shadow-2xs">
+              <span class="text-stone-400 font-semibold">Sesi:</span>
+              <span class="font-extrabold text-stone-900 bg-stone-100 border border-stone-300 px-2 py-0.5 rounded text-[11px] font-mono">
                 {{ activeSession?.code || activeSession?.id }}
               </span>
-              <span class="text-stone-400">({{ activeSession?.jenis }} &bull; {{ activeSession?.jenis === 'Backward' ? activeSession?.noBatch : activeSession?.forward?.namaBahan }})</span>
+              <span class="text-stone-500 font-medium hidden md:inline">({{ activeSession?.jenis }} &bull; {{ activeSession?.jenis === 'Backward' ? activeSession?.noBatch : activeSession?.forward?.namaBahan }})</span>
             </div>
+
             <button
               v-if="activeSession"
               type="button"
               @click="openSessionReport(activeSession)"
-              class="clean-btn g text-xs py-1.5 px-3 flex items-center gap-1.5 hover:bg-stone-100 font-bold text-stone-800 ml-2"
+              class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-stone-50 border border-stone-200 text-stone-700 hover:text-stone-900 font-bold text-xs shadow-2xs transition-all cursor-pointer"
               title="Buka Dokumen Laporan Form F/QC/01.030 untuk sesi ini"
             >
               <span>Dokumen F/QC/01.030 &rarr;</span>
@@ -1188,253 +1426,287 @@
           </div>
 
           <!-- Dropdown Ganti Sesi Cepat -->
-          <div v-if="traceabilitySessions.length > 1" class="flex items-center gap-1.5 text-xs">
-            <span class="text-stone-500 font-medium">Ganti Sesi:</span>
+          <div v-if="traceabilitySessions.length > 1" class="flex items-center gap-2 text-xs shrink-0">
+            <span class="text-stone-500 font-semibold">Ganti Sesi:</span>
             <select
               :value="activeSessionId"
               @change="openSession($event.target.value)"
-              class="bg-white border border-stone-200 rounded-lg text-xs font-semibold px-2 py-1 text-stone-800 outline-none focus:border-[#4a2c1d]"
+              class="bg-white border border-stone-200 rounded-xl text-xs font-semibold px-2.5 py-1.5 text-stone-800 outline-none focus:border-[#4a2c1d] shadow-2xs"
             >
               <option v-for="s in traceabilitySessions" :key="s.id" :value="s.id">
-                {{ s.code || s.id }} - {{ s.jenis }} ({{ s.noBatch || s.forward?.namaBahan }}) [{{ s.status }}]
+                {{ s.code || s.id }} &bull; {{ s.jenis }} ({{ s.noBatch || s.forward?.namaBahan }}) [{{ s.status }}]
               </option>
             </select>
           </div>
         </div>
 
-      <!-- ── CLEAN HEADER BATCH & PENCARIAN (INFORMASI AWAL & EXECUTION TIMER) ── -->
-      <div class="clean-card mb-4 border-l-4" :class="auditTimer.status === 'running' ? 'border-l-emerald-600' : 'border-l-[#4a2c1d]'">
-        
-        <!-- Baris 1: Header Informasi Awal, Live Timer & Tim Approval -->
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-3.5 border-b border-[var(--bd)]">
-          <div class="flex items-center gap-3 min-w-0 flex-1">
-            <div class="w-9 h-9 rounded-xl bg-amber-900/10 border border-amber-900/20 flex items-center justify-center text-amber-900 shrink-0 font-bold">
-              <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-              </svg>
+      <!-- ── INDUSTRIAL CLEAN BATCH CONTROL & OVERVIEW PANEL (COFFEE GRADIENT THEME) ── -->
+      <div
+        class="clean-card mb-6 p-6 sm:p-7 rounded-3xl border border-[#5a331f]/70 shadow-2xl text-white relative overflow-hidden"
+        style="background: linear-gradient(135deg, #22120a 0%, #341b10 40%, #462516 75%, #2c160c 100%);"
+      >
+        <!-- Subtle Ambient Coffee Glow Highlights -->
+        <div class="pointer-events-none absolute -top-24 -right-24 w-80 h-80 rounded-full bg-amber-500/10 blur-3xl"></div>
+        <div class="pointer-events-none absolute -bottom-24 -left-24 w-80 h-80 rounded-full bg-[#5a331f]/25 blur-3xl"></div>
+
+        <!-- Baris 1: Header Ringkas, Tenang & Minimalis -->
+        <div class="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-5 border-b border-white/10">
+          <div>
+            <div class="flex items-center gap-2.5 flex-wrap">
+              <h2 class="text-base sm:text-lg font-bold text-white tracking-tight">
+                Penelusuran Batch
+                <span v-if="traceForm.noBatch" class="text-amber-300 font-mono font-extrabold ml-1">#{{ traceForm.noBatch }}</span>
+              </h2>
+              <span class="px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-white/10 text-amber-100 border border-white/15 backdrop-blur-xs">
+                Form F/QC/01.030
+              </span>
             </div>
-            <div class="min-w-0">
-              <div class="flex items-center gap-2 flex-wrap">
-                <h2 class="text-sm font-extrabold text-[var(--tx)] truncate">Informasi Pelaksanaan Traceability</h2>
-                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300 shrink-0">
-                  Form F/QC/01.030
-                </span>
-                <span class="text-xs text-[var(--mu)] hidden sm:inline">&bull; Area: <strong class="text-stone-800">{{ auditSession.area }}</strong></span>
-                <span class="text-xs text-[var(--mu)] hidden md:inline">&bull; PIC: <strong class="text-stone-800">{{ auditSession.picPelaksana }}</strong></span>
-              </div>
-              <p class="text-[11px] text-[var(--mu)] mt-0.5 truncate">
-                {{ auditSession.scenario }} &bull; Tanggal: {{ auditSession.tanggalPelaksanaan }}
-              </p>
-            </div>
+            <p class="text-xs text-stone-300 mt-1 flex items-center gap-2 flex-wrap">
+              <span>{{ auditSession.area || 'SJA Sukodono' }}</span>
+              <span class="text-stone-500">&bull;</span>
+              <span>PIC: <strong class="text-white font-semibold">{{ auditSession.picPelaksana || '-' }}</strong></span>
+              <span class="text-stone-500">&bull;</span>
+              <span class="text-stone-300">{{ auditSession.tanggalPelaksanaan }}</span>
+            </p>
           </div>
 
-          <!-- Bagian Kanan: Timer Badge & Tombol Tim & Approval (Bersih, Rapi & Bebas Tabrakan) -->
-          <div class="flex items-center gap-2 shrink-0">
-            <!-- Live Stopwatch Badge -->
+          <!-- Kanan: Status Timer & Tim Approval -->
+          <div class="flex items-center gap-2 shrink-0 self-start sm:self-auto">
+            <!-- Subtle Status Pill -->
             <div
-              class="flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-mono font-bold transition-all shadow-2xs shrink-0"
+              class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border transition-colors"
               :class="{
-                'bg-emerald-50 text-emerald-900 border-emerald-300': auditTimer.status === 'running',
-                'bg-blue-50 text-blue-900 border-blue-200': auditTimer.status === 'completed',
-                'bg-stone-100 text-stone-700 border-stone-200': auditTimer.status === 'idle'
+                'bg-emerald-950/80 text-emerald-300 border-emerald-500/40': auditTimer.status === 'running',
+                'bg-white/15 text-white border-white/20': auditTimer.status === 'completed',
+                'bg-black/35 text-stone-300 border-white/15': auditTimer.status === 'idle'
               }"
             >
               <span v-if="auditTimer.status === 'running'" class="relative flex h-2 w-2">
                 <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-600"></span>
+                <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
               </span>
-              <svg v-else class="w-3.5 h-3.5 text-stone-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
-              </svg>
-              <span v-if="auditTimer.status === 'running'">
-                Berjalan: {{ formatStopwatch(auditTimer.elapsedSeconds) }} <span class="text-[10px] opacity-75 font-normal">(Start {{ auditSessionWaktuStart }})</span>
+              <span v-else class="w-1.5 h-1.5 rounded-full" :class="auditTimer.status === 'completed' ? 'bg-amber-400' : 'bg-stone-500'"></span>
+              
+              <span v-if="auditTimer.status === 'running'" class="font-mono font-semibold">
+                {{ formatStopwatch(auditTimer.elapsedSeconds) }}
               </span>
               <span v-else-if="auditTimer.status === 'completed'">
-                Total: {{ auditSessionTotalWaktu }} <span class="text-[10px] opacity-75 font-normal">({{ auditSessionWaktuStart }} - {{ auditSessionWaktuEnd }})</span>
-                <span class="ml-1 px-1.5 py-0.5 rounded text-[9.5px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">✓ Selesai Otomatis</span>
+                Total: <strong class="font-mono text-amber-200 font-bold">{{ auditSessionTotalWaktu }}</strong>
               </span>
               <span v-else>
-                Waktu: Belum Dimulai (Start {{ auditSessionWaktuStart }})
+                Siap Dimulai
               </span>
             </div>
 
-            <!-- Tombol Dialog Tim & Approval (Ghost/Outline - Tidak Menyaingi Tombol Mulai) -->
+            <!-- Tim & Approval Ghost Link -->
             <button
               type="button"
               @click="showAuditDetails = true"
-              class="clean-btn g text-xs py-1.5 px-3 flex items-center gap-1.5 shadow-2xs hover:bg-stone-100"
-              title="Buka rincian informasi auditor, auditee, dan skenario audit"
+              class="px-3 py-1 rounded-lg text-xs font-semibold text-stone-200 hover:text-white bg-white/10 hover:bg-white/20 border border-white/15 transition-all cursor-pointer"
+              title="Buka rincian tim pelaksana audit"
             >
-              <svg class="w-3.5 h-3.5 text-stone-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
-              </svg>
-              <span>Tim &amp; Approval</span>
+              Tim &amp; Approval &rarr;
             </button>
           </div>
         </div>
 
-        <!-- Baris 2: Pemilihan Arah (Backward/Forward) & Utilitas Dokumen -->
-        <div class="pt-3.5 space-y-3">
-          
-          <!-- Bar Pemilihan Mode & Akses Dokumen / Preset -->
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
-            <div class="flex items-center gap-2 flex-wrap">
-              <span class="text-xs font-bold text-stone-700">Arah Penelusuran:</span>
-              <div class="inline-flex bg-stone-100 p-1 rounded-xl border border-stone-200">
-                <button
-                  type="button"
-                  @click="auditSession.jenis = 'Backward'"
-                  :class="auditSession.jenis === 'Backward' ? 'bg-[#4a2c1d] text-white font-bold shadow-2xs' : 'text-stone-600 hover:text-stone-900 font-medium'"
-                  class="px-3.5 py-1.5 rounded-lg text-xs transition-all cursor-pointer flex items-center gap-1.5"
-                >
-                  <span>⟵ Backward (Telusur Mundur)</span>
-                  <span class="text-[10px] opacity-75 font-normal hidden md:inline">Produk Jadi ke Bahan</span>
-                </button>
-                <button
-                  type="button"
-                  @click="auditSession.jenis = 'Forward'"
-                  :class="auditSession.jenis === 'Forward' ? 'bg-[#4a2c1d] text-white font-bold shadow-2xs' : 'text-stone-600 hover:text-stone-900 font-medium'"
-                  class="px-3.5 py-1.5 rounded-lg text-xs transition-all cursor-pointer flex items-center gap-1.5"
-                >
-                  <span>Forward (Telusur Maju) ⟶</span>
-                  <span class="text-[10px] opacity-75 font-normal hidden md:inline">Bahan ke Produk Jadi</span>
-                </button>
-              </div>
-            </div>
+        <!-- Baris 2: Pemilihan Arah & Toolbar Pencarian Bersih -->
+        <div class="pt-5 space-y-4">
+          <!-- Sub-baris: Direction Toggle & Preset -->
+          <div class="flex items-center justify-between gap-3 flex-wrap">
+            <!-- Segmented Control with Smooth & Slow Sliding Pill (Coffee Brown) -->
+            <div class="relative inline-flex items-center p-1 rounded-xl bg-black/40 border border-amber-900/40 backdrop-blur-xs select-none">
+              <!-- Animated Sliding Pill Indicator (Coklat Gradasi Kopi, Smooth & Slow) -->
+              <div
+                class="absolute top-1 bottom-1 rounded-lg bg-gradient-to-r from-[#7a4325] via-[#63331a] to-[#4e2612] shadow-md border border-amber-500/35 transition-all duration-700 ease-[cubic-bezier(0.25,1,0.3,1)] pointer-events-none"
+                :style="{
+                  left: auditSession.jenis === 'Backward' ? '4px' : 'calc(50% + 2px)',
+                  width: 'calc(50% - 6px)'
+                }"
+              ></div>
 
-            <!-- Utilitas Navigasi Dokumen & Preset Shortcut (Rapi, Sejajar, Tidak Berantakan) -->
-            <div class="flex items-center gap-2 flex-wrap self-start sm:self-auto">
-              <!-- Preset Shortcut -->
+              <!-- Backward Button -->
               <button
                 type="button"
-                @click="loadPresetAudit"
-                class="text-xs font-semibold text-amber-900 hover:underline cursor-pointer flex items-center gap-1 py-1"
-                title="Muat data contoh simulasi audit eksternal FSSC batch A370/26"
+                @click="auditSession.jenis = 'Backward'"
+                class="relative z-10 inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg transition-colors duration-500 cursor-pointer text-xs font-bold text-center"
+                :class="auditSession.jenis === 'Backward' ? 'text-amber-100' : 'text-stone-400 hover:text-stone-200'"
               >
-                <span>Preset Simulasi FSSC (A370/26)</span>
-                <span>&rarr;</span>
+                <span class="text-xs transition-transform duration-500" :class="auditSession.jenis === 'Backward' ? '-translate-x-0.5' : ''">⟵</span>
+                <span>Backward</span>
+                <span class="text-[10.5px] font-normal opacity-80 hidden sm:inline">(Produk Jadi &rarr; Bahan)</span>
               </button>
 
-              <span class="text-stone-300 hidden sm:inline">&bull;</span>
-
-              <!-- Tombol Navigasi Laporan & Cetak -->
+              <!-- Forward Button -->
               <button
                 type="button"
-                @click="activeTab = 'report'"
-                class="clean-btn g text-xs py-1 px-2.5 shadow-2xs flex items-center gap-1.5 hover:bg-stone-100"
-                title="Buka Lembar Dokumen Laporan Resmi Form F/QC/01.030"
+                @click="auditSession.jenis = 'Forward'"
+                class="relative z-10 inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg transition-colors duration-500 cursor-pointer text-xs font-bold text-center"
+                :class="auditSession.jenis === 'Forward' ? 'text-amber-100' : 'text-stone-400 hover:text-stone-200'"
               >
-                <svg class="w-3.5 h-3.5 text-stone-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                  <polyline points="14 2 14 8 20 8"></polyline>
-                </svg>
-                <span>Buka Laporan</span>
-              </button>
-              <button
-                type="button"
-                @click="printForm"
-                class="clean-btn g text-xs py-1 px-2.5 shadow-2xs flex items-center gap-1.5 hover:bg-stone-100"
-                title="Cetak Formulir Audit F/QC/01.030"
-              >
-                <svg class="w-3.5 h-3.5 text-stone-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                  <polyline points="6 9 6 2 18 2 18 9"></polyline>
-                  <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
-                  <rect x="6" y="14" width="12" height="8"></rect>
-                </svg>
-                <span>Cetak Form</span>
+                <span>Forward</span>
+                <span class="text-xs transition-transform duration-500" :class="auditSession.jenis === 'Forward' ? 'translate-x-0.5' : ''">⟶</span>
+                <span class="text-[10.5px] font-normal opacity-80 hidden sm:inline">(Bahan Mentah &rarr; FG)</span>
               </button>
             </div>
+
+            <!-- Preset Shortcut Text -->
+            <button
+              type="button"
+              @click="loadPresetAudit"
+              class="text-xs font-medium text-amber-300 hover:text-amber-200 hover:underline cursor-pointer flex items-center gap-1.5 transition-colors"
+              title="Muat data contoh simulasi audit batch A370/26"
+            >
+              <span>Preset Simulasi FSSC (A370/26)</span>
+              <span>&rarr;</span>
+            </button>
           </div>
 
-          <!-- Bar Pencarian & Tombol Eksekusi (Full Width, Lega, Tanpa Tabrakan) -->
-          <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
-            
-            <!-- Input Bar -->
-            <div class="flex-1 bg-white border-2 border-stone-200 focus-within:border-[#4a2c1d] rounded-xl p-1.5 flex items-center gap-2 shadow-xs transition-colors min-w-0">
-              
-              <!-- Mode Backward: Input Batch FG -->
-              <template v-if="auditSession.jenis === 'Backward'">
-                <div class="flex-1 flex items-center gap-2.5 px-3 min-w-0">
-                  <svg class="w-4 h-4 text-stone-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                    <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                  </svg>
-                  <input
-                    v-model="traceForm.noBatch"
-                    type="text"
-                    placeholder="Masukkan Nomor Batch Finished Good (contoh: A370/26 atau 370)"
-                    class="w-full bg-transparent border-0 text-stone-900 placeholder-stone-400 text-sm font-bold focus:outline-none uppercase"
-                    @keydown.enter.prevent="startTraceabilityAudit"
-                    @keyup.enter.prevent="startTraceabilityAudit"
-                  />
-                </div>
-                <!-- Tower Selector -->
-                <div class="flex items-center bg-stone-100 border border-stone-200 rounded-lg p-1 shrink-0">
-                  <button type="button" @click="traceForm.tower = '1'" :class="traceForm.tower === '1' ? 'bg-[#4a2c1d] text-white font-bold shadow-2xs' : 'text-stone-600 hover:text-stone-900'" class="px-3 py-1 rounded text-xs transition-all cursor-pointer">Tower 1</button>
-                  <button type="button" @click="traceForm.tower = '2'" :class="traceForm.tower === '2' ? 'bg-[#4a2c1d] text-white font-bold shadow-2xs' : 'text-stone-600 hover:text-stone-900'" class="px-3 py-1 rounded text-xs transition-all cursor-pointer">Tower 2</button>
-                </div>
-              </template>
+          <!-- Main Input Row (Satu Baris, Teratur, Spasi Lega) -->
+          <div class="flex flex-col md:flex-row items-stretch md:items-center gap-2.5">
+            <!-- Mode Backward: Input Batch FG -->
+            <template v-if="auditSession.jenis === 'Backward'">
+              <div class="flex-1 relative flex items-center">
+                <svg class="w-4 h-4 text-stone-400 absolute left-3.5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                  <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input
+                  v-model="traceForm.noBatch"
+                  type="text"
+                  placeholder="Masukkan Nomor Batch Finished Good (contoh: A370/26)"
+                  class="w-full pl-10 pr-4 py-2.5 bg-white border border-stone-200 focus:border-amber-400 focus:ring-2 focus:ring-amber-500/20 rounded-xl text-stone-900 placeholder-stone-400 text-sm font-semibold transition-all uppercase outline-none shadow-xs"
+                  @keydown.enter.prevent="startTraceabilityAudit"
+                  @keyup.enter.prevent="startTraceabilityAudit"
+                />
+              </div>
 
-              <!-- Mode Forward: Input Bahan Mentah -->
-              <template v-else>
-                <div class="flex-1 flex items-center gap-2.5 px-3 min-w-0">
-                  <svg class="w-4 h-4 text-stone-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                    <path d="M22 8.35V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8.35A2 2 0 0 1 3.26 6.5l8-3.2a2 2 0 0 1 1.48 0l8 3.2A2 2 0 0 1 22 8.35Z"/><path d="M6 18h12"/><path d="M6 14h12"/>
-                  </svg>
-                  <input
-                    v-model="auditSession.forward.namaBahan"
-                    type="text"
-                    placeholder="Nama Bahan / Kode Lot Kedatangan (contoh: Biji Kopi Robusta Mentah)"
-                    class="w-full bg-transparent border-0 text-stone-900 placeholder-stone-400 text-sm font-bold focus:outline-none"
-                    @keydown.enter.prevent="startTraceabilityAudit"
-                  />
-                </div>
-                <div class="px-3 py-1 bg-stone-50 border border-stone-200 rounded-lg text-xs text-stone-600 hidden md:flex items-center gap-1.5 shrink-0">
-                  <span class="font-bold text-stone-700">Supplier:</span>
-                  <input v-model="auditSession.forward.supplierBahan" class="bg-transparent font-medium text-stone-900 outline-none w-36" />
-                </div>
-              </template>
-            </div>
+              <!-- Tower Selector: Chip Rapi Mandiri -->
+              <div class="inline-flex bg-black/40 p-1 rounded-xl border border-amber-900/40 shrink-0 self-start md:self-auto backdrop-blur-xs">
+                <button
+                  type="button"
+                  @click="traceForm.tower = '1'"
+                  :class="traceForm.tower === '1' ? 'bg-gradient-to-r from-[#7a4325] to-[#542d14] text-amber-100 font-bold shadow-xs border border-amber-500/30' : 'text-stone-300 hover:text-white font-medium'"
+                  class="px-3.5 py-1.5 rounded-lg text-xs transition-all cursor-pointer"
+                >
+                  Tower 1
+                </button>
+                <button
+                  type="button"
+                  @click="traceForm.tower = '2'"
+                  :class="traceForm.tower === '2' ? 'bg-gradient-to-r from-[#7a4325] to-[#542d14] text-amber-100 font-bold shadow-xs border border-amber-500/30' : 'text-stone-300 hover:text-white font-medium'"
+                  class="px-3.5 py-1.5 rounded-lg text-xs transition-all cursor-pointer"
+                >
+                  Tower 2
+                </button>
+              </div>
+            </template>
 
-            <!-- Tombol Eksekusi Utama -->
-            <div class="flex items-center gap-1.5 shrink-0">
-              <!-- Tombol Start (Idle atau Selesai) -->
+            <!-- Mode Forward: Input Bahan Mentah -->
+            <template v-else>
+              <div class="flex-1 relative flex items-center">
+                <svg class="w-4 h-4 text-stone-400 absolute left-3.5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                  <path d="M22 8.35V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8.35A2 2 0 0 1 3.26 6.5l8-3.2a2 2 0 0 1 1.48 0l8 3.2A2 2 0 0 1 22 8.35Z"/><path d="M6 18h12"/><path d="M6 14h12"/>
+                </svg>
+                <input
+                  v-model="auditSession.forward.namaBahan"
+                  type="text"
+                  placeholder="Nama Bahan / Kode Lot Kedatangan (contoh: Biji Kopi Robusta Mentah)"
+                  class="w-full pl-10 pr-4 py-2.5 bg-white border border-stone-200 focus:border-amber-400 focus:ring-2 focus:ring-amber-500/20 rounded-xl text-stone-900 placeholder-stone-400 text-sm font-semibold transition-all outline-none shadow-xs"
+                  @keydown.enter.prevent="startTraceabilityAudit"
+                />
+              </div>
+              <div class="w-full md:w-64 relative flex items-center">
+                <input
+                  v-model="auditSession.forward.supplierBahan"
+                  type="text"
+                  placeholder="Supplier (opsional)"
+                  class="w-full px-3.5 py-2.5 bg-white border border-stone-200 focus:border-amber-400 focus:ring-2 focus:ring-amber-500/20 rounded-xl text-stone-900 placeholder-stone-400 text-xs font-medium transition-all outline-none shadow-xs"
+                />
+              </div>
+            </template>
+
+            <!-- Action Buttons: 1 Tombol Solid Utama Sesuai Aturan Clean UI -->
+            <div class="flex items-center gap-2 shrink-0">
+              <!-- Tombol Utama: Telusuri Batch / Mulai Ulang -->
               <button
                 v-if="auditTimer.status !== 'running'"
                 type="button"
                 @click="startTraceabilityAudit"
                 :disabled="tracing || (auditSession.jenis === 'Backward' && !traceForm.noBatch)"
-                class="w-full sm:w-auto px-6 py-3 bg-[#4a2c1d] hover:bg-[#3c2415] text-white font-bold rounded-xl text-xs shadow-sm transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer btn-action shrink-0"
+                class="w-full md:w-auto px-5 py-2.5 bg-gradient-to-r from-amber-600 via-amber-700 to-[#7a3e1d] hover:from-amber-500 hover:to-[#653317] text-white font-extrabold rounded-xl text-xs shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer shrink-0 border border-amber-400/30"
               >
-                <svg v-if="tracing" class="spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-                <svg v-else class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-                <span>{{ auditTimer.status === 'idle' ? 'Mulai Traceability (Start)' : 'Mulai Ulang (Start Baru)' }}</span>
+                <svg v-if="tracing" class="spin h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                <svg v-else class="w-3.5 h-3.5 text-white" fill="currentColor" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                <span>{{ auditTimer.status === 'idle' ? 'Telusuri Batch' : 'Mulai Ulang' }}</span>
               </button>
 
-              <!-- Tombol Selesai (Stop saat berjalan) -->
+              <!-- Tombol Hentikan Timer (Hanya saat status running) -->
               <button
                 v-if="auditTimer.status === 'running'"
                 type="button"
                 @click="stopTraceabilityAudit"
-                class="w-full sm:w-auto px-6 py-3 bg-red-800 hover:bg-red-900 text-white font-bold rounded-xl text-xs shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer btn-action shrink-0"
-                title="Hentikan timer dan kunci total waktu pelaksanaan"
+                class="w-full md:w-auto px-5 py-2.5 bg-red-700 hover:bg-red-800 text-white font-bold rounded-xl text-xs shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer shrink-0 border border-red-500/30"
+                title="Hentikan timer penelusuran"
               >
-                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="1.5"/></svg>
-                <span>Selesai (Stop Timer)</span>
+                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="1.5"/></svg>
+                <span>Selesai (Stop)</span>
               </button>
 
-              <!-- Tombol Reset / Lacak Ulang -->
+              <!-- Tombol Reset Sesi (Minimalis Ghost Icon) -->
               <button
                 v-if="auditTimer.status === 'completed'"
                 type="button"
                 @click="resetTraceabilityAudit"
-                class="p-3 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-xl text-xs font-semibold transition-colors cursor-pointer border border-stone-200 shadow-2xs"
-                title="Reset timer ke kondisi awal"
+                class="p-2.5 text-stone-300 hover:text-white bg-white/10 hover:bg-white/20 rounded-xl transition-colors cursor-pointer border border-white/15"
+                title="Reset timer ke status awal"
               >
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                 </svg>
               </button>
             </div>
+          </div>
+        </div>
+
+        <!-- Baris 3: Strip Metrik 4 Indikator Terpadu (Bersih, Rata, Kontras Maksimal di Background Kopi) -->
+        <div class="mt-6 pt-5 border-t border-white/10 grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+          <div>
+            <span class="text-[11px] font-semibold text-stone-400 uppercase tracking-wider block">Produk Finished Good</span>
+            <span class="text-sm font-bold text-white mt-1 block truncate" :title="headerNamaProduk !== '-' ? headerNamaProduk : ''">
+              {{ headerNamaProduk !== '-' ? headerNamaProduk : '—' }}
+              <span v-if="headerPin !== '-'" class="text-xs text-amber-300/80 font-normal ml-1">(PIN {{ headerPin }})</span>
+            </span>
+          </div>
+
+          <div>
+            <span class="text-[11px] font-semibold text-stone-400 uppercase tracking-wider block">Tanggal Produksi</span>
+            <span class="text-sm font-bold text-white mt-1 block font-mono">
+              {{ headerTanggalProduksi !== '-' ? headerTanggalProduksi : '—' }}
+            </span>
+          </div>
+
+          <div>
+            <span class="text-[11px] font-semibold text-stone-400 uppercase tracking-wider block">Total Output</span>
+            <span class="text-sm font-bold text-white mt-1 block font-mono">
+              <template v-if="headerOutputKg > 0">
+                {{ headerOutputKg.toLocaleString('id-ID') }} kg
+                <span v-if="headerOutputBox > 0" class="text-xs text-amber-300 font-semibold ml-1">({{ headerOutputBox.toLocaleString('id-ID') }} Box)</span>
+              </template>
+              <template v-else>—</template>
+            </span>
+          </div>
+
+          <div>
+            <span class="text-[11px] font-semibold text-stone-400 uppercase tracking-wider block">Yield / Rasio IC</span>
+            <span class="text-sm font-bold text-white mt-1 block font-mono">
+              <template v-if="headerYieldVal !== null && headerYieldVal > 0">
+                <span class="text-amber-300 font-extrabold">{{ Number(headerYieldVal).toFixed(2).replace('.', ',') }}%</span>
+                <span v-if="headerRasioVal" class="text-xs text-stone-300 font-normal ml-1">
+                  (Rasio {{ headerRasioVal }})
+                </span>
+              </template>
+              <template v-else>—</template>
+            </span>
           </div>
         </div>
 
@@ -1514,38 +1786,6 @@
           </div>
         </div>
 
-        <!-- 4 Angka Utama (Murni Data Riil Database) -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
-          <div class="p-3 rounded-xl bg-[var(--dp)] border border-[var(--bd)]">
-            <span class="clean-lbl">Produk Finished Good</span>
-            <span class="block text-sm font-bold text-[var(--tx)] mt-0.5 truncate" v-if="headerNamaProduk !== '-'">
-              {{ headerNamaProduk }} <span v-if="headerPin !== '-'" class="text-xs text-[var(--mu)] font-normal">(PIN {{ headerPin }})</span>
-            </span>
-            <span class="block text-sm font-bold text-[var(--mu)] mt-0.5" v-else>-</span>
-          </div>
-          <div class="p-3 rounded-xl bg-[var(--dp)] border border-[var(--bd)]">
-            <span class="clean-lbl">Tanggal Produksi</span>
-            <span class="block text-sm font-bold text-[var(--tx)] mt-0.5 font-mono" :class="{ 'text-[var(--mu)]': headerTanggalProduksi === '-' }">{{ headerTanggalProduksi }}</span>
-          </div>
-          <div class="p-3 rounded-xl bg-[var(--dp)] border border-[var(--bd)]">
-            <span class="clean-lbl">Total Output</span>
-            <span class="block text-sm font-bold text-[var(--tx)] mt-0.5 font-mono" v-if="counterOutputKg > 0">
-              {{ counterOutputKg.toLocaleString('id-ID') }} kg
-              <span class="text-xs text-[var(--ok)] font-semibold" v-if="counterBox > 0">({{ counterBox.toLocaleString('id-ID') }} Box)</span>
-            </span>
-            <span class="block text-sm font-bold text-[var(--mu)] mt-0.5" v-else>-</span>
-          </div>
-          <div class="p-3 rounded-xl bg-[var(--dp)] border border-[var(--bd)]">
-            <span class="clean-lbl">Yield / Rasio IC</span>
-            <span class="block text-sm font-bold text-[var(--tx)] mt-0.5 font-mono" v-if="counterYield !== null && counterYield > 0">
-              {{ counterYield.toFixed(2).replace('.', ',') }}%
-              <span class="text-xs text-[var(--mu)] font-normal" v-if="traceResult?.calculations?.icRatio || traceResult?.mass_balance?.icRatio || traceResult?.mass_balance?.rasio_ic">
-                | Rasio {{ traceResult?.calculations?.icRatio || traceResult?.mass_balance?.icRatio || traceResult?.mass_balance?.rasio_ic }}
-              </span>
-            </span>
-            <span class="block text-sm font-bold text-[var(--mu)] mt-0.5" v-else>-</span>
-          </div>
-        </div>
       </div>
 
       <!-- ── PUSH NOTIFIKASI: STATUS KELENGKAPAN DATA BATCH ── -->
@@ -1590,8 +1830,13 @@
 
       <!-- ── BARIS 8 TAHAPAN PROSES (SIMPUL ALUR BERSIH) ── -->
       <div class="clean-card mb-4">
-        <div class="flex items-center justify-between mb-3">
-          <span class="clean-lbl" style="margin-bottom:0">Simpul Alur Proses (Klik tahapan untuk melihat parameter rinci):</span>
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="clean-lbl" style="margin-bottom:0">Simpul Alur Proses (Klik tahapan untuk melihat parameter rinci):</span>
+            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold" :class="auditSession.jenis === 'Backward' ? 'bg-blue-100 text-blue-900 border border-blue-200' : 'bg-emerald-100 text-emerald-900 border border-emerald-200'">
+              {{ auditSession.jenis === 'Backward' ? '⟵ Backward: Distribusi ke Bahan Baku' : 'Forward: Bahan Baku ke Distribusi ⟶' }}
+            </span>
+          </div>
           <span class="text-xs text-[var(--mu)]">{{ clusterConfigList.length }} Tahapan</span>
         </div>
 
@@ -1692,13 +1937,17 @@
               </div>
 
               <!-- Body Kartu: Data Operasional & Uji Mutu (Hanya jika data tersedia) -->
-              <div v-if="flow.isAvailable !== false" class="p-5 sm:p-6 space-y-6">
-                <!-- Blok 1: Data Operasional (PIC Produksi / Operasional) -->
-                <div>
-                  <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
-                    <div class="flex items-center gap-2">
-                      <span class="w-2 h-2 rounded-full bg-amber-800"></span>
-                      <h5 class="text-xs font-bold text-slate-700 uppercase tracking-wider">{{ flow.operationalTitle }}</h5>
+              <!-- Body Kartu: Data Operasional & Uji Mutu (Hanya jika data tersedia) -->
+              <div v-if="flow.isAvailable !== false" class="p-5 sm:p-6 space-y-5">
+                <!-- ── CONTAINER 1: PIC PRODUKSI (atau PA jika flow khusus air) ── -->
+                <div class="border border-amber-900/20 bg-amber-50/15 rounded-2xl p-4 sm:p-5 shadow-2xs">
+                  <div class="flex flex-wrap items-center justify-between gap-3 mb-4 pb-3 border-b border-amber-900/10">
+                    <div class="flex items-center gap-2 flex-wrap">
+                      <span class="w-2.5 h-2.5 rounded-full bg-amber-700"></span>
+                      <h5 class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2 flex-wrap">
+                        <span>{{ cleanSectionTitle(flow.operationalTitle) }}</span>
+                        <span class="px-2 py-0.5 rounded-md text-[11px] font-black uppercase bg-amber-100 text-amber-950 border border-amber-300 normal-case tracking-normal shadow-2xs">({{ getProdRole(flow) }})</span>
+                      </h5>
                     </div>
                     <!-- Tombol Raw Data MySQL Produksi -->
                     <button
@@ -1709,7 +1958,7 @@
                       :class="openProdTables[flow.flowNumber] ? 'bg-amber-950 text-white border-amber-950 shadow-xs' : 'bg-white hover:bg-amber-50 text-amber-950 border-amber-900/20 shadow-2xs'"
                     >
                       <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
-                      <span>Raw Data MySQL (Produksi)</span>
+                      <span>Raw Data MySQL ({{ getProdRole(flow) }})</span>
                       <span class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-amber-100/70 text-amber-900 font-bold">
                         {{ flow.prodTable.rows.length }} Baris
                       </span>
@@ -1717,12 +1966,62 @@
                     </button>
                   </div>
 
-                  <!-- Grid Isian Parameter Operasional -->
-                  <div v-if="flow.fields && flow.fields.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                  <!-- ── RENDER MODULAR SUB-SEKSI OPERASIONAL / PA (Fisika Kimia, Mikrobiologi, dll) ── -->
+                  <template v-if="flow.sections && flow.sections.length > 0">
+                    <div
+                      v-for="(sec, sIdx) in flow.sections"
+                      :key="sIdx"
+                      :class="sIdx > 0 ? 'pt-4 mt-4 border-t border-amber-900/15' : ''"
+                    >
+                      <div class="flex flex-wrap items-center justify-between gap-2 mb-2.5">
+                        <div class="flex items-center gap-2">
+                          <span class="w-2 h-2 rounded-full" :class="sec.dotColor || 'bg-amber-600'"></span>
+                          <h6 class="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                            {{ cleanSectionTitle(sec.title) }}
+                          </h6>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                          <span v-if="sec.refForm" class="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-50 text-amber-900 font-semibold border border-amber-200">
+                            {{ sec.refForm }}
+                          </span>
+                          <span v-if="sec.badge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-semibold border border-slate-200">
+                            {{ sec.badge }}
+                          </span>
+                        </div>
+                      </div>
+
+                      <!-- Grid Isian Parameter Sub-seksi -->
+                      <div v-if="sec.fields && sec.fields.length > 0" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5">
+                        <div
+                          v-for="(f, fIdx) in sec.fields"
+                          :key="fIdx"
+                          class="bg-white border border-slate-200 rounded-xl p-3 shadow-2xs flex flex-col justify-between"
+                          :class="f.colSpan || ''"
+                        >
+                          <div class="flex items-center justify-between mb-0.5">
+                            <span class="text-[10px] font-medium text-slate-400">{{ f.label }}</span>
+                            <span v-if="f.badge" class="text-[9px] font-mono px-1.5 py-0.2 rounded bg-slate-200/60 text-slate-600">{{ f.badge }}</span>
+                          </div>
+                          <div class="my-0.5">
+                            <span class="text-xs sm:text-sm font-extrabold text-slate-900">
+                              {{ f.value }}
+                            </span>
+                          </div>
+                          <span v-if="f.spec" class="text-[10px] font-mono text-slate-500 mt-1 flex items-center gap-1 truncate" :title="f.spec">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                            {{ f.spec }}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </template>
+
+                  <!-- Grid Isian Parameter Operasional Standar (Fallback jika tidak ada sub-sections) -->
+                  <div v-else-if="flow.fields && flow.fields.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                     <div
                       v-for="(f, fIdx) in flow.fields"
                       :key="fIdx"
-                      class="bg-slate-50/80 border border-slate-200/70 rounded-xl p-3"
+                      class="bg-white border border-slate-200/80 rounded-xl p-3 shadow-2xs"
                       :class="f.colSpan || ''"
                     >
                       <div class="flex items-center justify-between mb-0.5">
@@ -1790,14 +2089,204 @@
                       </div>
                     </div>
                   </div>
+
+                  <!-- Petugas PIC Produksi (Di bawah Container Produksi) -->
+                  <div
+                    v-if="(flow.pic?.operasional && flow.pic.operasional !== '-') || (getProdRole(flow) === 'PA' && flow.pic?.pa)"
+                    class="mt-4 pt-3 border-t border-amber-900/15 flex items-center justify-between text-xs"
+                  >
+                    <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-amber-300/80 text-amber-950 shadow-2xs">
+                      <span class="w-2 h-2 rounded-full bg-amber-600 shrink-0"></span>
+                      <span class="text-[11px] font-bold text-amber-900 uppercase tracking-wide">Petugas {{ getProdRole(flow) }}:</span>
+                      <strong class="font-black text-amber-950 text-xs sm:text-sm tracking-tight">{{ flow.pic?.operasional || flow.pic?.pa }}</strong>
+                    </div>
+                  </div>
                 </div>
 
-                <!-- Blok 2: Hasil Pengujian Laboratorium QC -->
-                <div v-if="flow.qcTitle && (flow.qcMetrics?.length > 0 || flow.qcTable)" class="pt-5 border-t border-slate-100">
-                  <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
-                    <div class="flex items-center gap-2">
-                      <span class="w-2 h-2 rounded-full bg-blue-600"></span>
-                      <h5 class="text-xs font-bold text-slate-700 uppercase tracking-wider">{{ flow.qcTitle }}</h5>
+                <!-- ── CONTAINER 2: PIC PA (Product Assurance & Sanitasi CIP) ── -->
+                <div
+                  v-if="(flow.paSections && flow.paSections.length > 0) || (flow.paFields && flow.paFields.length > 0) || flow.paTable"
+                  class="border border-emerald-900/20 bg-emerald-50/15 rounded-2xl p-4 sm:p-5 shadow-2xs"
+                >
+                  <div class="flex flex-wrap items-center justify-between gap-3 mb-4 pb-3 border-b border-emerald-900/10">
+                    <div class="flex items-center gap-2 flex-wrap">
+                      <span class="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
+                      <h5 class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2 flex-wrap">
+                        <span>{{ cleanSectionTitle(flow.paTitle || 'Verifikasi Sanitasi CIP & Pasokan Air') }}</span>
+                        <span class="px-2 py-0.5 rounded-md text-[11px] font-black uppercase bg-emerald-100 text-emerald-950 border border-emerald-300 normal-case tracking-normal shadow-2xs">(PA)</span>
+                      </h5>
+                    </div>
+                    <!-- Tombol Raw Data MySQL PA -->
+                    <button
+                      v-if="flow.paTable && flow.paTable.rows?.length > 0"
+                      type="button"
+                      @click="toggleFlowPaTable(flow)"
+                      class="btn-secondary-action inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold border rounded-xl transition-all cursor-pointer shadow-2xs"
+                      :class="openPaTables[flow.flowNumber] ? 'bg-emerald-900 text-white border-emerald-900 shadow-xs' : 'bg-white hover:bg-emerald-50 text-emerald-950 border-emerald-900/20 shadow-2xs'"
+                    >
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
+                      <span>Raw Data MySQL (PA)</span>
+                      <span class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-emerald-100/70 text-emerald-900 font-bold">
+                        {{ flow.paTable.rows.length }} Baris
+                      </span>
+                      <svg class="w-3.5 h-3.5 transition-transform duration-200" :class="{ 'rotate-180': openPaTables[flow.flowNumber] }" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" /></svg>
+                    </button>
+                    <span v-else class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-100/80 text-emerald-900 font-bold border border-emerald-300/60">
+                      Sanitasi & Product Assurance
+                    </span>
+                  </div>
+
+                  <!-- ── RENDER MODULAR SUB-SEKSI PA (COP Instrument, EMP, ABE, CIP, dll) ── -->
+                  <template v-if="flow.paSections && flow.paSections.length > 0">
+                    <div
+                      v-for="(sec, sIdx) in flow.paSections"
+                      :key="sIdx"
+                      :class="sIdx > 0 ? 'pt-4 mt-4 border-t border-emerald-900/15' : ''"
+                    >
+                      <div class="flex flex-wrap items-center justify-between gap-2 mb-2.5">
+                        <div class="flex items-center gap-2">
+                          <span class="w-2 h-2 rounded-full" :class="sec.dotColor || 'bg-emerald-600'"></span>
+                          <h6 class="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                            {{ cleanSectionTitle(sec.title) }}
+                          </h6>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                          <span v-if="sec.refForm" class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-50 text-emerald-900 font-semibold border border-emerald-200">
+                            {{ sec.refForm }}
+                          </span>
+                          <span v-if="sec.badge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-semibold border border-slate-200">
+                            {{ sec.badge }}
+                          </span>
+                        </div>
+                      </div>
+
+                      <!-- Grid Isian Parameter Sub-seksi PA -->
+                      <div v-if="sec.fields && sec.fields.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
+                        <div
+                          v-for="(pa, paIdx) in sec.fields"
+                          :key="paIdx"
+                          class="bg-white border border-slate-200/80 rounded-xl p-3 shadow-2xs"
+                        >
+                          <div class="flex items-center justify-between mb-0.5">
+                            <span class="text-[10px] font-medium text-slate-400">{{ pa.label }}</span>
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                          </div>
+                          <span class="text-xs sm:text-sm font-semibold text-slate-900">
+                            {{ pa.value }}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </template>
+
+                  <!-- Grid Parameter PA Standar (Fallback jika tidak ada sub-sections) -->
+                  <div v-else-if="flow.paFields && flow.paFields.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                    <div
+                      v-for="(pa, paIdx) in flow.paFields"
+                      :key="paIdx"
+                      class="bg-white border border-slate-200/80 rounded-xl p-3 shadow-2xs"
+                    >
+                      <div class="flex items-center justify-between mb-0.5">
+                        <span class="text-[10px] font-medium text-slate-400">{{ pa.label }}</span>
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                      </div>
+                      <span class="text-xs sm:text-sm font-semibold text-slate-900">
+                        {{ pa.value }}
+                      </span>
+                    </div>
+                  </div>
+
+                  <!-- Tabel Inline PIC PA (Langsung di bawah blok PA) -->
+                  <div
+                    v-if="flow.paTable && openPaTables[flow.flowNumber]"
+                    class="mt-4 border border-emerald-900/20 bg-emerald-50/20 rounded-xl p-4 sm:p-5"
+                  >
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
+                      <div class="flex items-center gap-2 flex-wrap">
+                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
+                        <h6 class="text-xs sm:text-sm font-bold text-slate-900">
+                          {{ flow.paTable.title }} &bull; <span class="font-mono text-emerald-900">{{ flow.paTable.tableName }}</span>
+                        </h6>
+                        <span class="text-[10px] font-mono px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-900 font-bold border border-emerald-300">
+                          {{ flow.paTable.columns.length }} Kolom &bull; {{ flow.paTable.rows.length }} Baris Terverifikasi
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        @click="toggleFlowPaTable(flow)"
+                        class="text-xs font-bold text-slate-600 hover:text-slate-900 px-3 py-1 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 cursor-pointer shadow-2xs self-start sm:self-auto"
+                      >
+                        Tutup Tabel &times;
+                      </button>
+                    </div>
+
+                    <div class="param-stacked-container no-print">
+                      <div class="param-scroll-box rounded-xl border border-black overflow-x-auto shadow-xs bg-white max-h-[420px]">
+                        <table class="param-stacked-table mb-0 w-full text-xs">
+                          <thead class="sticky top-0 z-10">
+                            <tr>
+                              <th class="param-th-no">No</th>
+                              <th v-for="col in flow.paTable.columns" :key="col" class="param-green-th" :title="col">
+                                {{ formatColHeader(col) }}
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr v-for="(row, rIdx) in flow.paTable.rows" :key="rIdx" class="param-tr">
+                              <td class="param-td-no">{{ rIdx + 1 }}</td>
+                              <td v-for="col in flow.paTable.columns" :key="col" class="param-td">
+                                {{ formatParamCell(row[col], col) }}
+                              </td>
+                            </tr>
+                            <tr v-if="flow.paTable.rows.length === 0">
+                              <td :colspan="Math.max(flow.paTable.columns.length + 1, 1)" class="text-center py-6 text-slate-400 italic">
+                                Belum ada rekaman data di tabel {{ flow.paTable.tableName }}.
+                              </td>
+                            </tr>
+                          </tbody>
+                          <!-- FOOTER: BARIS RATA-RATA HASIL ANALISIS -->
+                          <tfoot v-if="flow.paTable.rows.length > 0 && flow.paTable.averages && Object.keys(flow.paTable.averages).length > 0">
+                            <tr class="bg-emerald-100/90 font-bold border-t-2 border-emerald-900 text-emerald-950">
+                              <td class="param-td-no text-center font-extrabold uppercase text-[10px] tracking-wider py-2 bg-emerald-200/80">Avg</td>
+                              <td v-for="col in flow.paTable.columns" :key="col" class="param-td font-semibold text-[11px]">
+                                <span v-if="flow.paTable.averages[col] !== undefined" class="inline-flex items-center gap-1 font-mono font-bold text-emerald-950 bg-emerald-200/90 px-1.5 py-0.5 rounded shadow-2xs" title="Rata-rata Hasil Analisa">
+                                  <span class="text-[9px] font-normal text-emerald-800">x̄ =</span>
+                                  <span>{{ flow.paTable.averages[col] }}</span>
+                                </span>
+                                <span v-else class="text-slate-400 font-normal text-[10px]">-</span>
+                              </td>
+                            </tr>
+                          </tfoot>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Petugas PIC PA (Di bawah Container PA) -->
+                  <div
+                    v-if="flow.pic?.pa && flow.pic.pa !== '-'"
+                    class="mt-4 pt-3 border-t border-emerald-900/15 flex items-center justify-between text-xs"
+                  >
+                    <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-emerald-300/80 text-emerald-950 shadow-2xs">
+                      <span class="w-2 h-2 rounded-full bg-emerald-600 shrink-0"></span>
+                      <span class="text-[11px] font-bold text-emerald-900 uppercase tracking-wide">Petugas PA:</span>
+                      <strong class="font-black text-emerald-950 text-xs sm:text-sm tracking-tight">{{ flow.pic.pa }}</strong>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- ── CONTAINER 3: PIC QC (Quality Control & Laboratorium) ── -->
+                <div
+                  v-if="(flow.qcSections && flow.qcSections.length > 0) || (flow.qcMetrics && flow.qcMetrics.length > 0) || (flow.cuptestMetrics && flow.cuptestMetrics.length > 0) || flow.qcTable || (flow.extraQcBlocks && flow.extraQcBlocks.length > 0)"
+                  class="border border-blue-900/20 bg-blue-50/15 rounded-2xl p-4 sm:p-5 shadow-2xs"
+                >
+                  <div class="flex flex-wrap items-center justify-between gap-3 mb-4 pb-3 border-b border-blue-900/10">
+                    <div class="flex items-center gap-2 flex-wrap">
+                      <span class="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
+                      <h5 class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2 flex-wrap">
+                        <span>{{ cleanSectionTitle(flow.qcTitle || 'Hasil Pengujian Laboratorium Mutu') }}</span>
+                        <span class="px-2 py-0.5 rounded-md text-[11px] font-black uppercase bg-blue-100 text-blue-950 border border-blue-300 normal-case tracking-normal shadow-2xs">({{ getQcRole(flow) }})</span>
+                      </h5>
                     </div>
                     <!-- Tombol Raw Data MySQL QC -->
                     <button
@@ -1816,25 +2305,164 @@
                     </button>
                   </div>
 
-                  <!-- Grid Metrik QC -->
-                  <div v-if="flow.qcMetrics && flow.qcMetrics.length > 0" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
+                  <!-- ── RENDER MODULAR SUB-SEKSI QC (Grinding, Aroma, Hidrolise, dll) ── -->
+                  <template v-if="flow.qcSections && flow.qcSections.length > 0">
                     <div
-                      v-for="(m, mIdx) in flow.qcMetrics"
-                      :key="mIdx"
-                      class="bg-white border border-slate-200 rounded-xl p-3 flex flex-col justify-between shadow-2xs"
+                      v-for="(sec, sIdx) in flow.qcSections"
+                      :key="sIdx"
+                      :class="sIdx > 0 ? 'pt-4 mt-4 border-t border-blue-900/10' : ''"
                     >
-                      <span class="text-[10px] font-medium text-slate-400 truncate mb-1" :title="m.label">{{ m.label }}</span>
-                      <div class="my-0.5">
-                        <span class="text-sm sm:text-base font-extrabold text-slate-900">
-                          {{ m.value }}
+                      <div class="flex flex-wrap items-center justify-between gap-2 mb-2.5">
+                        <div class="flex items-center gap-2">
+                          <span class="w-2 h-2 rounded-full" :class="sec.dotColor || 'bg-blue-600'"></span>
+                          <h6 class="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                            {{ cleanSectionTitle(sec.title) }}
+                          </h6>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                          <span v-if="sec.refForm" class="text-[10px] font-mono px-2 py-0.5 rounded bg-blue-50 text-blue-900 font-semibold border border-blue-200">
+                            {{ sec.refForm }}
+                          </span>
+                          <span v-if="sec.badge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-semibold border border-slate-200">
+                            {{ sec.badge }}
+                          </span>
+                        </div>
+                      </div>
+
+                      <!-- Grid Metrik QC Sub-seksi -->
+                      <div v-if="sec.metrics && sec.metrics.length > 0" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
+                        <div
+                          v-for="(m, mIdx) in sec.metrics"
+                          :key="mIdx"
+                          class="bg-white border border-slate-200 rounded-xl p-3 flex flex-col justify-between shadow-2xs"
+                        >
+                          <span class="text-[10px] font-medium text-slate-400 truncate mb-1" :title="m.label">{{ m.label }}</span>
+                          <div class="my-0.5">
+                            <span class="text-sm sm:text-base font-extrabold text-slate-900">
+                              {{ m.value }}
+                            </span>
+                          </div>
+                          <span class="text-[10px] font-mono text-slate-500 mt-1 flex items-center gap-1 truncate" :title="m.spec">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                            {{ m.spec }}
+                          </span>
+                        </div>
+                      </div>
+
+                      <!-- Sub-grid Cuptest jika sub-seksi ini punya organoleptik -->
+                      <div v-if="sec.cuptest && sec.cuptest.length > 0" class="mt-3 pt-3 border-t border-dashed border-amber-900/15">
+                        <div class="flex items-center justify-between mb-2">
+                          <span class="text-[11px] font-bold text-amber-900 uppercase tracking-wide flex items-center gap-1.5">
+                            <span class="w-1.5 h-1.5 rounded-full bg-amber-600"></span>
+                            Score Cuptest / Evaluasi Sensori Cita Rasa {{ sec.cuptestTitle ? `(${sec.cuptestTitle})` : '' }}
+                          </span>
+                          <span class="text-[9px] font-mono px-1.5 py-0.2 rounded bg-amber-100 text-amber-900 font-bold border border-amber-300">
+                            Organoleptik
+                          </span>
+                        </div>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
+                          <div
+                            v-for="(c, cIdx) in sec.cuptest"
+                            :key="cIdx"
+                            class="bg-gradient-to-br from-amber-50/60 to-orange-50/40 border border-amber-900/15 rounded-xl p-2.5 flex flex-col justify-between shadow-2xs"
+                          >
+                            <div class="flex items-center justify-between mb-1">
+                              <span class="text-[10px] font-bold text-amber-950 uppercase tracking-wide truncate" :title="c.label">{{ c.label }}</span>
+                              <span class="w-1.5 h-1.5 rounded-full bg-amber-600 shrink-0"></span>
+                            </div>
+                            <div class="my-0.5">
+                              <span class="text-sm sm:text-base font-extrabold text-amber-950 font-mono truncate">
+                                {{ c.value }}
+                              </span>
+                            </div>
+                            <span class="text-[9px] font-mono text-amber-800/80">Skala Organoleptik</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </template>
+
+                  <!-- ── FALLBACK FORMAT (JIKA qcSections TIDAK DIDEFINISIKAN) ── -->
+                  <template v-else>
+                    <!-- Grid Metrik QC -->
+                    <div v-if="flow.qcMetrics && flow.qcMetrics.length > 0" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
+                      <div
+                        v-for="(m, mIdx) in flow.qcMetrics"
+                        :key="mIdx"
+                        class="bg-white border border-slate-200 rounded-xl p-3 flex flex-col justify-between shadow-2xs"
+                      >
+                        <span class="text-[10px] font-medium text-slate-400 truncate mb-1" :title="m.label">{{ m.label }}</span>
+                        <div class="my-0.5">
+                          <span class="text-sm sm:text-base font-extrabold text-slate-900">
+                            {{ m.value }}
+                          </span>
+                        </div>
+                        <span class="text-[10px] font-mono text-slate-500 mt-1 flex items-center gap-1 truncate" :title="m.spec">
+                          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                          {{ m.spec }}
                         </span>
                       </div>
-                      <span class="text-[10px] font-mono text-slate-500 mt-1 flex items-center gap-1 truncate" :title="m.spec">
-                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                        {{ m.spec }}
-                      </span>
                     </div>
-                  </div>
+
+                    <!-- Sub-Blok Score Cuptest / Evaluasi Sensori Cita Rasa -->
+                    <div v-if="flow.cuptestMetrics && flow.cuptestMetrics.length > 0" class="pt-4 mt-4 border-t border-blue-900/10">
+                      <div class="flex items-center justify-between mb-2.5">
+                        <div class="flex items-center gap-2">
+                          <span class="w-2 h-2 rounded-full bg-amber-700"></span>
+                          <h6 class="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                            Score Cuptest / Evaluasi Sensori Cita Rasa
+                          </h6>
+                        </div>
+                        <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-100/80 text-amber-900 font-semibold border border-amber-300/60">Organoleptik</span>
+                      </div>
+
+                      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
+                        <div
+                          v-for="(c, cIdx) in flow.cuptestMetrics"
+                          :key="cIdx"
+                          class="bg-gradient-to-br from-amber-50/60 to-orange-50/40 border border-amber-900/15 rounded-xl p-3 flex flex-col justify-between shadow-2xs"
+                        >
+                          <div class="flex items-center justify-between mb-1">
+                            <span class="text-[10px] font-bold text-amber-950 uppercase tracking-wide truncate" :title="c.label">{{ c.label }}</span>
+                            <span class="w-1.5 h-1.5 rounded-full bg-amber-600 shrink-0"></span>
+                          </div>
+                          <div class="my-1">
+                            <span class="text-sm sm:text-base font-extrabold text-amber-950 font-mono truncate">
+                              {{ c.value }}
+                            </span>
+                          </div>
+                          <span class="text-[10px] font-mono text-amber-800/80">Skala Organoleptik</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Sub-Blok Extra QC Blocks -->
+                    <template v-if="flow.extraQcBlocks && flow.extraQcBlocks.length > 0">
+                      <div v-for="(ex, exIdx) in flow.extraQcBlocks" :key="exIdx" class="pt-4 mt-4 border-t border-blue-900/10">
+                        <div class="flex items-center justify-between mb-2.5">
+                          <div class="flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-indigo-600"></span>
+                            <h6 class="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                              {{ cleanSectionTitle(ex.title) }}
+                            </h6>
+                          </div>
+                          <span v-if="ex.badge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 font-semibold border border-indigo-200">{{ ex.badge }}</span>
+                        </div>
+
+                        <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-2.5">
+                          <div
+                            v-for="(it, itIdx) in ex.items"
+                            :key="itIdx"
+                            class="bg-white border border-slate-200 rounded-xl p-2.5 flex flex-col justify-between shadow-2xs"
+                          >
+                            <span class="text-[10px] font-medium text-slate-400 truncate mb-1" :title="it.label">{{ it.label }}</span>
+                            <span class="text-xs sm:text-sm font-bold text-slate-900 font-mono truncate" :title="it.value">{{ it.value }}</span>
+                            <span class="text-[9px] font-mono text-slate-400 mt-1 truncate">{{ it.sub || 'Uji Terpadu' }}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </template>
+                  </template>
 
                   <!-- Tabel Inline PIC QC (Langsung di bawah blok QC) -->
                   <div
@@ -1888,75 +2516,33 @@
                       </div>
                     </div>
                   </div>
-                </div>
 
-                <!-- Blok 3: Score Cuptest / Evaluasi Sensori Cita Rasa -->
-                <div v-if="flow.cuptestMetrics && flow.cuptestMetrics.length > 0" class="pt-5 border-t border-slate-100">
-                  <div class="flex items-center justify-between mb-3">
-                    <div class="flex items-center gap-2">
-                      <span class="w-2 h-2 rounded-full bg-amber-700"></span>
-                      <h5 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Score Cuptest / Evaluasi Sensori (QC)</h5>
-                    </div>
-                    <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-100/80 text-amber-900 font-semibold border border-amber-300/60">Organoleptik QC</span>
-                  </div>
-
-                  <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
-                    <div
-                      v-for="(c, cIdx) in flow.cuptestMetrics"
-                      :key="cIdx"
-                      class="bg-gradient-to-br from-amber-50/60 to-orange-50/40 border border-amber-900/15 rounded-xl p-3 flex flex-col justify-between shadow-2xs"
-                    >
-                      <div class="flex items-center justify-between mb-1">
-                        <span class="text-[10px] font-bold text-amber-950 uppercase tracking-wide truncate" :title="c.label">{{ c.label }}</span>
-                        <span class="w-1.5 h-1.5 rounded-full bg-amber-600 shrink-0"></span>
-                      </div>
-                      <div class="my-1">
-                        <span class="text-sm sm:text-base font-extrabold text-amber-950 font-mono truncate">
-                          {{ c.value }}
-                        </span>
-                      </div>
-                      <span class="text-[10px] font-mono text-amber-800/80">Skala Organoleptik</span>
+                  <!-- Petugas PIC QC (Di bawah Container QC) -->
+                  <div
+                    v-if="(flow.pic?.qc && flow.pic.qc !== '-') || (getQcRole(flow) === 'PA' && flow.pic?.pa)"
+                    class="mt-4 pt-3 border-t border-blue-900/15 flex items-center justify-between text-xs"
+                  >
+                    <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-blue-300/80 text-blue-950 shadow-2xs">
+                      <span class="w-2 h-2 rounded-full bg-blue-600 shrink-0"></span>
+                      <span class="text-[11px] font-bold text-blue-900 uppercase tracking-wide">Petugas {{ getQcRole(flow) }}:</span>
+                      <strong class="font-black text-blue-950 text-xs sm:text-sm tracking-tight">{{ flow.pic?.qc || flow.pic?.pa }}</strong>
                     </div>
                   </div>
                 </div>
-
-                <!-- Blok 4: Pengujian Tambahan / Sub-Tahapan Mutu Terpadu -->
-                <template v-if="flow.extraQcBlocks && flow.extraQcBlocks.length > 0">
-                  <div v-for="(ex, exIdx) in flow.extraQcBlocks" :key="exIdx" class="pt-5 border-t border-slate-100">
-                    <div class="flex items-center justify-between mb-3">
-                      <div class="flex items-center gap-2">
-                        <span class="w-2 h-2 rounded-full bg-indigo-600"></span>
-                        <h5 class="text-xs font-bold text-slate-700 uppercase tracking-wider">{{ ex.title }}</h5>
-                      </div>
-                      <span v-if="ex.badge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 font-semibold border border-indigo-200">{{ ex.badge }}</span>
-                    </div>
-
-                    <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-2.5">
-                      <div
-                        v-for="(it, itIdx) in ex.items"
-                        :key="itIdx"
-                        class="bg-white border border-slate-200 rounded-xl p-2.5 flex flex-col justify-between shadow-2xs"
-                      >
-                        <span class="text-[10px] font-medium text-slate-400 truncate mb-1" :title="it.label">{{ it.label }}</span>
-                        <span class="text-xs sm:text-sm font-bold text-slate-900 font-mono truncate" :title="it.value">{{ it.value }}</span>
-                        <span class="text-[9px] font-mono text-slate-400 mt-1 truncate">{{ it.sub || 'Uji Terpadu' }}</span>
-                      </div>
-                    </div>
-                  </div>
-                </template>
               </div>
 
-              <!-- Footer Signature & Verifikasi Digital -->
-              <div class="bg-slate-50/80 border-t border-slate-100 px-5 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3 text-xs">
-                <div class="flex items-center gap-5 flex-wrap">
-                  <span class="text-slate-500">Operasional: <strong class="text-slate-800 font-semibold">{{ flow.pic.operasional }}</strong></span>
-                  <span class="text-slate-500">QC: <strong class="text-slate-800 font-semibold">{{ flow.pic.qc }}</strong></span>
+              <!-- Footer Signature & Verifikasi Digital Mutu Terintegrasi -->
+              <div class="bg-slate-50/90 border-t border-slate-200/80 px-5 sm:px-6 py-3.5 flex flex-wrap items-center justify-between gap-3 text-xs">
+                <div class="flex items-center gap-2 text-slate-500 font-medium">
+                  <span class="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
+                  <span class="font-mono text-[11px] text-slate-600">Dokumen Mutu Terintegrasi: <span class="font-bold text-slate-800">{{ flow.refDoc || 'Form F/QC/01.030' }}</span></span>
                 </div>
-                <span v-if="flow.isAvailable !== false" class="text-emerald-700 font-semibold flex items-center gap-1.5">
-                  <svg class="w-3.5 h-3.5 text-emerald-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+
+                <span v-if="flow.isAvailable !== false" class="text-emerald-700 font-bold flex items-center gap-1.5 text-xs bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-200">
+                  <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
                   Terverifikasi Form F/QC/01.030
                 </span>
-                <span v-else class="text-amber-700 font-medium flex items-center gap-1.5">
+                <span v-else class="text-amber-800 font-medium flex items-center gap-1.5 text-xs bg-amber-50 px-3 py-1.5 rounded-xl border border-amber-200">
                   <span class="w-2 h-2 rounded-full bg-amber-500"></span>
                   Menunggu Data PIC {{ flow.pendingPicName }}
                 </span>
@@ -2147,20 +2733,20 @@
                 <button
                   type="button"
                   @click="draftSession.jenis = 'Backward'"
-                  :class="draftSession.jenis === 'Backward' ? 'bg-[#4a2c1d] text-white font-bold shadow-2xs' : 'text-stone-600 hover:text-stone-900 font-medium'"
+                  :class="draftSession.jenis === 'Backward' ? 'bg-blue-600 text-white font-bold shadow-xs' : 'text-stone-600 hover:text-stone-900 font-medium'"
                   class="py-2.5 px-3 rounded-lg text-xs transition-all cursor-pointer text-center"
                 >
-                  <div class="font-bold">⟵ Backward (Telusur Mundur)</div>
-                  <div class="text-[10px] opacity-80 mt-0.5">Produk Jadi ke Bahan Mentah</div>
+                  <div class="font-bold">⟵ Backward</div>
+                  <div class="text-[10px] opacity-85 mt-0.5">Produk Jadi ke Bahan Mentah</div>
                 </button>
                 <button
                   type="button"
                   @click="draftSession.jenis = 'Forward'"
-                  :class="draftSession.jenis === 'Forward' ? 'bg-[#4a2c1d] text-white font-bold shadow-2xs' : 'text-stone-600 hover:text-stone-900 font-medium'"
+                  :class="draftSession.jenis === 'Forward' ? 'bg-emerald-600 text-white font-bold shadow-xs' : 'text-stone-600 hover:text-stone-900 font-medium'"
                   class="py-2.5 px-3 rounded-lg text-xs transition-all cursor-pointer text-center"
                 >
-                  <div class="font-bold">Forward (Telusur Maju) ⟶</div>
-                  <div class="text-[10px] opacity-80 mt-0.5">Bahan Mentah ke Produk Jadi</div>
+                  <div class="font-bold">Forward ⟶</div>
+                  <div class="text-[10px] opacity-85 mt-0.5">Bahan Mentah ke Produk Jadi</div>
                 </button>
               </div>
             </div>
@@ -2322,7 +2908,7 @@
                   Form F/QC/01.030
                 </span>
                 <span class="px-3 py-0.5 rounded-full text-xs font-semibold bg-[#eeeae6] text-stone-700 border border-[#e2ddd8]">
-                  {{ reportViewMode === 'document' ? 'Mode Dokumen Audit' : 'Mode Log Riwayat' }}
+                  {{ reportViewMode === 'log' ? 'Mode Log Riwayat' : 'Mode Dokumen Audit' }}
                 </span>
               </div>
               <p class="text-xs sm:text-sm text-stone-600 mt-2.5 leading-relaxed max-w-xl">
@@ -2412,7 +2998,7 @@
             </div>
           </div>
 
-          <!-- Row 2: Segmented Control Tabs (Dokumen Form & Log Riwayat) -->
+          <!-- Row 2: Segmented Control Tabs (Log Riwayat & Dokumen Form) -->
           <div class="mt-4">
             <div class="relative inline-flex bg-white p-1 rounded-2xl border border-stone-200/90 shadow-2xs select-none">
               <!-- Sliding Brown Pill Indicator -->
@@ -2420,21 +3006,11 @@
                 class="absolute top-1 bottom-1 left-1 rounded-xl bg-[#4a2c1d] shadow-xs pointer-events-none transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]"
                 :style="{
                   width: 'calc(50% - 4px)',
-                  transform: reportViewMode === 'document' ? 'translateX(0)' : 'translateX(100%)'
+                  transform: reportViewMode === 'log' ? 'translateX(0)' : 'translateX(100%)'
                 }"
               ></div>
 
-              <!-- Tab 1: Dokumen Form -->
-              <button
-                type="button"
-                @click="reportViewMode = 'document'"
-                class="relative z-10 px-4 py-2 text-xs sm:text-sm rounded-xl transition-colors duration-200 cursor-pointer font-bold min-w-[125px] text-center"
-                :class="reportViewMode === 'document' ? 'text-white' : 'text-stone-600 hover:text-stone-900 font-medium'"
-              >
-                Dokumen Form
-              </button>
-
-              <!-- Tab 2: Log Riwayat -->
+              <!-- Tab 1: Log Riwayat (Tampilan Utama Default) -->
               <button
                 type="button"
                 @click="reportViewMode = 'log'"
@@ -2443,6 +3019,16 @@
               >
                 Log Riwayat ({{ traceabilitySessions.length }})
               </button>
+
+              <!-- Tab 2: Dokumen Form -->
+              <button
+                type="button"
+                @click="reportViewMode = 'document'"
+                class="relative z-10 px-4 py-2 text-xs sm:text-sm rounded-xl transition-colors duration-200 cursor-pointer font-bold min-w-[125px] text-center"
+                :class="reportViewMode === 'document' ? 'text-white' : 'text-stone-600 hover:text-stone-900 font-medium'"
+              >
+                Dokumen Form
+              </button>
             </div>
           </div>
         </div>
@@ -2450,7 +3036,7 @@
 
       <!-- Text Tampilan di Bawah Card -->
       <div class="text-xs sm:text-sm text-stone-500 font-medium px-1 no-print">
-        Tampilan: {{ reportViewMode === 'document' ? 'Dokumen Form' : 'Log Riwayat' }}
+        Tampilan: {{ reportViewMode === 'log' ? 'Log Riwayat' : 'Dokumen Form' }}
       </div>
 
       <!-- ── VIEW MODE 2: TABEL OPERATION LOG RIWAYAT PENELUSURAN ── -->
@@ -2590,10 +3176,11 @@
                       Edit
                     </button>
                     <button
+                      v-if="authRole === 'admin'"
                       type="button"
                       @click="deleteSession(s.id)"
                       class="clean-btn g text-xs py-1 px-2 hover:bg-red-50 text-stone-400 hover:text-red-700"
-                      title="Hapus sesi"
+                      title="Hapus sesi (Khusus Super Admin)"
                     >
                       ✕
                     </button>
@@ -3003,6 +3590,26 @@
           <!-- ══════════════════════════════════════════ -->
           <div v-if="ingestionStep === 1">
 
+            <!-- Read-Only Notice for Non-Admin Roles -->
+            <div
+              v-if="authRole !== 'admin'"
+              class="mb-4 p-3.5 bg-amber-50/80 border border-amber-200 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-amber-950"
+            >
+              <div class="flex items-center gap-2.5">
+                <span class="font-extrabold uppercase text-[10px] px-2 py-0.5 rounded bg-amber-200/90 border border-amber-300 tracking-wider text-amber-900 shrink-0">
+                  Akses Dibatasi
+                </span>
+                <span>Anda masuk sebagai <b>{{ authUser.full_name }} ({{ authRole.toUpperCase() }})</b>. Aksi kritis seperti impor file, sinkronisasi Google Sheets, dan penambahan data hanya dapat dieksekusi oleh <b>Super Admin</b>.</span>
+              </div>
+              <button
+                type="button"
+                @click="openLoginModal"
+                class="px-3 py-1.5 bg-[#4a2c1d] hover:bg-[#3c2415] text-white font-bold text-xs rounded-lg transition-colors cursor-pointer shrink-0"
+              >
+                Ganti Akun Admin
+              </button>
+            </div>
+
             <!-- TAB 1: UPLOAD FILE (EXCEL) -->
             <div v-if="ingestionTab === 'file'">
               <input
@@ -3294,11 +3901,12 @@
               </button>
               <button
                 class="clean-btn"
-                :disabled="!ingestionConfirmed || ingestionSubmitting"
+                :disabled="!ingestionConfirmed || ingestionSubmitting || authRole !== 'admin'"
                 @click="executeConfirmedIngestion"
+                :title="authRole !== 'admin' ? 'Aksi pengiriman data hanya diizinkan untuk Super Admin' : ''"
               >
                 <span v-if="ingestionSubmitting" class="spin inline-block w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full mr-1.5"></span>
-                <span>Kirim {{ previewSummary.newCount }} baris</span>
+                <span>{{ authRole !== 'admin' ? 'Kirim Terkunci (Khusus Admin)' : 'Kirim ' + previewSummary.newCount + ' baris' }}</span>
               </button>
             </div>
           </div>
@@ -3340,13 +3948,14 @@
         </div>
 
         <div class="flex items-center gap-2.5 shrink-0">
-          <!-- Auto-Sync 10s Toggle Button -->
+          <!-- Auto-Sync 10s Toggle Button (Khusus Super Admin) -->
           <button
+            v-if="authRole === 'admin'"
             type="button"
             @click="toggleAutoSync"
             :class="autoSyncEnabled ? 'bg-emerald-50 border-emerald-300 text-emerald-800 ring-2 ring-emerald-500/20' : 'bg-stone-100 hover:bg-stone-200/80 border-stone-200 text-stone-700'"
             class="inline-flex items-center gap-2 px-3 py-1.5 border rounded-xl text-xs font-semibold transition-all cursor-pointer shadow-2xs whitespace-nowrap"
-            :title="autoSyncEnabled ? 'Klik untuk mematikan penarikan otomatis' : 'Aktifkan penarikan otomatis dari Google Sheets setiap 10 detik'"
+            :title="autoSyncEnabled ? 'Klik untuk mematikan penarikan otomatis' : 'Aktifkan penarikan otomatis dari Google Sheets setiap 10 detik (Khusus Super Admin)'"
           >
             <span class="relative flex h-2 w-2" v-if="autoSyncEnabled">
               <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -3362,14 +3971,14 @@
             @click="refreshAndSyncActiveTable(false)"
             :disabled="isSyncingActiveTable"
             class="inline-flex items-center gap-2 px-3.5 py-1.5 bg-[#4a2c1d] hover:bg-[#3d2417] text-white rounded-xl text-xs font-semibold transition-all cursor-pointer shadow-2xs disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
-            title="Tarik seluruh data terbaru dari semua PIC (Produksi, QC, RMW) dan semua tabel Google Sheets secara real-time"
+            :title="authRole === 'admin' ? 'Tarik seluruh data terbaru dari semua PIC dan tabel Google Sheets secara real-time' : 'Segarkan tampilan tabel dari database lokal'"
           >
             <svg :class="{ 'spin': isSyncingActiveTable }" class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
               <polyline points="23 4 23 10 17 10"></polyline>
               <polyline points="1 20 1 14 7 14"></polyline>
               <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
             </svg>
-            <span>{{ isSyncingActiveTable ? 'Menarik Semua Data PIC & Tabel...' : 'Refresh & Tarik Data (Semua Tabel)' }}</span>
+            <span>{{ isSyncingActiveTable ? 'Memuat Data...' : (authRole === 'admin' ? 'Refresh &amp; Tarik Data GSheet' : 'Refresh Tampilan Data') }}</span>
           </button>
         </div>
       </div>
@@ -3463,7 +4072,7 @@
             </div>
           </div>
           <div class="flex items-center gap-2">
-            <div class="relative w-48 sm:w-60">
+            <div class="relative w-44 sm:w-56">
               <input
                 v-model="tableFilterQuery"
                 type="text"
@@ -3473,6 +4082,20 @@
                 class="w-full bg-white border border-stone-200 text-stone-900 placeholder-stone-400 text-xs rounded-lg px-3 py-1.5 focus:outline-none focus:border-coffee-700 shadow-2xs transition-colors"
               />
             </div>
+            <button
+              v-if="authRole === 'admin'"
+              type="button"
+              @click="clearAllTables()"
+              :disabled="isClearingAll"
+              class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200/90 text-xs font-bold rounded-lg transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs btn-action shrink-0 disabled:opacity-40 disabled:cursor-not-allowed"
+              title="Hapus seluruh data rekaman pada semua 33 tabel database (Khusus Super Admin)"
+            >
+              <svg class="w-3.5 h-3.5 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              </svg>
+              <span>{{ isClearingAll ? 'Menghapus Semua...' : 'Hapus Semua Tabel' }}</span>
+            </button>
           </div>
         </div>
 
@@ -3538,17 +4161,18 @@
                       {{ picSelectedTable === tbl.key ? 'Sedang Dilihat' : 'Lihat Data' }}
                     </button>
                     <button
+                      v-if="authRole === 'admin'"
                       type="button"
                       @click.stop="clearTable(tbl.key)"
                       :disabled="tbl.count === 0"
                       class="px-2 py-1 bg-stone-100 hover:bg-rose-50 text-stone-500 hover:text-rose-700 rounded-lg text-[11px] font-semibold transition-all flex items-center gap-1 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
-                      title="Kosongkan seluruh rekaman pada tabel ini"
+                      :title="'Hapus semua data pada tabel ' + tbl.label + ' (Khusus Super Admin)'"
                     >
-                      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                      <svg class="w-3 h-3 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                         <polyline points="3 6 5 6 21 6"></polyline>
                         <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
                       </svg>
-                      <span>Kosongkan</span>
+                      <span>Hapus Data</span>
                     </button>
                   </div>
                 </td>
@@ -3577,18 +4201,29 @@
                 </span>
               </div>
               <div class="text-[10px] text-stone-500 font-mono mt-0.5">
-                SELECT * FROM `{{ picSelectedTable }}`<span v-if="picFilterYear"> WHERE `Tanggal` LIKE '%{{ picFilterYear }}<span v-if="isRoastingTable && picFilterMonth">-{{ picFilterMonth }}</span>%'</span>
+                SELECT * FROM `{{ picSelectedTable }}`<span v-if="picFilterDate"> WHERE `{{ activeDateCol }}` LIKE '%{{ picFilterDate }}%'</span><span v-else-if="picFilterYear"> WHERE `{{ activeDateCol }}` LIKE '%{{ picFilterYear }}<span v-if="isRoastingTable && picFilterMonth">-{{ picFilterMonth }}</span>%'</span><span v-if="isRoastingTable && picFilterBean"> AND `Jenis Kopi Mentah` LIKE '%{{ picFilterBean }}%'</span>
               </div>
             </div>
           </div>
 
           <div class="flex flex-wrap items-center gap-2">
-            <!-- Filter Tahun Select Box -->
-            <div class="relative">
+            <!-- 1. Date Picker Terpadu (Tanggal, Bulan, Thn jadi 1) - Diterapkan di SEMUA Tabel -->
+            <div class="relative flex items-center">
+              <input
+                type="date"
+                v-model="picFilterDate"
+                @change="searchPicTable"
+                class="appearance-none bg-white hover:bg-stone-50 border border-stone-200 focus:border-[#4a2c1d] focus:ring-1 focus:ring-[#4a2c1d] rounded-xl px-2.5 py-1.5 text-xs font-semibold text-stone-800 transition-all cursor-pointer shadow-2xs outline-none"
+                title="Pilih Tanggal Presisi (Tanggal, Bulan, Tahun). Kosongkan untuk filter umum."
+              />
+            </div>
+
+            <!-- 2. Filter Tahun (Aktif jika Date Picker kosong) -->
+            <div v-if="!picFilterDate" class="relative">
               <select
                 v-model="picFilterYear"
                 @change="searchPicTable"
-                class="appearance-none bg-white hover:bg-stone-50 border border-stone-200 focus:border-[#4a2c1d] focus:ring-1 focus:ring-[#4a2c1d] rounded-xl pl-3 pr-8 py-2 text-xs font-bold text-stone-800 transition-all cursor-pointer shadow-2xs"
+                class="appearance-none bg-white hover:bg-stone-50 border border-stone-200 focus:border-[#4a2c1d] focus:ring-1 focus:ring-[#4a2c1d] rounded-xl pl-3 pr-7 py-1.5 text-xs font-bold text-stone-800 transition-all cursor-pointer shadow-2xs"
                 title="Pilih Tahun Rekaman"
               >
                 <option value="2026">Thn 2026</option>
@@ -3596,74 +4231,75 @@
                 <option value="2024">Thn 2024</option>
                 <option value="">Semua Thn</option>
               </select>
-              <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-stone-400">
+              <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-1.5 text-stone-400">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
                 </svg>
               </div>
             </div>
 
-            <!-- Khusus Roasting: Filter Bulan Select Box -->
+            <!-- 3. Khusus Roasting: Select Box Jenis Kopi Mentah (Opsional) -->
             <div v-if="isRoastingTable" class="relative">
               <select
-                v-model="picFilterMonth"
+                v-model="picFilterBean"
                 @change="searchPicTable"
-                class="appearance-none bg-amber-50 hover:bg-amber-100/70 border border-amber-300 text-amber-900 focus:border-[#4a2c1d] focus:ring-1 focus:ring-[#4a2c1d] rounded-xl pl-3 pr-8 py-2 text-xs font-bold transition-all cursor-pointer shadow-2xs"
-                title="Khusus Roasting: Saring Bulan"
+                class="appearance-none bg-amber-50 hover:bg-amber-100/70 border border-amber-300 text-amber-950 focus:border-[#4a2c1d] focus:ring-1 focus:ring-[#4a2c1d] rounded-xl pl-3 pr-8 py-1.5 text-xs font-bold transition-all cursor-pointer shadow-2xs outline-none"
+                title="Khusus Roasting: Filter Jenis Biji Kopi Mentah (Opsional)"
               >
-                <option value="">Semua Bulan</option>
-                <option v-for="m in monthOptions" :key="m.value" :value="m.value">
-                  {{ m.label }}
+                <option value="">Semua Biji Mentah</option>
+                <option v-for="b in beanOptions" :key="b.value" :value="b.value">
+                  {{ b.label }}
                 </option>
               </select>
-              <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-amber-700">
+              <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-amber-800">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
                 </svg>
               </div>
             </div>
 
-            <!-- Search Input -->
-            <div class="relative w-44 sm:w-64">
+            <!-- 4. Search Input Teks Bebas -->
+            <div class="relative w-36 sm:w-48">
               <input
                 v-model="picSearchQuery"
                 @keydown.enter.prevent="searchPicTable"
                 @keyup.enter.prevent="searchPicTable"
                 type="text"
-                :placeholder="isRoastingTable ? 'Cari Jenis Biji Kopi (misal: SB, VP)...' : 'Cari Batch / Nama / Tanggal...'"
-                class="w-full bg-white border border-stone-200 text-stone-900 placeholder-stone-400 text-xs rounded-xl px-3.5 py-2 focus:outline-none focus:border-coffee-700 shadow-2xs transition-colors"
-                :title="isRoastingTable ? 'Pencarian berdasarkan Jenis Biji Kopi Mentah' : 'Cari Batch, Nama, atau Tanggal'"
+                :placeholder="isRoastingTable ? 'Cari Batch / Petugas...' : 'Cari Batch / Nama...'"
+                class="w-full bg-white border border-stone-200 text-stone-900 placeholder-stone-400 text-xs rounded-xl px-3 py-1.5 focus:outline-none focus:border-coffee-700 shadow-2xs transition-colors"
+                title="Pencarian Bebas (Batch, Nama Petugas, dll.)"
               />
             </div>
 
             <button
               @click="searchPicTable"
-              class="px-3.5 py-2 bg-[#4a2c1d] hover:bg-[#3c2415] text-white text-xs font-bold rounded-xl transition-all cursor-pointer btn-action shadow-2xs flex items-center gap-1.5"
+              class="px-3 py-1.5 bg-[#4a2c1d] hover:bg-[#3c2415] text-white text-xs font-bold rounded-xl transition-all cursor-pointer btn-action shadow-2xs flex items-center gap-1.5"
             >
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
               <span>Cari</span>
             </button>
 
             <button
-              v-if="picSearchQuery || picFilterYear !== '2026' || (isRoastingTable && picFilterMonth)"
+              v-if="picSearchQuery || picFilterDate || picFilterBean || picFilterYear !== '2026' || (isRoastingTable && picFilterMonth)"
               @click="resetPicFilters"
-              class="px-2.5 py-2 bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs rounded-xl transition-colors cursor-pointer"
+              class="px-2.5 py-1.5 bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-bold rounded-xl transition-colors cursor-pointer"
               title="Reset filter &amp; pencarian"
             >
               ✕
             </button>
 
             <button
+              v-if="authRole === 'admin'"
               @click="clearTable(picSelectedTable)"
               :disabled="picTotalRows === 0"
               class="px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200/90 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs btn-action shrink-0 disabled:opacity-40 disabled:cursor-not-allowed"
-              title="Kosongkan seluruh baris di tabel ini"
+              :title="'Hapus seluruh data pada tabel ' + getTableLabelByKey(picSelectedTable) + ' (Khusus Super Admin)'"
             >
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <svg class="w-3.5 h-3.5 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                 <polyline points="3 6 5 6 21 6"></polyline>
                 <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
               </svg>
-              <span class="hidden md:inline">Kosongkan</span>
+              <span>Hapus Semua Data Tabel</span>
             </button>
           </div>
         </div>
@@ -3691,7 +4327,7 @@
                   <th v-for="col in picTableColumns" :key="col" class="param-green-th" :title="col">
                     {{ formatColHeader(col) }}
                   </th>
-                  <th class="param-green-th text-center w-20" title="Aksi Hapus Rekaman">Aksi</th>
+                  <th v-if="authRole === 'admin'" class="param-green-th text-center w-20" title="Aksi Hapus Rekaman (Khusus Super Admin)">Aksi</th>
                 </tr>
               </thead>
               <tbody>
@@ -3700,13 +4336,13 @@
                   <td v-for="col in picTableColumns" :key="col" class="param-td">
                     {{ formatParamCell(row[col], col) }}
                   </td>
-                  <td class="param-td text-center whitespace-nowrap">
+                  <td v-if="authRole === 'admin'" class="param-td text-center whitespace-nowrap">
                     <button
                       v-if="row.id"
                       type="button"
                       @click="deleteTableRow(picSelectedTable, row)"
                       class="px-2 py-0.5 bg-stone-100 hover:bg-rose-50 text-stone-500 hover:text-rose-700 rounded-md text-[11px] font-semibold transition-colors cursor-pointer inline-flex items-center gap-1"
-                      title="Hapus baris rekaman ini"
+                      title="Hapus baris rekaman ini (Khusus Super Admin)"
                     >
                       <svg class="w-3 h-3 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                         <polyline points="3 6 5 6 21 6"></polyline>
@@ -4025,7 +4661,92 @@
         </div>
       </div>
     </div>
+
+    <!-- ── AUTHENTICATION / LOGIN MODAL ── -->
+    <div
+      v-if="loginModalOpen"
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs no-print"
+      @click.self="loginModalOpen = false"
+    >
+      <div class="bg-white rounded-2xl shadow-2xl border border-stone-200 w-full max-w-md overflow-hidden">
+        <!-- Modal Header -->
+        <div class="p-5 bg-stone-50 border-b border-stone-200/80 flex items-center justify-between">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-xl bg-[#4a2c1d] flex items-center justify-center font-bold text-white text-xs">
+              SJA
+            </div>
+            <div>
+              <h3 class="font-extrabold text-stone-900 text-sm">Autentikasi Pengguna</h3>
+              <p class="text-[11px] text-stone-500">Sistem Traceability PT. Santos Jaya Abadi</p>
+            </div>
+          </div>
+          <button
+            @click="loginModalOpen = false"
+            class="text-stone-400 hover:text-stone-700 p-1.5 rounded-lg hover:bg-stone-200/60 transition-colors cursor-pointer"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Modal Body -->
+        <form @submit.prevent="submitLogin" class="p-5 space-y-3.5">
+          <div class="space-y-3">
+            <div>
+              <label class="block text-xs font-bold text-stone-700 mb-1">Username Pengguna</label>
+              <input
+                v-model="loginForm.username"
+                type="text"
+                required
+                autocomplete="username"
+                placeholder="Masukkan username Anda"
+                class="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#4a2c1d]/30 focus:border-[#4a2c1d] focus:bg-white transition-all shadow-2xs"
+              />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-stone-700 mb-1">Kata Sandi (Password)</label>
+              <input
+                v-model="loginForm.password"
+                type="password"
+                required
+                autocomplete="current-password"
+                placeholder="Masukkan kata sandi Anda"
+                class="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#4a2c1d]/30 focus:border-[#4a2c1d] focus:bg-white transition-all shadow-2xs"
+              />
+            </div>
+          </div>
+
+          <div v-if="loginError" class="p-2.5 rounded-lg bg-red-50 border border-red-200 text-red-700 text-xs">
+            {{ loginError }}
+          </div>
+
+          <div class="pt-2 flex items-center justify-end gap-2">
+            <button
+              type="button"
+              @click="loginModalOpen = false"
+              class="px-4 py-2 border border-stone-300 hover:bg-stone-50 text-stone-700 rounded-xl text-xs font-medium cursor-pointer"
+            >
+              Batal
+            </button>
+            <button
+              type="submit"
+              :disabled="loginLoading"
+              class="px-5 py-2 bg-[#4a2c1d] hover:bg-[#3c2415] text-white rounded-xl text-xs font-bold shadow-xs cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
+            >
+              <svg v-if="loginLoading" class="w-3.5 h-3.5 spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" stroke-width="4" stroke="currentColor" class="opacity-25"></circle>
+                <path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" class="opacity-75"></path>
+              </svg>
+              <span>{{ loginLoading ? 'Memverifikasi...' : 'Masuk ke Sistem' }}</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   </main>
+</div>
 </div>
 </div>
 
@@ -4034,6 +4755,80 @@ const { createApp, ref, reactive, computed, onMounted, watch } = Vue;
 
 createApp({
   setup() {
+    // ── Authentication & Role-Based Access Control (RBAC) ──
+    const authRole = computed(() => (window.sjaAuth && window.sjaAuth.currentRole.value) || 'viewer');
+    const authUser = computed(() => (window.sjaAuth && window.sjaAuth.state.user) || { full_name: 'Tamu / Auditor', role: 'viewer' });
+    const authIsLoggedIn = computed(() => (window.sjaAuth && window.sjaAuth.isAuthenticated.value) || false);
+    const isAdmin = computed(() => authRole.value === 'admin');
+    const isProduksi = computed(() => authRole.value === 'produksi');
+    const isQc = computed(() => authRole.value === 'qc');
+    const isViewer = computed(() => authRole.value === 'viewer');
+
+    const loginModalOpen = ref(false);
+    const loginForm = reactive({
+      username: '',
+      password: '',
+    });
+    const loginLoading = ref(false);
+    const loginError = ref('');
+
+    function openLoginModal() {
+      loginError.value = '';
+      loginModalOpen.value = true;
+    }
+
+    function fillQuickAccount(username, password) {
+      loginForm.username = username;
+      loginForm.password = password;
+      loginError.value = '';
+    }
+
+    async function submitLogin() {
+      loginLoading.value = true;
+      loginError.value = '';
+      try {
+        if (!window.sjaAuth) {
+          throw new Error('Modul autentikasi belum siap.');
+        }
+        const res = await window.sjaAuth.login(loginForm.username, loginForm.password);
+        if (!res.success) {
+          loginError.value = res.error || 'Login gagal.';
+        } else {
+          loginModalOpen.value = false;
+        }
+      } catch (err) {
+        loginError.value = err.message || 'Terjadi kesalahan sistem.';
+      } finally {
+        loginLoading.value = false;
+      }
+    }
+
+    function logoutAuth() {
+      if (window.sjaAuth) {
+        window.sjaAuth.logout();
+      }
+    }
+
+    async function enterAsGuest() {
+      loginLoading.value = true;
+      loginError.value = '';
+      try {
+        if (!window.sjaAuth) {
+          throw new Error('Modul autentikasi belum siap.');
+        }
+        const res = await window.sjaAuth.loginAsGuest();
+        if (!res.success) {
+          loginError.value = res.error || 'Gagal masuk sebagai tamu.';
+        } else {
+          loginModalOpen.value = false;
+        }
+      } catch (err) {
+        loginError.value = err.message || 'Terjadi kesalahan sistem.';
+      } finally {
+        loginLoading.value = false;
+      }
+    }
+
     const sidebarOpen = ref(true);
     const validTabs = ['dashboard', 'pipeline', 'report', 'sync', 'pic'];
     function getInitialTab() {
@@ -4279,6 +5074,11 @@ createApp({
     }
 
     async function executeConfirmedIngestion() {
+      if (authRole.value !== 'admin') {
+        alert('Akses Dibatasi: Penambahan data, impor file, dan sinkronisasi Google Sheets merupakan aksi kritis yang hanya diizinkan untuk Super Admin.');
+        openLoginModal();
+        return;
+      }
       ingestionSubmitting.value = true;
       try {
         if (ingestionTab.value === 'file') {
@@ -4359,9 +5159,51 @@ createApp({
       totalRows: 0,
     });
 
-    // ── 7 Process Clusters (Industrial Coffee Theme) ──
-    const selectedClusterKey = ref('raw-material');
-    const clusterConfigList = ref(window.CLUSTER_CONFIG || []);
+    // ── INFORMASI PELAKSANAAN TRACEABILITY (GLOBAL / ACTIVE SYNC) ──
+    const auditSession = reactive({
+      area: 'SJA Sukodono',
+      tanggalPelaksanaan: '13 Oktober 2026',
+      jenis: 'Backward', // 'Backward' | 'Forward'
+      picPelaksana: 'Frengky Wahyudi',
+      scenario: 'Simulasi traceability untuk audit eksternal FSSC',
+      auditor: 'Pak Armando, Ibu Asih',
+      auditee: 'Meisy, Dini, Udin, Yolanda',
+      fstl: 'Suhendar Adikusuma',
+      gambarProduk: 'Terlampir pada berkas sistem',
+      catatan: 'Data penarikan traceability divalidasi dan diambil langsung dari database sistem operasional SCADA PIC Produksi PT. Santos Jaya Abadi.',
+      manualWaktuStart: '',
+      manualWaktuEnd: '',
+      manualTotalWaktu: '',
+      forward: {
+        kategoriProduk: 'Instant Coffee',
+        namaBahan: 'Biji Kopi Robusta Mentah',
+        supplierBahan: 'PT. Santos Jaya Abadi Rekanan',
+        tglKedatangan: '25 Agustus 2026',
+        lokasiBahan: 'Gudang GBJ / Silo UPBM',
+      },
+    });
+
+    // ── 8 Process Clusters (Industrial Coffee Theme) ──
+    // Dalam pencarian Backward: Alur dimulai dari Distribusi -> Kemas -> ... -> Gudang Bahan Baku
+    // Dalam pencarian Forward: Alur dimulai dari Gudang Bahan Baku -> ... -> Distribusi
+    const clusterConfigList = computed(() => {
+      const base = window.CLUSTER_CONFIG || [];
+      if (auditSession.jenis === 'Backward') {
+        return [...base].reverse();
+      }
+      return [...base];
+    });
+
+    const selectedClusterKey = ref('distribusi');
+
+    watch(() => auditSession.jenis, (newJenis) => {
+      if (newJenis === 'Backward') {
+        selectedClusterKey.value = 'distribusi';
+      } else if (newJenis === 'Forward') {
+        selectedClusterKey.value = 'raw-material';
+      }
+    });
+
     const clusterDataStore = computed(() => {
       if (typeof window.buildClusterData === 'function') {
         return window.buildClusterData(traceResult.value, traceForm.tower);
@@ -4369,7 +5211,7 @@ createApp({
       return {};
     });
     const activeCluster = computed(() => {
-      return clusterDataStore.value[selectedClusterKey.value] || clusterDataStore.value['raw-material'];
+      return clusterDataStore.value[selectedClusterKey.value] || clusterDataStore.value[clusterConfigList.value[0]?.key] || clusterDataStore.value['distribusi'] || clusterDataStore.value['raw-material'];
     });
 
     // ── 120Hz Animated Numerical Counters ──
@@ -4589,6 +5431,7 @@ createApp({
 
     const openProdTables = reactive({});
     const openQcTables = reactive({});
+    const openPaTables = reactive({});
 
     function toggleFlowProdTable(flow) {
       if (!flow || !flow.flowNumber) return;
@@ -4598,6 +5441,30 @@ createApp({
     function toggleFlowQcTable(flow) {
       if (!flow || !flow.flowNumber) return;
       openQcTables[flow.flowNumber] = !openQcTables[flow.flowNumber];
+    }
+
+    function toggleFlowPaTable(flow) {
+      if (!flow || !flow.flowNumber) return;
+      openPaTables[flow.flowNumber] = !openPaTables[flow.flowNumber];
+    }
+
+    function cleanSectionTitle(title) {
+      if (!title) return '';
+      return String(title)
+        .replace(/\s*\((?:PIC\s+)?(?:Produksi|QC|PA|RMW|UPBM|FGW|Laboratorium QC|QC Kedatangan|PIC RMW|PIC UPBM|PIC FGW|PIC PA)\)\s*$/i, '')
+        .trim();
+    }
+
+    function getProdRole(flow) {
+      if (flow?.prodRole) return flow.prodRole;
+      if (flow?.pic?.pa && !flow?.pic?.operasional) return 'PA';
+      return 'Produksi';
+    }
+
+    function getQcRole(flow) {
+      if (flow?.qcRole) return flow.qcRole;
+      if (flow?.pic?.pa && !flow?.pic?.qc) return 'PA';
+      return 'QC';
     }
 
     const openRawTables = reactive({});
@@ -4673,29 +5540,7 @@ createApp({
       return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
     });
 
-    // ── INFORMASI PELAKSANAAN TRACEABILITY & AUDIT TIMER (GLOBAL / ACTIVE SYNC) ──
-    const auditSession = reactive({
-      area: 'SJA Sukodono',
-      tanggalPelaksanaan: '13 Oktober 2026',
-      jenis: 'Backward', // 'Backward' | 'Forward'
-      picPelaksana: 'Frengky Wahyudi',
-      scenario: 'Simulasi traceability untuk audit eksternal FSSC',
-      auditor: 'Pak Armando, Ibu Asih',
-      auditee: 'Meisy, Dini, Udin, Yolanda',
-      fstl: 'Suhendar Adikusuma',
-      gambarProduk: 'Terlampir pada berkas sistem',
-      catatan: 'Data penarikan traceability divalidasi dan diambil langsung dari database sistem operasional SCADA PIC Produksi PT. Santos Jaya Abadi.',
-      manualWaktuStart: '',
-      manualWaktuEnd: '',
-      manualTotalWaktu: '',
-      forward: {
-        kategoriProduk: 'Instant Coffee',
-        namaBahan: 'Biji Kopi Robusta Mentah',
-        supplierBahan: 'PT. Santos Jaya Abadi Rekanan',
-        tglKedatangan: '25 Agustus 2026',
-        lokasiBahan: 'Gudang GBJ / Silo UPBM',
-      },
-    });
+    // ── AUDIT TIMER (GLOBAL / ACTIVE SYNC) ──
 
     const auditTimer = reactive({
       status: 'idle', // 'idle' | 'running' | 'completed'
@@ -4715,7 +5560,7 @@ createApp({
     const showNewSessionModal = ref(false);
     const newSessionStep = ref(1); // 1 = Info Pelaksanaan (Gambar 2), 2 = Konfigurasi Penelusuran (Gambar 3)
     const newSessionMode = ref('create'); // 'create' | 'edit'
-    const reportViewMode = ref('document'); // 'document' = Dokumen Form F/QC/01.030, 'log' = Tabel Riwayat Log Operasional
+    const reportViewMode = ref('log'); // 'log' = Tabel Riwayat Log Operasional (Default Awal), 'document' = Dokumen Form F/QC/01.030
 
     const draftSession = reactive({
       id: '',
@@ -4896,6 +5741,16 @@ createApp({
       activeTab.value = 'pipeline';
     }
 
+    function navigateToPipeline() {
+      activeTab.value = 'pipeline';
+      activeSessionId.value = null;
+    }
+
+    function navigateToReport() {
+      activeTab.value = 'report';
+      reportViewMode.value = 'log'; // Tampilan awal selalu masuk ke Log Riwayat
+    }
+
     function backToWorkOrderList() {
       activeSessionId.value = null;
     }
@@ -5053,6 +5908,10 @@ createApp({
     }
 
     function deleteSession(sessionId) {
+      if (authRole.value !== 'admin') {
+        alert('Akses Ditolak: Hanya Super Admin yang berwenang menghapus sesi work order.');
+        return;
+      }
       const idx = traceabilitySessions.findIndex(s => s.id === sessionId);
       if (idx === -1) return;
       const target = traceabilitySessions[idx];
@@ -5294,6 +6153,35 @@ createApp({
       return '-';
     });
 
+    const headerOutputKg = computed(() => {
+      if (counterOutputKg.value > 0) return counterOutputKg.value;
+      const d = traceResult.value;
+      return Number(d?.packing?.total_output_kg) || 0;
+    });
+
+    const headerOutputBox = computed(() => {
+      if (counterBox.value > 0) return counterBox.value;
+      const d = traceResult.value;
+      return d?.packing?.ok_box ? Math.round(Number(d.packing.ok_box)) : 0;
+    });
+
+    const headerYieldVal = computed(() => {
+      if (counterYield.value !== null && counterYield.value > 0) return counterYield.value;
+      const d = traceResult.value;
+      const raw = d?.roasting?.yield_roasting_num ?? d?.mass_balance?.yield;
+      if (raw !== undefined && raw !== null && !isNaN(Number(raw))) return Number(raw);
+      if (d?.roasting?.yield_roasting) {
+        const p = parseFloat(String(d.roasting.yield_roasting).replace(',', '.').replace('%', ''));
+        if (!isNaN(p)) return p;
+      }
+      return null;
+    });
+
+    const headerRasioVal = computed(() => {
+      const d = traceResult.value;
+      return d?.calculations?.icRatio || d?.mass_balance?.icRatio || d?.mass_balance?.rasio_ic || null;
+    });
+
     function getItemValue(key) {
       if (!key) return '-';
       const d = traceResult.value;
@@ -5302,7 +6190,7 @@ createApp({
       // ── Single Source of Truth: Shared Resolver ──
       if (typeof window.getTraceItemValue === 'function') {
         const sharedVal = window.getTraceItemValue(key, d);
-        if (sharedVal !== undefined && sharedVal !== null && sharedVal !== '-') {
+        if (sharedVal !== undefined && sharedVal !== null) {
           return sharedVal;
         }
       }
@@ -5378,6 +6266,66 @@ createApp({
       if (key === 'mb_kopi_mentah') return d.mass_balance?.total_kopi_mentah || '-';
       if (key === 'mb_rasio_ic') return d.mass_balance?.rasio_ic || d.mass_balance?.icRatio || '-';
 
+      // ── 7. PA (PRODUCT ASSURANCE) ──
+      if (key === 'water_waktu_analisa') return d.pa?.water?.waktu_analisa || '-';
+      if (key === 'water_ph') return d.pa?.water?.ph || '-';
+      if (key === 'water_tds') return d.pa?.water?.tds ? String(d.pa.water.tds) : '-';
+      if (key === 'water_kekeruhan') return d.pa?.water?.kekeruhan !== undefined && d.pa?.water?.kekeruhan !== null ? String(d.pa.water.kekeruhan) : '-';
+      if (key === 'water_kesadahan') return d.pa?.water?.kesadahan !== undefined && d.pa?.water?.kesadahan !== null ? String(d.pa.water.kesadahan) : '-';
+      if (key === 'water_sisa_khlor') return d.pa?.water?.sisa_khlor !== undefined && d.pa?.water?.sisa_khlor !== null ? String(d.pa.water.sisa_khlor) : '-';
+      if (key === 'water_mangan') return d.pa?.water?.mangan !== undefined && d.pa?.water?.mangan !== null ? String(d.pa.water.mangan) : '-';
+      if (key === 'water_besi') return d.pa?.water?.besi !== undefined && d.pa?.water?.besi !== null ? String(d.pa.water.besi) : '-';
+      if (key === 'water_warna') return d.pa?.water?.warna !== undefined && d.pa?.water?.warna !== null ? String(d.pa.water.warna) : '-';
+      if (key === 'water_aluminium') return d.pa?.water?.aluminium !== undefined && d.pa?.water?.aluminium !== null ? String(d.pa.water.aluminium) : '-';
+      if (key === 'water_e_coli') return d.pa?.water?.e_coli || '-';
+      if (key === 'water_total_coliform') return d.pa?.water?.total_coliform || '-';
+      if (key === 'water_pic_pa') return d.pa?.water?.pic_pa || 'Jefri & Reza';
+
+      const hasCop = !!(d.pa?.cip?.rework?.tanggal || d.pa?.cip?.extraction?.tanggal);
+      if (key === 'pa_packing_cop_waktu') return d.pa?.cip?.rework?.tanggal || d.pa?.cip?.extraction?.tanggal || '-';
+      if (key === 'pa_packing_cop_swab') return hasCop ? 'OK' : '-';
+      if (key === 'pa_packing_cop_pic') return hasCop ? 'Jefri & Rudi' : '-';
+      if (key === 'pa_packing_env_internal_waktu') return d.pa?.env_swab_date || '-';
+      if (key === 'pa_packing_env_internal_list') return d.pa?.env_swab_date ? 'OK' : '-';
+      if (key === 'pa_packing_env_internal_pic') return d.pa?.env_swab_date ? 'Jefri & Rudi' : '-';
+      if (key === 'pa_packing_env_external_waktu') return d.pa?.env_swab_date || '-';
+      if (key === 'pa_packing_env_external_list') return d.pa?.env_swab_date ? 'OK' : '-';
+      if (key === 'pa_packing_env_external_pic') return d.pa?.env_swab_date ? 'Huda & Faiz' : '-';
+      if (key === 'pa_packing_abe_waktu') return d.pa?.air_bacteria_date || '-';
+      if (key === 'pa_packing_abe_hasil') return d.pa?.air_bacteria_date ? 'OK' : '-';
+      if (key === 'pa_packing_abe_pic') return d.pa?.air_bacteria_date ? 'Huda & Faiz' : '-';
+
+      const hasReworkCip = !!(d.pa?.cip?.rework?.tanggal);
+      if (key === 'pa_rework_cip_waktu') return d.pa?.cip?.rework?.tanggal || '-';
+      if (key === 'pa_rework_cip_lye') return hasReworkCip ? '3%' : '-';
+      if (key === 'pa_rework_cip_rinse') return hasReworkCip ? ((d.pa?.cip?.rework?.ph_lab && d.pa.cip.rework.ph_lab !== '-' && d.pa.cip.rework.ph_lab !== '0') ? `pH: ${d.pa.cip.rework.ph_lab} (OK)` : 'OK') : '-';
+      if (key === 'pa_rework_cip_pic') return hasReworkCip ? 'Jefri, Huda, Shandi, Rudi' : '-';
+
+      const hasDryerCip = !!(d.pa?.cip?.dryer?.tanggal);
+      if (key === 'pa_dryer_cip_waktu') return d.pa?.cip?.dryer?.tanggal || '-';
+      if (key === 'pa_dryer_cip_lye') return hasDryerCip ? '3%' : '-';
+      if (key === 'pa_dryer_cip_rinse') return hasDryerCip ? ((d.pa?.cip?.dryer?.ph_lab && d.pa.cip.dryer.ph_lab !== '-' && d.pa.cip.dryer.ph_lab !== '0') ? `pH: ${d.pa.cip.dryer.ph_lab} (OK)` : 'OK') : '-';
+      if (key === 'pa_dryer_cip_pic') return hasDryerCip ? 'Reza' : '-';
+
+      const hasEvapCip = !!(d.pa?.cip?.evaporation?.tanggal);
+      if (key === 'pa_evap_cip_waktu') return d.pa?.cip?.evaporation?.tanggal || '-';
+      if (key === 'pa_evap_cip_lye') return hasEvapCip ? '3%' : '-';
+      if (key === 'pa_evap_cip_rinse') return hasEvapCip ? ((d.pa?.cip?.evaporation?.ph_lab && d.pa.cip.evaporation.ph_lab !== '-' && d.pa.cip.evaporation.ph_lab !== '0') ? `pH: ${d.pa.cip.evaporation.ph_lab} (OK)` : 'OK') : '-';
+      if (key === 'pa_evap_cip_pic') return hasEvapCip ? 'Huda' : '-';
+
+      const hasFtCip = !!(d.pa?.cip?.final_tank?.tanggal);
+      if (key === 'pa_finaltank_cip_waktu') return d.pa?.cip?.final_tank?.tanggal || '-';
+      if (key === 'pa_finaltank_cip_lye') return hasFtCip ? '3%' : '-';
+      if (key === 'pa_finaltank_cip_rinse') return hasFtCip ? ((d.pa?.cip?.final_tank?.ph_lab && d.pa.cip.final_tank.ph_lab !== '-' && d.pa.cip.final_tank.ph_lab !== '0') ? `pH: ${d.pa.cip.final_tank.ph_lab} (OK)` : 'OK') : '-';
+      if (key === 'pa_finaltank_cip_swab') return hasFtCip ? 'OK' : '-';
+      if (key === 'pa_finaltank_cip_pic') return hasFtCip ? 'Reza, Jefri, Huda' : '-';
+
+      const hasExtCip = !!(d.pa?.cip?.extraction?.tanggal);
+      if (key === 'pa_ext_cip_waktu') return d.pa?.cip?.extraction?.tanggal || '-';
+      if (key === 'pa_ext_cip_lye') return hasExtCip ? '3%' : '-';
+      if (key === 'pa_ext_cip_rinse') return hasExtCip ? ((d.pa?.cip?.extraction?.ph_lab && d.pa.cip.extraction.ph_lab !== '-' && d.pa.cip.extraction.ph_lab !== '0') ? `pH: ${d.pa.cip.extraction.ph_lab} (OK)` : 'OK') : '-';
+      if (key === 'pa_ext_cip_pic') return hasExtCip ? 'Reza, Huda, Toat' : '-';
+
       return '-';
     }
 
@@ -5425,6 +6373,15 @@ createApp({
       { key: 'qc_aroma_t2',        label: 'QC Aroma Extraction T2',  flow: 'EXTRACTION',  pic: 'QC', tower: 'Tower 2', count: null },
       { key: 'qc_grinding_t2',     label: 'QC Grinding T2',          flow: 'EXTRACTION',  pic: 'QC', tower: 'Tower 2', count: null },
       { key: 'qc_mesh_t2',         label: 'QC Mesh Test T2',         flow: 'PACKING',     pic: 'QC', tower: 'Tower 2', count: null },
+      // PA (Product Assurance) Tower 1 & Tower 2 (8 Tabel)
+      { key: 'pa_fwt_t1',          label: 'FWT Tower 1',             flow: 'WATER PROCESS', pic: 'PA', tower: 'Tower 1', count: null },
+      { key: 'pa_fwt_t2',          label: 'FWT Tower 2',             flow: 'WATER PROCESS', pic: 'PA', tower: 'Tower 2', count: null },
+      { key: 'pa_cip_t1',          label: 'CIP Tower 1',             flow: 'CIP & SANITASI', pic: 'PA', tower: 'Tower 1', count: null },
+      { key: 'pa_cip_t2',          label: 'CIP Tower 2',             flow: 'CIP & SANITASI', pic: 'PA', tower: 'Tower 2', count: null },
+      { key: 'pa_emp_t1',          label: 'EMP Swab T1',             flow: 'PACKING',     pic: 'PA', tower: 'Tower 1', count: null },
+      { key: 'pa_emp_t2',          label: 'EMP Swab T2',             flow: 'PACKING',     pic: 'PA', tower: 'Tower 2', count: null },
+      { key: 'pa_abe_t1',          label: 'ABE Air Bacteria T1',     flow: 'PACKING',     pic: 'PA', tower: 'Tower 1', count: null },
+      { key: 'pa_abe_t2',          label: 'ABE Air Bacteria T2',     flow: 'PACKING',     pic: 'PA', tower: 'Tower 2', count: null },
     ]);
 
     const filteredTables = computed(() => {
@@ -5513,6 +6470,10 @@ createApp({
     }
 
     async function submitInputRow() {
+      if (authRole.value !== 'admin') {
+        inputErrorMsg.value = 'Akses Ditolak: Hanya Super Admin yang berwenang menambahkan baris data ke database.';
+        return;
+      }
       inputSubmitting.value = true;
       inputSuccessMsg.value = '';
       inputErrorMsg.value = '';
@@ -5567,10 +6528,32 @@ createApp({
     const picSearchQuery = ref('');
     const picFilterYear = ref('2026');
     const picFilterMonth = ref('');
+    const picFilterDate = ref('');
+    const picFilterBean = ref('');
 
     const isRoastingTable = computed(() => {
       return String(picSelectedTable.value || '').toLowerCase().startsWith('roasting');
     });
+
+    const activeDateCol = computed(() => {
+      const cols = picTableColumns.value || [];
+      return cols.find(c => ['tanggal', 'date'].some(k => c.toLowerCase().includes(k))) || cols.find(c => c.toLowerCase().includes('stamp')) || 'Tanggal';
+    });
+
+    const beanOptions = [
+      { value: '018 SB', label: '018 SB (Robusta Standar B)' },
+      { value: '018 LT', label: '018 LT (Robusta Lampung/Lokal T)' },
+      { value: '018 BY', label: '018 BY (Robusta Banyuwangi)' },
+      { value: '019 VP', label: '019 VP (Robusta Varian P)' },
+      { value: '019 LT', label: '019 LT (Robusta Varian LT)' },
+      { value: '019 VO', label: '019 VO (Robusta Varian O)' },
+      { value: '018 SK', label: '018 SK (Robusta Sukodono)' },
+      { value: '018 ST', label: '018 ST (Robusta Standar T)' },
+      { value: '018 SM', label: '018 SM (Robusta Standar M)' },
+      { value: '018 IN', label: '018 IN (Robusta IN)' },
+      { value: '06 BY', label: '06 BY' },
+      { value: '06 AM', label: '06 AM' },
+    ];
 
     const monthOptions = [
       { value: '01', label: '01 - Jan' },
@@ -5589,6 +6572,8 @@ createApp({
 
     function resetPicFilters() {
       picSearchQuery.value = '';
+      picFilterDate.value = '';
+      picFilterBean.value = '';
       picFilterYear.value = '2026';
       picFilterMonth.value = '';
       searchPicTable();
@@ -5639,7 +6624,9 @@ createApp({
         const q = encodeURIComponent(picSearchQuery.value || '');
         const yr = encodeURIComponent(picFilterYear.value || '');
         const mo = isRoastingTable.value ? encodeURIComponent(picFilterMonth.value || '') : '';
-        const res = await fetch(`/api/import/${picSelectedTable.value}/rows?page=${picPage.value}&limit=${picLimit.value}&search=${q}&year=${yr}&month=${mo}`);
+        const dt = encodeURIComponent(picFilterDate.value || '');
+        const bn = isRoastingTable.value ? encodeURIComponent(picFilterBean.value || '') : '';
+        const res = await fetch(`/api/import/${picSelectedTable.value}/rows?page=${picPage.value}&limit=${picLimit.value}&search=${q}&year=${yr}&month=${mo}&date=${dt}&bean=${bn}`);
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Gagal memuat baris data dari database.');
         picTableColumns.value = data.columns || [];
@@ -5662,6 +6649,8 @@ createApp({
     function changePicTable(tblKey) {
       picSelectedTable.value = tblKey;
       picSearchQuery.value = '';
+      picFilterDate.value = '';
+      picFilterBean.value = '';
       picFilterMonth.value = '';
       pageJumpInput.value = 1;
       loadPicTable(tblKey, 1);
@@ -5723,6 +6712,22 @@ createApp({
       if (isSyncingActiveTable.value) return;
       isSyncingActiveTable.value = true;
 
+      // Jika bukan admin, hanya segarkan tampilan data lokal tanpa sinkronisasi Google Sheets
+      if (authRole.value !== 'admin') {
+        try {
+          await Promise.all([
+            refreshAllCounts(),
+            loadPicTable(picSelectedTable.value, picPage.value),
+          ]);
+          if (!silent) syncStatusMessage.value = '✓ Tampilan data berhasil disegarkan dari database lokal.';
+        } catch (e) {
+          if (!silent) syncStatusMessage.value = 'Gagal memuat data: ' + e.message;
+        } finally {
+          isSyncingActiveTable.value = false;
+        }
+        return;
+      }
+
       if (!silent) {
         syncStatusMessage.value = 'Menghubungi Google Sheets API & menarik seluruh data terbaru (Semua PIC & Semua Tabel secara real-time)...';
       }
@@ -5748,7 +6753,7 @@ createApp({
             if (errMsg.includes('sedang berjalan') || errMsg.includes('sedang berlangsung')) {
               syncStatusMessage.value = 'ℹ Proses sinkronisasi sedang berlangsung di latar belakang...';
             } else {
-              syncStatusMessage.value = `Informasi sinkronisasi: ${errMsg}`;
+              syncStatusMessage.value = `Gagal: ${errMsg}`;
             }
           }
         } else {
@@ -5935,11 +6940,17 @@ createApp({
       }
     }
 
+    const isClearingAll = ref(false);
+
     async function clearTable(key) {
+      if (authRole.value !== 'admin') {
+        alert('Akses Ditolak: Tindakan pengosongan data tabel hanya diizinkan untuk Super Admin.');
+        return;
+      }
       const target = key || picSelectedTable.value;
       if (!target) return;
       const label = getTableLabelByKey(target) || target;
-      if (!confirm(`PERINGATAN: Apakah Anda yakin ingin mengosongkan SELURUH data pada tabel "${label}" (${target})?\n\nTindakan ini akan menghapus semua rekaman data dan tidak dapat dibatalkan.`)) return;
+      if (!confirm(`⚠️ PERINGATAN: Apakah Anda yakin ingin MENGHAPUS SEMUA DATA pada tabel "${label}" (${target})?\n\nTindakan ini akan mengosongkan seluruh baris data dan mereset urutan ID ke 1.\n\nLanjutkan?`)) return;
       try {
         const res = await fetch(`/api/import/${target}`, { method: 'DELETE' });
         const data = await res.json();
@@ -5952,14 +6963,46 @@ createApp({
           }
           alert(data.message || `Tabel ${label} berhasil dikosongkan.`);
         } else {
-          alert('Gagal mengosongkan tabel: ' + (data.error || 'Terjadi kesalahan'));
+          alert('Gagal menghapus data tabel: ' + (data.error || 'Terjadi kesalahan'));
         }
       } catch (err) {
-        alert('Gagal mengosongkan tabel: ' + err.message);
+        alert('Gagal menghapus data tabel: ' + err.message);
+      }
+    }
+
+    async function clearAllTables() {
+      if (authRole.value !== 'admin') {
+        alert('Akses Ditolak: Tindakan pengosongan seluruh database hanya diizinkan untuk Super Admin.');
+        return;
+      }
+      if (isClearingAll.value) return;
+      if (!confirm('⚠️ PERINGATAN KRITIS: Apakah Anda yakin ingin MENGHAPUS SEMUA DATA di SELURUH TABEL (33 tabel database)?\n\nTindakan ini akan mengosongkan seluruh rekaman data produksi dan QC serta mereset urutan ID ke 1.\n\nApakah Anda benar-benar yakin ingin melanjutkan?')) return;
+      isClearingAll.value = true;
+      try {
+        const res = await fetch('/api/import/all/clear-all', { method: 'DELETE' });
+        const data = await res.json();
+        if (res.ok) {
+          tables.forEach(t => { t.count = 0; });
+          await refreshAllCounts();
+          if (picSelectedTable.value) {
+            await loadPicTable(picSelectedTable.value, 1);
+          }
+          alert(data.message || 'Seluruh data pada 33 tabel database berhasil dikosongkan.');
+        } else {
+          alert('Gagal menghapus seluruh tabel: ' + (data.error || 'Terjadi kesalahan'));
+        }
+      } catch (err) {
+        alert('Gagal menghapus seluruh tabel: ' + err.message);
+      } finally {
+        isClearingAll.value = false;
       }
     }
 
     async function deleteTableRow(key, row) {
+      if (authRole.value !== 'admin') {
+        alert('Akses Ditolak: Tindakan penghapusan baris data hanya diizinkan untuk Super Admin.');
+        return;
+      }
       const target = key || picSelectedTable.value;
       if (!row || !row.id) {
         alert('Baris ini tidak memiliki kolom ID unik.');
@@ -6028,6 +7071,7 @@ createApp({
       traceForm.noBatch = 'A370/26';
       traceForm.tower = '1';
       auditSession.jenis = 'Backward';
+      selectedClusterKey.value = 'distribusi';
       auditSession.area = 'SJA Sukodono';
       auditSession.tanggalPelaksanaan = '13 Oktober 2026';
       auditSession.picPelaksana = 'Frengky Wahyudi';
@@ -6244,20 +7288,20 @@ createApp({
     const gsheetLoading = ref(false);
     const gsheetTower = ref('1');
     const gsheetStatus = reactive({
-      folderUrl: 'https://drive.google.com/drive/folders/1hRgNzF2I5Q3AB22pd8xZDOexzoPUZP95',
-      sheetId: '1rx6D5Iecd7-3UzZiixLbkko5m1YYfYrQpTdZ60uIKUA',
-      sheetUrl: 'https://docs.google.com/spreadsheets/d/1rx6D5Iecd7-3UzZiixLbkko5m1YYfYrQpTdZ60uIKUA/edit',
+      folderUrl: 'https://drive.google.com/drive/folders/1fNUUqJSoE1JesqkkmKZ6PU4dDP5MEswn',
+      sheetId: '1gYPOqD4NT0v3U0eZewDCYNpwf-3zk_iclXsJcTsITdo',
+      sheetUrl: 'https://docs.google.com/spreadsheets/d/1gYPOqD4NT0v3U0eZewDCYNpwf-3zk_iclXsJcTsITdo/edit',
       towers: {
         '1': {
           tower: 'Tower 1',
-          sheetId: '1rx6D5Iecd7-3UzZiixLbkko5m1YYfYrQpTdZ60uIKUA',
-          sheetUrl: 'https://docs.google.com/spreadsheets/d/1rx6D5Iecd7-3UzZiixLbkko5m1YYfYrQpTdZ60uIKUA/edit',
+          sheetId: '1gYPOqD4NT0v3U0eZewDCYNpwf-3zk_iclXsJcTsITdo',
+          sheetUrl: 'https://docs.google.com/spreadsheets/d/1gYPOqD4NT0v3U0eZewDCYNpwf-3zk_iclXsJcTsITdo/edit',
           tableCount: 11,
         },
         '2': {
           tower: 'Tower 2',
-          sheetId: '1I_n0gmzWSZAkjZD-Hsdz-OVNmreo90dEwS3btq7KxY0',
-          sheetUrl: 'https://docs.google.com/spreadsheets/d/1I_n0gmzWSZAkjZD-Hsdz-OVNmreo90dEwS3btq7KxY0/edit',
+          sheetId: '18skCecZKGdFj8uSE7hu7F-X8XQ2PD1Ys5EIvdh8iez8',
+          sheetUrl: 'https://docs.google.com/spreadsheets/d/18skCecZKGdFj8uSE7hu7F-X8XQ2PD1Ys5EIvdh8iez8/edit',
           tableCount: 11,
         },
       },
@@ -6270,9 +7314,9 @@ createApp({
 
     const activeSheetUrl = computed(() => {
       if (gsheetTower.value === '2') {
-        return gsheetStatus.towers?.['2']?.sheetUrl || 'https://docs.google.com/spreadsheets/d/1I_n0gmzWSZAkjZD-Hsdz-OVNmreo90dEwS3btq7KxY0/edit';
+        return gsheetStatus.towers?.['2']?.sheetUrl || 'https://docs.google.com/spreadsheets/d/18skCecZKGdFj8uSE7hu7F-X8XQ2PD1Ys5EIvdh8iez8/edit';
       }
-      return gsheetStatus.towers?.['1']?.sheetUrl || gsheetStatus.sheetUrl || 'https://docs.google.com/spreadsheets/d/1rx6D5Iecd7-3UzZiixLbkko5m1YYfYrQpTdZ60uIKUA/edit';
+      return gsheetStatus.towers?.['1']?.sheetUrl || gsheetStatus.sheetUrl || 'https://docs.google.com/spreadsheets/d/1gYPOqD4NT0v3U0eZewDCYNpwf-3zk_iclXsJcTsITdo/edit';
     });
 
     const activeSheetTitle = computed(() => {
@@ -6384,6 +7428,9 @@ createApp({
 
     // Auto-init on mount and scroll reveal
     onMounted(async () => {
+      if (window.sjaAuth) {
+        try { await window.sjaAuth.initAuth(); } catch (e) { console.warn(e); }
+      }
       try {
         const r = await fetch('/api/health');
         dbConnected.value = r.ok;
@@ -6395,12 +7442,23 @@ createApp({
       loadSessionsFromStorage();
       loadPicTable(picSelectedTable.value || 'dryer_tower_1', 1);
 
+      // Auto-fetch fresh trace from database on mount if batch is specified
+      if (traceForm.noBatch) {
+        doTrace(true);
+      }
+
       const initialHash = activeTab.value === 'pic' ? 'data-explorer' : activeTab.value;
       if (window.location.hash !== '#' + initialHash) {
         try { history.replaceState(null, '', '#' + initialHash); } catch {}
       }
       if (window.initScrollReveal) window.initScrollReveal();
     });
+
+    watch(traceResult, (newVal) => {
+      if (newVal) {
+        triggerCounters();
+      }
+    }, { immediate: true });
 
     watch(selectedPic, (v) => { try { localStorage.setItem('traceability_selected_pic', v); } catch {} });
     watch(selectedTower, (v) => { try { localStorage.setItem('traceability_selected_tower', v); } catch {} });
@@ -6511,8 +7569,13 @@ createApp({
       closeTablePreview,
       openProdTables,
       openQcTables,
+      openPaTables,
       toggleFlowProdTable,
       toggleFlowQcTable,
+      toggleFlowPaTable,
+      cleanSectionTitle,
+      getProdRole,
+      getQcRole,
       openRawTables,
       flowRawDataCache,
       flowRawLoading,
@@ -6538,7 +7601,11 @@ createApp({
       picSearchQuery,
       picFilterYear,
       picFilterMonth,
+      picFilterDate,
+      picFilterBean,
+      beanOptions,
       isRoastingTable,
+      activeDateCol,
       monthOptions,
       resetPicFilters,
       picPage,
@@ -6568,10 +7635,16 @@ createApp({
       headerBestBefore,
       headerPin,
       headerNomorBox,
+      headerOutputKg,
+      headerOutputBox,
+      headerYieldVal,
+      headerRasioVal,
       flowSections,
       tables,
       getItemValue,
       clearTable,
+      clearAllTables,
+      isClearingAll,
       deleteTableRow,
       doTrace,
       loadPresetAudit,
@@ -6650,6 +7723,26 @@ createApp({
       reportViewMode,
       openSessionReport,
       openSessionPipeline,
+      navigateToPipeline,
+      navigateToReport,
+
+      // Authentication & Role-Based Access Control
+      authRole,
+      authUser,
+      authIsLoggedIn,
+      isAdmin,
+      isProduksi,
+      isQc,
+      isViewer,
+      loginModalOpen,
+      loginForm,
+      loginLoading,
+      loginError,
+      openLoginModal,
+      fillQuickAccount,
+      submitLogin,
+      enterAsGuest,
+      logoutAuth,
     };
   },
 }).mount('#app');

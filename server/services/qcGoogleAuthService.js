@@ -10,10 +10,12 @@ let authInstance = null;
 let cachedEmail = null;
 
 function getQcAuth() {
+  if (!fs.existsSync(QC_KEY_PATH)) {
+    authInstance = null;
+    cachedEmail = null;
+    throw new Error('Gagal terhubung ke API Google: Kredensial API tidak ditemukan.');
+  }
   if (!authInstance) {
-    if (!fs.existsSync(QC_KEY_PATH)) {
-      throw new Error(`File kredensial QC tidak ditemukan: ${QC_KEY_PATH}`);
-    }
     try {
       const raw = JSON.parse(fs.readFileSync(QC_KEY_PATH, 'utf8'));
       cachedEmail = raw.client_email || 'checklist-qc@traceability-512303.iam.gserviceaccount.com';

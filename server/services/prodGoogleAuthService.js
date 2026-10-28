@@ -10,10 +10,12 @@ let authInstance = null;
 let cachedEmail = null;
 
 function getProdAuth() {
+  if (!fs.existsSync(PROD_KEY_PATH)) {
+    authInstance = null;
+    cachedEmail = null;
+    throw new Error('Gagal terhubung ke API Google: Kredensial API tidak ditemukan.');
+  }
   if (!authInstance) {
-    if (!fs.existsSync(PROD_KEY_PATH)) {
-      throw new Error(`File kredensial Produksi tidak ditemukan: ${PROD_KEY_PATH}`);
-    }
     try {
       const raw = JSON.parse(fs.readFileSync(PROD_KEY_PATH, 'utf8'));
       cachedEmail = raw.client_email || 'cheklist-produksi@traceability-512303.iam.gserviceaccount.com';

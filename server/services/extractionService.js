@@ -44,7 +44,7 @@ async function getExtractionFlow(batch, tahun, tower) {
       tanggal: first.Tanggal ? String(first.Tanggal).split('T')[0].split(' ')[0] : null,
       waktu_proses: `${formatDT(first.Tanggal, first['Start Extraction'])} - ${formatDT(last.Tanggal, last['Stop Extraction'])}`,
       operator_produksi: uniqueJoin(rows.map((r) => r['Nama Petugas'])) || '-',
-      mode_ekstraksi: [...new Set(rows.map((r) => r.Mode).filter(Boolean))].join(', ') || 'IC1',
+      mode_ekstraksi: [...new Set(rows.map((r) => r.Mode).filter(Boolean))].join(', ') || null,
       jumlah_percolator: rows.length,
       silo_degassing: siloNumbers.join(' & ') || '-',
       silo_numbers: siloNumbers,

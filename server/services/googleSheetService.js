@@ -16,40 +16,12 @@ const lastSyncByScope = {}, lastSummaryByScope = {}, sheetBufferHashes = {};
 const SYNC_COOLDOWN_MS = 2 * 60 * 1000; // 2 menit cooldown (dari 10 detik)
 const SYNC_FORCE_AFTER_MS = 30 * 60 * 1000; // Force sync jika data > 30 menit
 
-async function hasEmptyTablesInScope(division, tower) {
-  try {
-    const activeTower = String(tower).toLowerCase();
-    if (division === 'all' || division === 'produksi') {
-      for (const [tblKey, config] of Object.entries(PROD_TABLE_MAP)) {
-        if (activeTower === '1' && config.tower !== 'Tower 1' && config.tower !== 'Non-Tower') continue;
-        if (activeTower === '2' && config.tower !== 'Tower 2' && config.tower !== 'Non-Tower') continue;
-        if ((activeTower === 'non-tower' || activeTower === 'nontower') && config.tower !== 'Non-Tower') continue;
-        const [r] = await pool.query(`SELECT 1 FROM \`${tblKey}\` LIMIT 1`);
-        if (r.length === 0) return true;
-      }
-    }
-    if (division === 'all' || division === 'qc') {
-      const towers = (tower === 'all' || tower === 'both') ? ['1', '2'] : [String(tower)];
-      for (const t of towers) {
-        for (const tbl of (QC_TABLES_BY_TOWER[t] || [])) {
-          const [r] = await pool.query(`SELECT 1 FROM \`${tbl}\` LIMIT 1`);
-          if (r.length === 0) return true;
-        }
-      }
-    }
-    return false;
-  } catch {
-    return false;
-  }
-}
+const { hasEmptyTablesInScope } = require('./googleSheetScopeService');
 
 async function executeUnifiedSync({ division = 'all', tower = 'all', customSheetId = null, force = false } = {}) {
-  const startTime = Date.now();
-  const now = startTime;
+  const startTime = Date.now(), now = startTime;
   let allResults = [], totalImported = 0, totalDuplicates = 0;
   const workbookCache = {}, fingerprintCache = {};
-
-
   try {
     if (division === 'all' || division === 'produksi') {
       const activeTower = String(tower).toLowerCase();
@@ -108,11 +80,26 @@ async function executeUnifiedSync({ division = 'all', tower = 'all', customSheet
       }
     }
 
+    if (division === 'all' || division === 'pa') {
+      try {
+        const { syncAllPaTables } = require('./googleSheetPaService');
+        const paRes = await syncAllPaTables({ tower, force, customSheetId });
+        paRes.results.forEach(r => { r.pic = 'PA'; });
+        allResults = allResults.concat(paRes.results);
+        totalImported += paRes.imported;
+        totalDuplicates += paRes.duplicates;
+      } catch (paErr) {
+        console.error('PA Sync Error in Unified:', paErr);
+      }
+    }
+
     Object.assign(sheetBufferHashes, fingerprintCache);
-    const durationSeconds = ((Date.now() - startTime) / 1000).toFixed(1);
+    const allFailed = allResults.length > 0 && allResults.every(r => !r.success);
     const summary = {
       division, tower, totalTables: allResults.length, totalImported, totalDuplicates,
-      durationSeconds: `${durationSeconds}s`, timestamp: new Date().toISOString(), results: allResults, success: true,
+      durationSeconds: `${((Date.now() - startTime) / 1000).toFixed(1)}s`, timestamp: new Date().toISOString(), results: allResults,
+      success: !allFailed,
+      error: allFailed ? allResults[0]?.message : null,
     };
     syncState.lastSyncTime = summary.timestamp;
     syncState.lastSummary = summary;
@@ -157,32 +144,23 @@ async function syncAllProdTables(options = {}) {
   return syncUnifiedTables({ division: 'produksi', tower: 'all', force: Boolean(options.force) });
 }
 
+const { syncSingleTable: runSyncSingleTable } = require('./googleSheetSingleService');
+
 async function syncSingleTable(tableName, customSheetId, force = false) {
   if (activeSyncPromise) {
     await activeSyncPromise;
-    return { table: tableName, label: PROD_TABLE_MAP[tableName]?.title || tableName, pic: PROD_TABLE_MAP[tableName] ? 'Produksi' : 'QC', tower: PROD_TABLE_MAP[tableName]?.tower || 'Tower 1', imported: 0, duplicates: 0, message: 'Tabel telah dimutakhirkan dalam proses sinkronisasi bersama.', success: true };
+    return {
+      table: tableName,
+      label: PROD_TABLE_MAP[tableName]?.title || tableName,
+      pic: PROD_TABLE_MAP[tableName] ? 'Produksi' : 'QC',
+      tower: PROD_TABLE_MAP[tableName]?.tower || 'Tower 1',
+      imported: 0,
+      duplicates: 0,
+      message: 'Tabel telah dimutakhirkan dalam proses sinkronisasi bersama.',
+      success: true,
+    };
   }
-
-  const isProd = Boolean(PROD_TABLE_MAP[tableName]);
-  const targetId = customSheetId || (isProd ? PROD_TABLE_MAP[tableName].sheetId : (tableName.endsWith('_t2') ? getSpreadsheetId('2') : getSpreadsheetId('1')));
-  const label = isProd ? PROD_TABLE_MAP[tableName].title : tableName;
-  const pic = isProd ? 'Produksi' : 'QC';
-  const tower = isProd ? PROD_TABLE_MAP[tableName].tower : (tableName.endsWith('_t2') ? 'Tower 2' : 'Tower 1');
-
-  const [cntRows] = await pool.query(`SELECT 1 FROM \`${tableName}\` LIMIT 1`);
-  const isDbEmpty = cntRows.length === 0;
-
-  const buffer = await fetchGoogleSheetBuffer(targetId, { isQc: pic === 'QC' });
-  const hash = crypto.createHash('md5').update(buffer).digest('hex');
-  const cacheKey = `${targetId}:${tableName}`;
-  const unchanged = !force && !isDbEmpty && sheetBufferHashes[cacheKey] === hash;
-  sheetBufferHashes[cacheKey] = hash;
-
-  const res = unchanged
-    ? { imported: 0, duplicates: 0, message: 'Data tabel mutakhir (tidak ada perubahan).' }
-    : await bulkInsertExcelData(tableName, buffer, PROD_TABLE_MAP[tableName]?.sheetName);
-
-  return { table: tableName, label, pic, tower, imported: res.imported || 0, duplicates: res.duplicates || 0, message: res.message, success: true };
+  return runSyncSingleTable(tableName, customSheetId, force, sheetBufferHashes);
 }
 
 module.exports = {
@@ -196,3 +174,4 @@ module.exports = {
   PROD_TABLE_MAP,
   DEFAULT_PROD_SHEETS,
 };
+

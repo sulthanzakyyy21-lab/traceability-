@@ -425,25 +425,6 @@ body {
   color-scheme: light;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #15110e;
-    --sf: #1e1814;
-    --tx: #f3ece4;
-    --mu: #a09385;
-    --bd: #33291f;
-    --ac: #f2b81c;
-    --acx: #2b1a0d;
-    --hl: #f2b81c;
-    --ok: #5fd397;
-    --okb: #16291f;
-    --er: #ff8a7a;
-    --erb: #2f1a17;
-    --dp: #2a221b;
-    color-scheme: dark;
-  }
-}
-
 :root[data-theme="dark"] {
   --bg: #15110e;
   --sf: #1e1814;

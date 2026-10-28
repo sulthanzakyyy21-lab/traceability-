@@ -8,10 +8,8 @@ function excelValueToString(val) {
     const pad = (n) => String(n).padStart(2, '0');
     let y = val.getFullYear();
     if (y === 1899 || y === 1900) return `${pad(val.getHours())}:${pad(val.getMinutes())}:${pad(val.getSeconds())}`;
-    if (y > 2099) {
-      const match = String(y).match(/(20[2-3][0-9])/);
-      y = match ? parseInt(match[1], 10) : new Date().getFullYear();
-    } else if (y < 2000 || y > 2099) y = new Date().getFullYear();
+    if (y === 2055) y = 2025;
+    if (y > 2030 || y < 2000) y = new Date().getFullYear();
     const mo = pad(val.getMonth() + 1), d = pad(val.getDate());
     const h = pad(val.getHours()), mi = pad(val.getMinutes()), s = pad(val.getSeconds());
     return (h === '00' && mi === '00' && s === '00') ? `${y}-${mo}-${d}` : `${y}-${mo}-${d} ${h}:${mi}:${s}`;
@@ -27,9 +25,11 @@ function excelValueToString(val) {
     let p1 = parseInt(dateMatch[1], 10), p2 = parseInt(dateMatch[2], 10), yr = parseInt(dateMatch[3], 10);
     const rest = dateMatch[4] ? dateMatch[4].trim() : '';
     if (yr < 100) yr = 2000 + yr;
-    if (yr < 2000 || yr > 2099) yr = new Date().getFullYear();
-    const month = (p1 > 12 && p2 <= 12) ? p2 : p1;
-    const day = (p1 > 12 && p2 <= 12) ? p1 : p2;
+    if (yr === 2055) yr = 2025;
+    if (yr < 2000 || yr > 2030) yr = new Date().getFullYear();
+    const isMMDD = (p1 <= 12 && p2 > 12);
+    const day = isMMDD ? p2 : p1;
+    const month = isMMDD ? p1 : p2;
     if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
       const pad = (n) => String(n).padStart(2, '0');
       const datePart = `${yr}-${pad(month)}-${pad(day)}`;
