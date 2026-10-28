@@ -382,6 +382,16 @@ describe('Traceability System - Automated Monitoring & Validation', () => {
     assert.ok(paFlow.cip.evaporation, 'paFlow harus memuat CIP evaporasi');
     assert.ok(paFlow.cip.dryer, 'paFlow harus memuat CIP dryer');
     assert.ok(paFlow.cip.rework, 'paFlow harus memuat CIP rework');
+
+    assert.ok(paFlow.extraction_cip_checklist, 'paFlow harus memuat extraction_cip_checklist');
+    assert.strictEqual(paFlow.extraction_cip_checklist.totalItems, 57, 'Plant 1 checklist harus berisi 57 titik');
+    assert.ok(paFlow.extraction_cip_checklist.recordedItems > 0, 'Plant 1 harus memiliki titik CIP terverifikasi');
+
+    const { getExtractionCipChecklist } = require('../server/services/paCipChecklistService');
+    const p2Checklist = await getExtractionCipChecklist(2, '2026-08-28');
+    assert.ok(p2Checklist, 'getExtractionCipChecklist Plant 2 harus mengembalikan objek');
+    assert.strictEqual(p2Checklist.totalItems, 68, 'Plant 2 checklist harus berisi 68 titik');
+    assert.ok(p2Checklist.recordedItems > 0, 'Plant 2 harus memiliki titik CIP terverifikasi');
   });
 
 });

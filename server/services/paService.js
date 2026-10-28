@@ -152,6 +152,7 @@ async function getPaFlow(batch, tahun, tower, extractionDate, packingDate) {
   } catch {}
 
   const { getSessionCipRows, getWaterProcessTable, getPackingEmpTable } = require('./paTableHelper');
+  const { getExtractionCipChecklist } = require('./paCipChecklistService');
   const extCutoff = getCutoff(extractionDate);
   const waterTable = await getWaterProcessTable(tower, extCutoff);
   const extCipTable = await getSessionCipRows(tower, ['ekstrak', 'c01', 'flash tank', 'kolom c03', 'tank system', 'aroma', 'reboiler', 'hydrolis'], extCutoff, ['selang biru']);
@@ -159,6 +160,7 @@ async function getPaFlow(batch, tahun, tower, extractionDate, packingDate) {
   const dryerCipTable = await getSessionCipRows(tower, ['dryer', 'sfb', 'chamber', 'feed tank dryer', 'feed line'], extCutoff);
   const reworkCipTable = await getSessionCipRows(tower, ['rework'], extCutoff);
   const packingEmpTable = await getPackingEmpTable(tower, cutoff);
+  const extCipChecklist = await getExtractionCipChecklist(tower, extractionDate);
 
   return {
     water,
@@ -177,6 +179,7 @@ async function getPaFlow(batch, tahun, tower, extractionDate, packingDate) {
       rework: reworkCipTable,
       packing: packingEmpTable,
     },
+    extraction_cip_checklist: extCipChecklist,
     env_swab_date: empDate,
     air_bacteria_date: abeDate,
   };
@@ -186,5 +189,6 @@ module.exports = {
   getPaFlow,
   getWaterProcessFlow,
   getLatestCip,
+  getExtractionCipChecklist: require('./paCipChecklistService').getExtractionCipChecklist,
 };
 
