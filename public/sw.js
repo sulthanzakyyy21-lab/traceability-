@@ -1,5 +1,5 @@
-// Service Worker: PT. Santos Jaya Abadi Traceability Platform (SJA-PWA v1.0)
-const CACHE_NAME = 'sja-traceability-v1';
+// Service Worker: PT. Santos Jaya Abadi Traceability Platform (SJA-PWA v2.0)
+const CACHE_NAME = 'sja-traceability-v2';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -32,7 +32,12 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
 
-  // 1. Mandatory Single Source of Truth: API queries are ALWAYS network-first (NEVER serve stale/mock DB data)
+  // 1. NEVER intercept cross-origin requests (Tailwind CDN, Fonts, UNPKG)
+  if (url.origin !== self.location.origin) {
+    return;
+  }
+
+  // 2. Mandatory Single Source of Truth: API queries are ALWAYS network-first (NEVER serve stale/mock DB data)
   if (url.pathname.startsWith('/api/')) {
     event.respondWith(
       fetch(event.request).catch(() => {
@@ -45,7 +50,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 2. Static application shell: Stale-While-Revalidate for instant load
+  // 3. Static application shell: Stale-While-Revalidate for instant load
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
       const fetchPromise = fetch(event.request).then((networkResponse) => {
@@ -62,4 +67,3 @@ self.addEventListener('fetch', (event) => {
     })
   );
 });
-
