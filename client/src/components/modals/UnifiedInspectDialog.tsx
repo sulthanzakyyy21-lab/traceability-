@@ -1,8 +1,9 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Table2, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { CipChecklistTable } from './CipChecklistTable';
 import type { InspectModalState } from '@/types/traceability';
 
 interface Props {
@@ -12,16 +13,22 @@ interface Props {
 
 export const UnifiedInspectDialog: React.FC<Props> = ({ data, onClose }) => {
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [cipFilter, setCipFilter] = useState<'all' | 'lt1' | 'lt2' | 'lt3' | 'swab'>('all');
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search), 150);
+    return () => clearTimeout(timer);
+  }, [search]);
 
   if (!data) return null;
 
   const filteredCipItems = useMemo(() => {
     if (!data.cipChecklist?.items) return [];
     return data.cipChecklist.items.filter((item) => {
-      const matchSearch = !search ||
-        item.area.toLowerCase().includes(search.toLowerCase()) ||
-        item.lokasi.toLowerCase().includes(search.toLowerCase());
+      const matchSearch = !debouncedSearch ||
+        item.area.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+        item.lokasi.toLowerCase().includes(debouncedSearch.toLowerCase());
       if (!matchSearch) return false;
       if (cipFilter === 'lt1') return item.lokasi.includes('Lt. 1');
       if (cipFilter === 'lt2') return item.lokasi.includes('Lt. 2');
@@ -29,15 +36,15 @@ export const UnifiedInspectDialog: React.FC<Props> = ({ data, onClose }) => {
       if (cipFilter === 'swab') return item.swab_required;
       return true;
     });
-  }, [data.cipChecklist, search, cipFilter]);
+  }, [data.cipChecklist, debouncedSearch, cipFilter]);
 
   const filteredRows = useMemo(() => {
     if (!data.rows) return [];
-    if (!search) return data.rows;
+    if (!debouncedSearch) return data.rows;
     return data.rows.filter((r) =>
-      Object.values(r).some((v) => String(v ?? '').toLowerCase().includes(search.toLowerCase()))
+      Object.values(r).some((v) => String(v ?? '').toLowerCase().includes(debouncedSearch.toLowerCase()))
     );
-  }, [data.rows, search]);
+  }, [data.rows, debouncedSearch]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 md:p-8 bg-slate-900/45 backdrop-blur-xs overflow-y-auto">
@@ -75,6 +82,7 @@ export const UnifiedInspectDialog: React.FC<Props> = ({ data, onClose }) => {
             </Button>
           </div>
         </div>
+
         {/* CIP Contextual Toolbar */}
         {data.type === 'cip' && (
           <div className="px-5 py-2.5 bg-slate-50/90 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2.5 shrink-0 text-xs">
@@ -106,43 +114,11 @@ export const UnifiedInspectDialog: React.FC<Props> = ({ data, onClose }) => {
             </div>
           </div>
         )}
+
         {/* Body Table Container */}
         <div className="flex-1 overflow-auto bg-slate-100/70 p-3 sm:p-4">
           {data.type === 'cip' ? (
-            <div className="overflow-x-auto rounded-xl border border-slate-300 bg-white shadow-xs">
-              <table className="w-full min-w-[980px] text-left text-xs border-collapse">
-                <thead className="sticky top-0 bg-blue-700 text-white z-10 text-[11px] font-bold uppercase tracking-wider">
-                  <tr>
-                    <th className="py-2.5 px-3 w-12 text-center border-r border-blue-600">No.</th>
-                    <th className="py-2.5 px-3 min-w-[240px] border-r border-blue-600">Instrument / Area</th>
-                    <th className="py-2.5 px-3 w-20 text-center border-r border-blue-600">Lokasi</th>
-                    <th className="py-2.5 px-3 w-24 text-center border-r border-blue-600">Swab Test</th>
-                    <th className="py-2.5 px-3 min-w-[150px] text-center border-r border-blue-600">Waktu CIP Terakhir</th>
-                    <th className="py-2.5 px-3 w-20 text-right border-r border-blue-600">pH Lab</th>
-                    <th className="py-2.5 px-3 w-24 text-right border-r border-blue-600">Conductivity</th>
-                    <th className="py-2.5 px-3 w-28 text-center border-r border-blue-600">Hasil Swab</th>
-                    <th className="py-2.5 px-3 w-28 text-center">Status</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-200">
-                  {filteredCipItems.map((item) => (
-                    <tr key={item.no} className="hover:bg-blue-50/50 transition-colors">
-                      <td className="py-2 px-3 text-center font-bold text-slate-500 border-r border-slate-200">{item.no}</td>
-                      <td className="py-2 px-3 font-semibold text-slate-900 border-r border-slate-200">{item.area}</td>
-                      <td className="py-2 px-3 text-center font-mono text-[11px] border-r border-slate-200">{item.lokasi}</td>
-                      <td className="py-2 px-3 text-center font-bold border-r border-slate-200">{item.swab_label}</td>
-                      <td className="py-2 px-3 text-center font-mono text-[11px] text-slate-700 border-r border-slate-200">{item.waktu_cip || '-'}</td>
-                      <td className="py-2 px-3 text-right font-mono font-bold text-slate-900 border-r border-slate-200">{item.ph || '-'}</td>
-                      <td className="py-2 px-3 text-right font-mono font-bold text-slate-900 border-r border-slate-200">{item.conductivity || '-'}</td>
-                      <td className="py-2 px-3 text-center font-mono font-bold text-emerald-800 border-r border-slate-200">{item.swab_result ?? '-'}</td>
-                      <td className="py-2 px-3 text-center">
-                        <Badge variant={item.status === 'SESUAI' ? 'success' : 'warning'}>{item.status}</Badge>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <CipChecklistTable items={filteredCipItems} />
           ) : (
             <div className="overflow-x-auto rounded-xl border border-slate-300 bg-white shadow-xs">
               <table className="param-stacked-table mb-0 w-full text-xs">

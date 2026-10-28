@@ -6,6 +6,8 @@
   <meta name="description" content="Automated Digital Traceability System PT. Santos Jaya Abadi - Form F/QC/01.030" />
   <title>Laporan Traceability – PT. Santos Jaya Abadi (Form F/QC/01.030)</title>
 
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
+  <link rel="dns-prefetch" href="//fonts.googleapis.com" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -498,6 +500,17 @@
     /* Spinner */
     .spin { animation: spin 1s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* High-Performance Industrial Skeleton Shimmer */
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+    .skeleton-shimmer {
+      background: linear-gradient(90deg, #f5f5f4 25%, #e7e5e4 50%, #f5f5f4 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+    }
   </style>
 </head>
 <body class="min-h-screen bg-[#fbfaf8] font-sans antialiased text-stone-900 ambient-pattern">
@@ -1887,7 +1900,13 @@
 
       <!-- ── DETAIL PANEL CONTAINER (DIPERKUAT DENGAN VUE TRANSITION MODE=OUT-IN) ── -->
       <div id="flow-detail-panel" class="transition-all duration-300">
-        <Transition name="cluster-fade" mode="out-in">
+        <!-- Skeleton Shimmer Screen saat loading penelusuran (CLS = 0) -->
+        <div v-if="tracing" class="space-y-5 animate-pulse no-print" aria-busy="true" aria-label="Memuat data penelusuran...">
+          <div class="h-24 rounded-2xl skeleton-shimmer border border-stone-200"></div>
+          <div class="h-64 rounded-2xl skeleton-shimmer border border-stone-200"></div>
+          <div class="h-64 rounded-2xl skeleton-shimmer border border-stone-200"></div>
+        </div>
+        <Transition v-else name="cluster-fade" mode="out-in">
           <div :key="selectedClusterKey" class="space-y-5">
             <!-- Banner Klaster Atas -->
             <div v-if="activeCluster" class="cluster-coffee-bg text-white rounded-2xl p-5 sm:p-6 shadow-md flex items-center justify-between gap-4 animate-step-1 border border-amber-900/40 relative overflow-hidden">
@@ -4428,11 +4447,11 @@
             <div class="relative">
               <input
                 type="text"
-                v-model="inspectSearchQuery"
+                v-model="inspectSearchInput"
                 placeholder="Cari data..."
                 class="w-36 sm:w-56 bg-white border border-slate-300 rounded-xl px-3 py-1.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all shadow-2xs"
               />
-              <span v-if="inspectSearchQuery" @click="inspectSearchQuery = ''" class="absolute right-2.5 top-1.5 text-xs text-slate-400 hover:text-slate-700 cursor-pointer">&times;</span>
+              <span v-if="inspectSearchInput" @click="inspectSearchInput = ''; inspectSearchQuery = ''" class="absolute right-2.5 top-1.5 text-xs text-slate-400 hover:text-slate-700 cursor-pointer">&times;</span>
             </div>
             <!-- Close Button -->
             <button
@@ -5612,15 +5631,23 @@ createApp({
 
     // ── Unified Inspector Pop-up Modal State & Methods ──
     const activeInspectModal = ref(null);
+    const inspectSearchInput = ref('');
     const inspectSearchQuery = ref('');
     const inspectCipFilter = ref('all');
+    let inspectDebounceTimer = null;
+    watch(inspectSearchInput, (newVal) => {
+      clearTimeout(inspectDebounceTimer);
+      inspectDebounceTimer = setTimeout(() => {
+        inspectSearchQuery.value = newVal;
+      }, 150);
+    });
 
     function openInspectCip(checklistData, customTitle, customSubtitle) {
       if (!checklistData) {
         checklistData = traceResult.value?.pa?.extraction_cip_checklist;
       }
       if (!checklistData) return;
-      inspectSearchQuery.value = '';
+      inspectSearchInput.value = ''; inspectSearchQuery.value = '';
       inspectCipFilter.value = 'all';
       activeInspectModal.value = {
         type: 'cip',
@@ -5638,7 +5665,7 @@ createApp({
 
     function openInspectScada(procKey) {
       if (!procKey) return;
-      inspectSearchQuery.value = '';
+      inspectSearchInput.value = ''; inspectSearchQuery.value = '';
       const title = getProcessTitleByKey(procKey);
       const columns = getProcessColumnsByKey(procKey);
       const rows = getProcessRowsByKey(procKey);
@@ -5663,7 +5690,7 @@ createApp({
 
     function openInspectProd(flow) {
       if (!flow || !flow.prodTable) return;
-      inspectSearchQuery.value = '';
+      inspectSearchInput.value = ''; inspectSearchQuery.value = '';
       activeInspectModal.value = {
         type: 'prod',
         title: `Tabel Data Produksi • ${flow.prodTable.title || flow.flowTitle}`,
@@ -5677,7 +5704,7 @@ createApp({
 
     function openInspectQc(flow) {
       if (!flow || !flow.qcTable) return;
-      inspectSearchQuery.value = '';
+      inspectSearchInput.value = ''; inspectSearchQuery.value = '';
       activeInspectModal.value = {
         type: 'qc',
         title: `Tabel Pengujian Mutu (QC) • ${flow.qcTable.title || flow.flowTitle}`,
@@ -5691,7 +5718,7 @@ createApp({
 
     function openInspectPa(flow) {
       if (!flow || !flow.paTable) return;
-      inspectSearchQuery.value = '';
+      inspectSearchInput.value = ''; inspectSearchQuery.value = '';
       activeInspectModal.value = {
         type: 'pa',
         title: `Tabel Sanitasi & Jaminan Mutu (PA) • ${flow.paTable.title || flow.flowTitle}`,
@@ -5707,7 +5734,7 @@ createApp({
     function closeInspectModal() {
       activeInspectModal.value = null;
       activeModalProcess.value = null;
-      inspectSearchQuery.value = '';
+      inspectSearchInput.value = ''; inspectSearchQuery.value = '';
     }
 
     const filteredInspectCipItems = computed(() => {
@@ -7962,6 +7989,7 @@ createApp({
       toggleFlowQcTable,
       toggleFlowPaTable,
       activeInspectModal,
+      inspectSearchInput,
       inspectSearchQuery,
       inspectCipFilter,
       openInspectCip,
@@ -8151,5 +8179,14 @@ createApp({
   },
 }).mount('#app');
 </script>
+  <script>
+    if ('serviceWorker' in navigator && window.location.protocol.startsWith('http')) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').catch((err) => {
+          console.warn('Service Worker registration skipped:', err);
+        });
+      });
+    }
+  </script>
 </body>
 </html>

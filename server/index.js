@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const compression = require('compression');
 const path = require('path');
 const fs = require('fs');
 const { securityHeaders } = require('./middleware/securityHeaders');
@@ -31,6 +32,7 @@ const PORT = process.env.PORT || 3001;
 
 // Security & Standard Middleware
 app.use(securityHeaders);
+app.use(compression({ level: 6, threshold: 1024 }));
 app.use(cors());
 app.use(express.json({ limit: '15mb' }));
 app.use(express.urlencoded({ extended: true, limit: '15mb' }));
@@ -38,11 +40,21 @@ app.use(express.urlencoded({ extended: true, limit: '15mb' }));
 // Serve static frontend files (Dual-Running: /app for React, / for stable fallback)
 const clientDist = path.join(__dirname, '../client/dist');
 if (fs.existsSync(clientDist)) {
-  app.use('/app', express.static(clientDist));
+  app.use('/app', express.static(clientDist, {
+    maxAge: '1d',
+    setHeaders: (res, p) => {
+      if (p.includes('assets')) res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    }
+  }));
   app.get('/app', (req, res) => res.sendFile(path.join(clientDist, 'index.html')));
   app.get('/app/*', (req, res) => res.sendFile(path.join(clientDist, 'index.html')));
 }
-app.use(express.static(path.join(__dirname, '../public')));
+app.use(express.static(path.join(__dirname, '../public'), {
+  maxAge: '1h',
+  setHeaders: (res, p) => {
+    if (p.endsWith('.html')) res.setHeader('Cache-Control', 'no-cache, must-revalidate');
+  }
+}));
 
 // API Routes
 app.use('/api/auth', require('./routes/auth'));
