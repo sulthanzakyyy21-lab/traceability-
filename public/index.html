@@ -512,33 +512,49 @@
       animation: shimmer 1.5s infinite;
     }
 
-    /* ── High-Performance GPU Mesh Gradient for Industrial Login ── */
-    .login-mesh-bg {
-      background-color: #140d0a;
-      background-image:
-        radial-gradient(at 10% 15%, rgba(138, 64, 18, 0.45) 0px, transparent 55%),
-        radial-gradient(at 90% 10%, rgba(98, 42, 22, 0.55) 0px, transparent 50%),
-        radial-gradient(at 85% 85%, rgba(194, 91, 14, 0.32) 0px, transparent 55%),
-        radial-gradient(at 15% 85%, rgba(65, 26, 16, 0.65) 0px, transparent 50%),
-        radial-gradient(at 50% 50%, rgba(110, 52, 28, 0.35) 0px, transparent 60%);
-      background-size: 140% 140%;
-      animation: meshShift 18s ease-in-out infinite alternate;
-      transform: translateZ(0);
-      will-change: background-position;
-    }
-    @keyframes meshShift {
-      0% { background-position: 0% 0%; }
-      50% { background-position: 100% 100%; }
-      100% { background-position: 0% 100%; }
+    /* ── 1. Latar Belakang Gambar Karung Biji Kopi dengan Warm Overlay ── */
+    .coffee-bg-backdrop {
+      background-image: 
+        radial-gradient(circle at 75% 20%, rgba(92, 58, 41, 0.45) 0%, rgba(35, 20, 14, 0.88) 75%),
+        linear-gradient(135deg, rgba(26, 15, 10, 0.85) 0%, rgba(45, 26, 17, 0.78) 100%),
+        url('https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=1920&q=85');
+      background-size: cover;
+      background-position: center center;
+      background-repeat: no-repeat;
+      background-color: #23140e;
     }
 
-    /* ── Pure CSS Glassmorphism Card ── */
-    .glass-login-card {
-      background: rgba(255, 255, 255, 0.85);
-      backdrop-filter: blur(20px) saturate(180%);
-      -webkit-backdrop-filter: blur(20px) saturate(180%);
-      border: 1px solid rgba(255, 255, 255, 0.7);
-      box-shadow: 0 30px 60px -12px rgba(28, 16, 10, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.4) inset;
+    /* ── 2. Glassmorphism Warm Tinted Card ── */
+    .glass-card-portal {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      box-shadow: 
+        0 25px 60px -15px rgba(25, 14, 8, 0.6),
+        0 0 0 1px rgba(255, 255, 255, 0.4);
+    }
+
+    /* Left Hero Panel Glass */
+    .glass-left-panel {
+      background: linear-gradient(145deg, #7f5038 0%, #5c3a29 55%, #3d251a 100%);
+      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.2);
+    }
+
+    /* Orbit & Glow Keyframes */
+    @keyframes spinSlow {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    .animate-spin-slow {
+      animation: spinSlow 22s linear infinite;
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% { opacity: 0.4; transform: scale(1); }
+      50% { opacity: 0.75; transform: scale(1.04); }
+    }
+    .animate-pulse-glow {
+      animation: pulseGlow 4s ease-in-out infinite;
     }
 
     /* ── Defensive SVG Sizing & Constraints ── */
@@ -621,154 +637,334 @@
 <div id="app" v-cloak class="min-h-screen">
 
   <!-- ══════════════════════════════════════════════════════════════ -->
-  <!-- HALAMAN LOGIN UTAMA (SISTEM TRACEABILITY PT. SANTOS JAYA ABADI)-->
+  <!-- HALAMAN LOGIN UTAMA (COFFEE TRACEABILITY TWO-COLUMN SPLIT PORTAL) -->
   <!-- Ditampilkan saat pengguna belum terautentikasi                 -->
   <!-- ══════════════════════════════════════════════════════════════ -->
   <div
     v-if="!authIsLoggedIn"
-    class="min-h-screen relative flex items-center justify-center p-4 sm:p-6 select-none login-mesh-bg overflow-hidden"
+    class="coffee-bg-backdrop min-h-screen flex items-center justify-center p-3 sm:p-6 lg:p-8 font-sans selection:bg-[#7f5038] selection:text-white antialiased relative overflow-x-hidden"
   >
-    <!-- Subtle GPU Floating Ambient Glow Orbs -->
-    <div class="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-amber-600/15 blur-3xl pointer-events-none transform -translate-x-1/2 -translate-y-1/2"></div>
-    <div class="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full bg-orange-700/10 blur-3xl pointer-events-none transform translate-x-1/2 translate-y-1/2"></div>
+    <!-- Subtle Ambient Glow Orbs di Balik Layar -->
+    <div class="absolute top-1/4 left-10 w-96 h-96 bg-amber-700/20 rounded-full blur-3xl pointer-events-none animate-pulse-glow"></div>
+    <div class="absolute bottom-10 right-10 w-96 h-96 bg-[#3d251a]/40 rounded-full blur-3xl pointer-events-none"></div>
 
-    <!-- Glassmorphic Login Card -->
-    <div class="relative z-10 w-full max-w-md glass-login-card rounded-3xl overflow-hidden p-6 sm:p-8 space-y-6">
-      
-      <!-- Brand & Title Header -->
-      <div class="text-center space-y-2.5">
-        <div class="w-16 h-16 rounded-2xl bg-[#4a2c1d] flex items-center justify-center font-black text-white text-lg shadow-md mx-auto tracking-wider border-2 border-[#6d422a]/40">
-          SJA
-        </div>
-        <div>
-          <h1 class="text-xl sm:text-2xl font-black text-stone-900 tracking-tight">PT. Santos Jaya Abadi</h1>
-          <p class="text-[11px] font-extrabold text-[#4a2c1d] uppercase tracking-widest mt-0.5">Sistem Traceability &amp; Penelusuran Mutu</p>
-        </div>
-        <p class="text-xs text-stone-600 max-w-xs mx-auto leading-relaxed">
-          Silakan masukkan kredensial akun resmi Anda untuk mengakses sistem traceability dan operasional mutu.
-        </p>
+    <!-- MAIN CONTAINER CARD: SPLIT TWO-COLUMNS (Referensi OriginTrack / Coffee Portal) -->
+    <main class="w-full max-w-5xl rounded-[32px] sm:rounded-[40px] overflow-hidden glass-card-portal p-2 sm:p-3.5 border border-white/40 shadow-2xl transition-all duration-300 relative z-10">
+      <div class="grid grid-cols-1 lg:grid-cols-12 min-h-[580px] sm:min-h-[620px] rounded-[26px] sm:rounded-[34px] overflow-hidden">
+
+        <!-- =================================================================
+             KOLOM KIRI: VISUAL HERO & TRACEABILITY BADGE (Panel Kopi Nusantara)
+             ================================================================= -->
+        <section class="lg:col-span-6 glass-left-panel relative p-8 sm:p-12 flex flex-col justify-between text-white overflow-hidden select-none">
+          <!-- Elemen Geometris Abstrak & Dekorasi Latar -->
+          <div class="absolute -top-16 -left-16 w-56 h-56 rounded-full bg-white/5 blur-xl pointer-events-none"></div>
+          <div class="absolute top-1/2 -right-16 w-64 h-64 rounded-full bg-amber-500/10 blur-2xl pointer-events-none"></div>
+
+          <!-- Dot Pattern Sisi Atas Kiri (Dot Matrix 5x3) -->
+          <div class="absolute top-8 left-8 grid grid-cols-5 gap-2 opacity-25 pointer-events-none">
+            <div class="w-1.5 h-1.5 rounded-full bg-white"></div>
+            <div class="w-1.5 h-1.5 rounded-full bg-white"></div>
+            <div class="w-1.5 h-1.5 rounded-full bg-white"></div>
+            <div class="w-1.5 h-1.5 rounded-full bg-white"></div>
+            <div class="w-1.5 h-1.5 rounded-full bg-white"></div>
+            <div class="w-1.5 h-1.5 rounded-full bg-white"></div>
+            <div class="w-1.5 h-1.5 rounded-full bg-white"></div>
+            <div class="w-1.5 h-1.5 rounded-full bg-white"></div>
+            <div class="w-1.5 h-1.5 rounded-full bg-white"></div>
+            <div class="w-1.5 h-1.5 rounded-full bg-white"></div>
+            <div class="w-1.5 h-1.5 rounded-full bg-white"></div>
+            <div class="w-1.5 h-1.5 rounded-full bg-white"></div>
+            <div class="w-1.5 h-1.5 rounded-full bg-white"></div>
+            <div class="w-1.5 h-1.5 rounded-full bg-white"></div>
+            <div class="w-1.5 h-1.5 rounded-full bg-white"></div>
+          </div>
+
+          <!-- Konten Headline Utama -->
+          <div class="relative z-10 my-auto py-8">
+            <div class="inline-flex items-center gap-1.5 mb-3 px-3 py-1 rounded-lg bg-amber-500/20 border border-amber-400/30 text-amber-200 text-xs font-semibold">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              </svg>
+              <span>Terotentikasi dari Kebun hingga Cangkir</span>
+            </div>
+            <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight leading-[1.15] text-white">
+              Traceability <br />
+              <span class="bg-clip-text text-transparent bg-gradient-to-r from-amber-200 via-amber-100 to-amber-300">
+                Starts Here.
+              </span>
+            </h1>
+            <p class="text-amber-100/90 text-xs sm:text-sm mt-4 max-w-md font-normal leading-relaxed">
+              Sistem digital penelusuran mutu Form F/QC/01.030 terintegrasi database MySQL PT. Santos Jaya Abadi. Verifikasi parameter kritis SCADA, roasting, extraction, dryer, packing, checklist sanitasi CIP/COP, dan hasil uji QC secara transparan &amp; real-time.
+            </p>
+
+            <!-- Interactive Micro-Badge: Quick Trace Checker -->
+            <div class="mt-6 flex flex-wrap items-center gap-3">
+              <button
+                type="button"
+                @click="toggleDemoTraceModal"
+                class="group px-4 py-2.5 rounded-xl bg-white/15 hover:bg-white/25 border border-white/20 text-xs font-semibold text-white flex items-center gap-2 backdrop-blur-md transition-all active:scale-95 shadow-lg cursor-pointer"
+              >
+                <svg width="16" height="16" class="transition-transform group-hover:rotate-12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="3" width="7" height="7"></rect>
+                  <rect x="14" y="3" width="7" height="7"></rect>
+                  <rect x="14" y="14" width="7" height="7"></rect>
+                  <rect x="3" y="14" width="7" height="7"></rect>
+                </svg>
+                <span>Cek Demo Jejak Batch</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                  <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Ornamen Lingkaran Planet / Orbit Kopi -->
+          <div class="relative z-10 flex items-end justify-end pt-4 border-t border-white/10">
+            <div class="relative w-20 h-20 -mb-6 -mr-6 pointer-events-none hidden sm:block">
+              <div class="w-20 h-20 rounded-full border-2 border-white/20 absolute bottom-0 right-0 animate-spin-slow"></div>
+              <div class="w-12 h-12 rounded-full border-2 border-amber-400/40 absolute bottom-2 right-2"></div>
+              <div class="w-4 h-4 rounded-full bg-amber-400 shadow-lg shadow-amber-400/50 absolute bottom-6 right-6 animate-pulse"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- =================================================================
+             KOLOM KANAN: FORM LOGIN COFFEE TRACEABILITY (Clean Industrial White)
+             ================================================================= -->
+        <section class="lg:col-span-6 bg-white p-6 sm:p-10 lg:p-12 flex flex-col justify-between">
+          <div class="max-w-md mx-auto w-full my-auto">
+            
+            <!-- Brand Logo Icon Box -->
+            <div class="text-center mb-6 sm:mb-8">
+              <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#5c3a29] to-[#8c532b] text-amber-200 flex items-center justify-center mx-auto shadow-xl shadow-stone-900/15 mb-3.5 transform hover:scale-105 transition-transform duration-300">
+                <!-- Inline SVG Monogram Logo Kopi & Jejak Rantai -->
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
+                  <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path>
+                  <line x1="6" y1="1" x2="6" y2="4"></line>
+                  <line x1="10" y1="1" x2="10" y2="4"></line>
+                  <line x1="14" y1="1" x2="14" y2="4"></line>
+                </svg>
+              </div>
+              <h2 class="text-2xl sm:text-3xl font-extrabold text-stone-950 tracking-tight">
+                Hello ! Welcome back
+              </h2>
+              <p class="text-xs sm:text-sm text-stone-600 mt-1 font-medium">
+                Masuk untuk mengelola &amp; memverifikasi batch kopi Anda
+              </p>
+            </div>
+
+            <!-- Form Login -->
+            <form @submit.prevent="submitLogin" class="space-y-4 sm:space-y-5">
+              
+              <!-- 1. Username Field (Autofocus Pintar) -->
+              <div>
+                <label for="login-username" class="block text-xs font-bold text-stone-900 mb-1.5 ml-1">Username</label>
+                <div class="relative">
+                  <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400 flex items-center pointer-events-none">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                      <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                  </span>
+                  <input
+                    id="login-username"
+                    ref="usernameInputRef"
+                    v-model="loginForm.username"
+                    type="text"
+                    required
+                    autocomplete="username"
+                    placeholder="Masukkan username Anda"
+                    class="w-full bg-[#fbfaf8] border border-stone-200 hover:border-stone-400 focus:border-[#5c3a29] focus:bg-white rounded-xl pl-11 pr-4 py-3 text-xs sm:text-sm text-stone-950 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-[#5c3a29]/20 transition-all shadow-2xs font-medium"
+                  />
+                </div>
+              </div>
+
+              <!-- 2. Password Field (dengan Toggle Visibility Peek) -->
+              <div>
+                <label for="login-password" class="block text-xs font-bold text-stone-900 mb-1.5 ml-1">Password</label>
+                <div class="relative">
+                  <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400 flex items-center pointer-events-none">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                      <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
+                  </span>
+                  <input
+                    id="login-password"
+                    v-model="loginForm.password"
+                    :type="showPassword ? 'text' : 'password'"
+                    required
+                    autocomplete="current-password"
+                    placeholder="••••••••••••"
+                    class="w-full bg-[#fbfaf8] border border-stone-200 hover:border-stone-400 focus:border-[#5c3a29] focus:bg-white rounded-xl pl-11 pr-11 py-3 text-xs sm:text-sm text-stone-950 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-[#5c3a29]/20 transition-all shadow-2xs font-mono"
+                  />
+                  <!-- Tombol Intip Sandi Responsif -->
+                  <button
+                    type="button"
+                    @click="showPassword = !showPassword"
+                    class="absolute right-3.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-700 p-1 rounded-md transition-colors cursor-pointer"
+                    :title="showPassword ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi'"
+                    tabindex="-1"
+                  >
+                    <svg v-if="!showPassword" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                      <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                    <svg v-else width="18" height="18" class="text-[#5c3a29]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                      <line x1="1" y1="1" x2="23" y2="23"></line>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Baris Opsi: Remember Me & Reset Password -->
+              <div class="flex items-center justify-between text-xs pt-0.5">
+                <label class="flex items-center gap-2 cursor-pointer select-none text-stone-700 font-medium">
+                  <input
+                    type="checkbox"
+                    v-model="rememberMe"
+                    class="w-4 h-4 rounded text-[#5c3a29] border-stone-300 focus:ring-[#5c3a29] focus:ring-offset-0 transition cursor-pointer"
+                  />
+                  <span>Remember me</span>
+                </label>
+                <button
+                  type="button"
+                  @click="handleForgotPassword"
+                  class="text-[#7f5038] hover:text-[#3d251a] font-semibold transition hover:underline cursor-pointer"
+                >
+                  Reset Password?
+                </button>
+              </div>
+
+              <!-- Error Alert -->
+              <div v-if="loginError" class="p-3 rounded-xl bg-red-50 border border-red-200 text-red-800 text-xs font-medium flex items-center gap-2">
+                <svg width="16" height="16" class="text-red-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="8" x2="12" y2="12"></line>
+                  <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+                <span>{{ loginError }}</span>
+              </div>
+
+              <!-- 3. Stateful Animated Button: Login Action (Idle -> Spinner -> Success) -->
+              <button
+                type="submit"
+                :disabled="loginState !== 'idle'"
+                class="w-full mt-2 py-3.5 px-6 rounded-xl text-white font-bold text-sm tracking-wide shadow-lg shadow-[#3d251a]/20 active:scale-[0.98] transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-75"
+                :class="{
+                  'bg-gradient-to-r from-[#7f5038] via-[#5c3a29] to-[#3d251a] hover:from-[#5c3a29] hover:to-[#23140e]': loginState === 'idle',
+                  'bg-[#3d251a] cursor-wait': loginState === 'loading',
+                  'bg-emerald-700 hover:bg-emerald-700 cursor-default scale-[1.01]': loginState === 'success'
+                }"
+              >
+                <!-- Idle State -->
+                <span v-if="loginState === 'idle'">Login</span>
+                <svg v-if="loginState === 'idle'" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                  <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+
+                <!-- Loading State -->
+                <svg v-if="loginState === 'loading'" width="18" height="18" class="spin text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10" stroke-width="4" stroke="currentColor" class="opacity-25"></circle>
+                  <path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" class="opacity-75"></path>
+                </svg>
+                <span v-if="loginState === 'loading'">Memverifikasi Kredensial...</span>
+
+                <!-- Success State -->
+                <svg v-if="loginState === 'success'" width="18" height="18" class="text-emerald-300 animate-scale-in" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <span v-if="loginState === 'success'">Akses Diverifikasi! Mengalihkan...</span>
+              </button>
+            </form>
+
+            <!-- Status Hak Akses Terpusat oleh Admin -->
+            <div class="mt-8 pt-5 border-t border-stone-100 text-center">
+              <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-stone-50 border border-stone-200/60 text-[11px] font-medium text-stone-600">
+                <svg width="14" height="14" class="text-[#7f5038]" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+                <span>Hak akses akun dikelola penuh oleh Administrator</span>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
       </div>
+    </main>
 
-      <!-- Login Form Credentials (Floating Labels & Interactive Toggle) -->
-      <form @submit.prevent="submitLogin" class="space-y-4">
-        <div class="space-y-3.5">
-          <!-- Floating Label: Username -->
-          <div class="floating-group">
-            <input
-              id="login-username"
-              ref="usernameInputRef"
-              v-model="loginForm.username"
-              type="text"
-              required
-              autocomplete="username"
-              placeholder=" "
-              class="floating-input w-full pl-10 pr-4 pt-4 pb-2 bg-stone-50/80 hover:bg-stone-50 focus:bg-white border border-stone-300 focus:border-[#4a2c1d] rounded-xl text-xs font-semibold text-stone-900 placeholder-transparent focus:outline-none focus:ring-2 focus:ring-[#4a2c1d]/20 transition-all shadow-2xs"
-            />
-            <label for="login-username" class="floating-label">
-              Username Pengguna SJA
-            </label>
-            <svg width="16" height="16" class="floating-icon w-4 h-4 text-stone-400 absolute left-3.5 top-3.5 transition-colors pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-              <circle cx="12" cy="7" r="4"></circle>
-            </svg>
-          </div>
-
-          <!-- Floating Label: Password with Peek Toggle -->
-          <div class="floating-group">
-            <input
-              id="login-password"
-              v-model="loginForm.password"
-              :type="showPassword ? 'text' : 'password'"
-              required
-              autocomplete="current-password"
-              placeholder=" "
-              class="floating-input w-full pl-10 pr-11 pt-4 pb-2 bg-stone-50/80 hover:bg-stone-50 focus:bg-white border border-stone-300 focus:border-[#4a2c1d] rounded-xl text-xs font-semibold text-stone-900 placeholder-transparent focus:outline-none focus:ring-2 focus:ring-[#4a2c1d]/20 transition-all shadow-2xs"
-            />
-            <label for="login-password" class="floating-label">
-              Kata Sandi (Password)
-            </label>
-            <svg width="16" height="16" class="floating-icon w-4 h-4 text-stone-400 absolute left-3.5 top-3.5 transition-colors pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-            </svg>
-            <!-- Interactive Password Peek Toggle -->
-            <button
-              type="button"
-              @click="showPassword = !showPassword"
-              class="absolute right-3 top-2.5 p-1 text-stone-400 hover:text-stone-700 rounded-lg hover:bg-stone-200/50 transition-colors cursor-pointer"
-              :title="showPassword ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi'"
-              tabindex="-1"
-            >
-              <svg v-if="!showPassword" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                <circle cx="12" cy="12" r="3"></circle>
-              </svg>
-              <svg v-else class="w-4 h-4 text-[#4a2c1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
-                <line x1="1" y1="1" x2="23" y2="23"></line>
-              </svg>
-            </button>
-          </div>
-        </div>
-
-        <!-- Error Alert -->
-        <div v-if="loginError" class="p-3 rounded-xl bg-red-50 border border-red-200 text-red-800 text-xs font-medium flex items-center gap-2">
-          <svg class="w-4 h-4 text-red-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-            <circle cx="12" cy="12" r="10"></circle>
-            <line x1="12" y1="8" x2="12" y2="12"></line>
-            <line x1="12" y1="16" x2="12.01" y2="16"></line>
-          </svg>
-          <span>{{ loginError }}</span>
-        </div>
-
-        <!-- Stateful Animated Button (Idle -> Loading -> Success Checkmark) -->
-        <button
-          type="submit"
-          :disabled="loginState !== 'idle'"
-          class="w-full relative overflow-hidden py-3 rounded-xl text-xs sm:text-sm font-bold text-white shadow-md transition-all duration-300 transform active:scale-[0.99] flex items-center justify-center gap-2"
-          :class="{
-            'bg-[#4a2c1d] hover:bg-[#3b2317] hover:shadow-lg cursor-pointer': loginState === 'idle',
-            'bg-[#4a2c1d]/90 cursor-wait': loginState === 'loading',
-            'bg-emerald-700 hover:bg-emerald-700 shadow-emerald-900/30 cursor-default scale-[1.01]': loginState === 'success'
-          }"
-        >
-          <!-- State: Idle -->
-          <div v-if="loginState === 'idle'" class="flex items-center justify-center gap-2">
-            <span>Masuk ke Sistem Traceability</span>
-            <svg class="w-4 h-4 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-              <polyline points="12 5 19 12 12 19"></polyline>
-            </svg>
-          </div>
-
-          <!-- State: Loading Spinner -->
-          <div v-else-if="loginState === 'loading'" class="flex items-center justify-center gap-2.5">
-            <svg class="w-4 h-4 spin text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <circle cx="12" cy="12" r="10" stroke-width="4" stroke="currentColor" class="opacity-25"></circle>
-              <path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" class="opacity-75"></path>
-            </svg>
-            <span>Memverifikasi Kredensial...</span>
-          </div>
-
-          <!-- State: Success Checkmark -->
-          <div v-else-if="loginState === 'success'" class="flex items-center justify-center gap-2 animate-scale-in">
-            <div class="w-5 h-5 rounded-full bg-white/25 flex items-center justify-center">
-              <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3">
-                <polyline points="20 6 9 17 4 12"></polyline>
+    <!-- MODAL LIVE BATCH TRACEABILITY EXPLORER (Demo Fitur Traceability) -->
+    <div v-if="showDemoTraceModal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-center justify-center p-4">
+      <div class="bg-white rounded-3xl max-w-xl w-full p-6 sm:p-8 shadow-2xl border border-stone-200 flex flex-col space-y-4 animate-scale-in">
+        <div class="flex items-center justify-between pb-3 border-b border-stone-100">
+          <div class="flex items-center gap-2.5">
+            <div class="w-9 h-9 rounded-xl bg-amber-100 text-[#5c3a29] flex items-center justify-center">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="7" height="7"></rect>
+                <rect x="14" y="3" width="7" height="7"></rect>
+                <rect x="14" y="14" width="7" height="7"></rect>
+                <rect x="3" y="14" width="7" height="7"></rect>
               </svg>
             </div>
-            <span>Kredensial Terverifikasi! Mengalihkan...</span>
+            <div>
+              <h3 class="font-extrabold text-stone-900 text-sm sm:text-base">Pohon Jejak Batch #A370/26</h3>
+              <p class="text-[11px] text-[#7f5038] font-medium">Verifikasi Alur Mutu PT. Santos Jaya Abadi</p>
+            </div>
           </div>
-        </button>
-      </form>
+          <button @click="toggleDemoTraceModal" class="w-8 h-8 rounded-full hover:bg-stone-100 text-stone-500 hover:text-stone-800 flex items-center justify-center transition cursor-pointer">
+            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
 
-      <!-- Footer Info -->
-      <div class="pt-2 border-t border-stone-200/80 flex items-center justify-center gap-1.5 text-[11px] text-stone-500">
-        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-        </svg>
-        <span>Sesi Terenkripsi &middot; PT. Santos Jaya Abadi &copy; 2026</span>
+        <!-- Trace Timeline -->
+        <div class="space-y-3 py-2 text-xs">
+          <div class="flex items-start gap-3 p-3 rounded-xl bg-stone-50 border border-stone-200/60">
+            <div class="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0 mt-0.5 font-bold">1</div>
+            <div class="flex-1">
+              <div class="flex justify-between items-center">
+                <span class="font-bold text-stone-950">1. Roasting Probat &amp; Silo Degassing</span>
+                <span class="text-stone-500 font-mono text-[10px]">Tower 1 / Tower 2</span>
+              </div>
+              <p class="text-stone-600 mt-0.5">Yield roasting terkontrol, density bean, dan verifikasi asal silo kopi sangrai.</p>
+            </div>
+          </div>
+
+          <div class="flex items-start gap-3 p-3 rounded-xl bg-stone-50 border border-stone-200/60">
+            <div class="w-7 h-7 rounded-lg bg-sky-100 text-sky-700 flex items-center justify-center shrink-0 mt-0.5 font-bold">2</div>
+            <div class="flex-1">
+              <div class="flex justify-between items-center">
+                <span class="font-bold text-stone-950">2. Extraction &amp; Sanitasi CIP Extraction</span>
+                <span class="text-stone-500 font-mono text-[10px]">36 Titik Verifikasi</span>
+              </div>
+              <p class="text-stone-600 mt-0.5">Siklus percolator mode FIC, monitoring pH lab, konduktivitas, dan swab test ATP.</p>
+            </div>
+          </div>
+
+          <div class="flex items-start gap-3 p-3 rounded-xl bg-stone-50 border border-stone-200/60">
+            <div class="w-7 h-7 rounded-lg bg-amber-100 text-amber-800 flex items-center justify-center shrink-0 mt-0.5 font-bold">3</div>
+            <div class="flex-1">
+              <div class="flex justify-between items-center">
+                <span class="font-bold text-stone-950">3. Spray Dryer &amp; Packaging Line</span>
+                <span class="text-stone-500 font-mono text-[10px]">21 Titik Sanitasi</span>
+              </div>
+              <p class="text-stone-600 mt-0.5">Kadar air VF2, densitas serbuk kopi, swab test line packing, dan metal detector.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="pt-2 flex justify-end">
+          <button @click="toggleDemoTraceModal" class="px-5 py-2.5 rounded-xl bg-[#5c3a29] hover:bg-[#3d251a] text-white text-xs font-bold transition shadow-xs cursor-pointer">
+            Tutup Lembar Jejak
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -5164,6 +5360,24 @@ createApp({
     const showModalPassword = ref(false);
     const usernameInputRef = ref(null);
     const modalUsernameRef = ref(null);
+    const rememberMe = ref(false);
+    const showDemoTraceModal = ref(false);
+
+    function toggleDemoTraceModal() {
+      showDemoTraceModal.value = !showDemoTraceModal.value;
+    }
+
+    function handleForgotPassword() {
+      const u = String(loginForm.username || '').trim();
+      if (u) {
+        copiedToast.value = `Permintaan reset password user '${u}' telah diteruskan ke Admin IT.`;
+        setTimeout(() => { copiedToast.value = ''; }, 3500);
+      } else {
+        copiedToast.value = 'Silakan isi username akun Anda pada kolom terlebih dahulu.';
+        if (usernameInputRef.value) usernameInputRef.value.focus();
+        setTimeout(() => { copiedToast.value = ''; }, 3000);
+      }
+    }
 
     function openLoginModal() {
       loginError.value = '';
@@ -5196,6 +5410,11 @@ createApp({
           loginError.value = res.error || 'Username atau kata sandi tidak valid.';
           loginState.value = 'idle';
         } else {
+          if (rememberMe.value) {
+            localStorage.setItem('sja_saved_username', loginForm.username);
+          } else {
+            localStorage.removeItem('sja_saved_username');
+          }
           loginState.value = 'success';
           // Tampilkan animasi tombol sukses sejenak sebelum beralih ke dashboard
           await new Promise((r) => setTimeout(r, 650));
@@ -8028,6 +8247,11 @@ createApp({
       if (window.sjaAuth) {
         try { await window.sjaAuth.initAuth(); } catch (e) { console.warn(e); }
       }
+      const savedUser = localStorage.getItem('sja_saved_username');
+      if (savedUser) {
+        loginForm.username = savedUser;
+        rememberMe.value = true;
+      }
       nextTick(() => {
         if (!authIsLoggedIn.value && usernameInputRef.value) {
           usernameInputRef.value.focus();
@@ -8392,6 +8616,10 @@ createApp({
       showModalPassword,
       usernameInputRef,
       modalUsernameRef,
+      rememberMe,
+      showDemoTraceModal,
+      toggleDemoTraceModal,
+      handleForgotPassword,
       openLoginModal,
       fillQuickAccount,
       submitLogin,
