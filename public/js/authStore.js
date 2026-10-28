@@ -99,7 +99,7 @@
     }
   }
 
-  async function login(username, password) {
+  async function login(username, password, delayCommit = false) {
     authState.loading = true;
     authState.error = '';
     try {
@@ -113,11 +113,18 @@
         throw new Error(data.message || 'Username atau password salah.');
       }
 
-      authState.token = data.token;
-      authState.user = data.user;
-      localStorage.setItem('sja_auth_token', data.token);
-      localStorage.setItem('sja_auth_user', JSON.stringify(data.user));
-      authState.loginModalOpen = false;
+      const commit = () => {
+        authState.token = data.token;
+        authState.user = data.user;
+        localStorage.setItem('sja_auth_token', data.token);
+        localStorage.setItem('sja_auth_user', JSON.stringify(data.user));
+        authState.loginModalOpen = false;
+      };
+
+      if (delayCommit) {
+        return { success: true, user: data.user, commit };
+      }
+      commit();
       return { success: true, user: data.user };
     } catch (err) {
       authState.error = err.message;

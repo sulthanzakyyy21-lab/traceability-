@@ -44,3 +44,4 @@ export const CipChecklistTable: React.FC<Props> = ({ items }) => {
     </div>
   );
 };
+
