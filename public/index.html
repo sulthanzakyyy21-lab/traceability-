@@ -7803,9 +7803,9 @@ createApp({
       }
 
       const initialHash = activeTab.value === 'pic' ? 'data-explorer' : activeTab.value;
-      if (window.location.hash !== '#' + initialHash) {
-        try { history.replaceState(null, '', '#' + initialHash); } catch {}
-      }
+      try {
+        history.replaceState({ tab: activeTab.value }, '', '#' + initialHash);
+      } catch {}
       if (window.initScrollReveal) window.initScrollReveal();
     });
 
@@ -7819,6 +7819,8 @@ createApp({
     watch(selectedTower, (v) => { try { localStorage.setItem('traceability_selected_tower', v); } catch {} });
     watch(picSelectedTable, (v) => { try { localStorage.setItem('traceability_selected_table', v); } catch {} });
 
+    let isNavigatingFromHistory = false;
+
     watch(activeTab, (newTab) => {
       if (newTab === 'pipeline') {
         triggerCounters();
@@ -7830,18 +7832,43 @@ createApp({
         localStorage.setItem('traceability_active_tab', newTab);
         const hashTag = newTab === 'pic' ? 'data-explorer' : newTab;
         if (window.location.hash !== '#' + hashTag) {
-          history.replaceState(null, '', '#' + hashTag);
+          if (!isNavigatingFromHistory) {
+            history.pushState({ tab: newTab }, '', '#' + hashTag);
+          } else {
+            history.replaceState({ tab: newTab }, '', '#' + hashTag);
+          }
         }
       } catch {}
+      isNavigatingFromHistory = false;
       setTimeout(() => {
         if (window.initScrollReveal) window.initScrollReveal();
       }, 80);
+    });
+
+    // ── Browser History Navigation (Back / Forward Button Support) ──
+    window.addEventListener('popstate', (e) => {
+      // 1. Jika ada inspect modal yang sedang terbuka, tutup modal terlebih dahulu saat user menekan Back
+      if (activeInspectModal.value) {
+        closeInspectModal();
+        return;
+      }
+      // 2. Baca target tab dari state history atau dari hash URL
+      const hash = window.location.hash.replace('#', '').toLowerCase();
+      let targetTab = e.state?.tab;
+      if (!targetTab) {
+        targetTab = (hash === 'data-explorer' || hash === 'explorer') ? 'pic' : (validTabs.includes(hash) ? hash : 'dashboard');
+      }
+      if (validTabs.includes(targetTab) && activeTab.value !== targetTab) {
+        isNavigatingFromHistory = true;
+        activeTab.value = targetTab;
+      }
     });
 
     window.addEventListener('hashchange', () => {
       const hash = window.location.hash.replace('#', '').toLowerCase();
       const tab = hash === 'data-explorer' || hash === 'explorer' ? 'pic' : hash;
       if (validTabs.includes(tab) && activeTab.value !== tab) {
+        isNavigatingFromHistory = true;
         activeTab.value = tab;
       }
     });

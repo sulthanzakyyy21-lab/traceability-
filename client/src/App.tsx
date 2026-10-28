@@ -9,13 +9,36 @@ import type { TraceResult, InspectModalState } from '@/types/traceability';
 
 export function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState('report');
+  const [activeTab, setActiveTab] = useState(() => {
+    const hash = window.location.hash.replace('#', '');
+    return hash || 'report';
+  });
   const [batchInput, setBatchInput] = useState('A370/26');
   const [tower, setTower] = useState('1');
   const [loading, setLoading] = useState(false);
   const [dbConnected, setDbConnected] = useState(true);
   const [traceResult, setTraceResult] = useState<TraceResult | null>(null);
   const [inspectModal, setInspectModal] = useState<InspectModalState | null>(null);
+
+  // Browser History Navigation (Back / Forward Button Support)
+  useEffect(() => {
+    const handlePopState = (e: PopStateEvent) => {
+      if (inspectModal) {
+        setInspectModal(null);
+        return;
+      }
+      const tab = e.state?.tab || window.location.hash.replace('#', '') || 'report';
+      setActiveTab(tab);
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [inspectModal]);
+
+  const handleTabChange = (tab: string) => {
+    if (tab === activeTab) return;
+    setActiveTab(tab);
+    window.history.pushState({ tab }, '', `#${tab}`);
+  };
 
   // Initial health & auto-search preset audit
   useEffect(() => {
@@ -52,7 +75,7 @@ export function App() {
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
         activeTab={activeTab}
-        setActiveTab={setActiveTab}
+        setActiveTab={handleTabChange}
         dbConnected={dbConnected}
       />
 
