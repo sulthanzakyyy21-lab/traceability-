@@ -62,8 +62,8 @@
     }
 
     body {
-      background: #f8fafc;
-      color: #0f172a;
+      background: #fbfaf8;
+      color: #1c1917;
       font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
       line-height: 1.4;
     }
@@ -411,12 +411,12 @@
       color: #1c1917 !important;
     }
     .sidebar-item.active {
-      background: #2563eb;
+      background: #4a2c1d;
       color: #ffffff;
       box-shadow: 0 2px 8px -2px rgba(74, 44, 29, 0.3);
     }
     .sidebar-item-collapsed.active {
-      background: #2563eb !important;
+      background: #4a2c1d !important;
       color: #ffffff !important;
       box-shadow: 0 2px 8px -1px rgba(74, 44, 29, 0.28) !important;
     }
@@ -504,12 +504,12 @@
       
       <!-- Brand & Title Header -->
       <div class="text-center space-y-2.5">
-        <div class="w-16 h-16 rounded-2xl bg-blue-600 flex items-center justify-center font-black text-white text-lg shadow-md mx-auto tracking-wider border-2 border-[#6d422a]/40">
+        <div class="w-16 h-16 rounded-2xl bg-[#4a2c1d] flex items-center justify-center font-black text-white text-lg shadow-md mx-auto tracking-wider border-2 border-[#6d422a]/40">
           SJA
         </div>
         <div>
           <h1 class="text-xl sm:text-2xl font-black text-stone-900 tracking-tight">PT. Santos Jaya Abadi</h1>
-          <p class="text-[11px] font-extrabold text-blue-600 uppercase tracking-widest mt-0.5">Sistem Traceability &amp; Penelusuran Mutu</p>
+          <p class="text-[11px] font-extrabold text-[#4a2c1d] uppercase tracking-widest mt-0.5">Sistem Traceability &amp; Penelusuran Mutu</p>
         </div>
         <p class="text-xs text-stone-500 max-w-xs mx-auto leading-relaxed">
           Silakan masukkan kredensial akun resmi Anda untuk mengakses sistem traceability dan operasional mutu.
@@ -531,7 +531,7 @@
                 required
                 autocomplete="username"
                 placeholder="Masukkan username Anda"
-                class="w-full pl-10 pr-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all shadow-2xs"
+                class="w-full pl-10 pr-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#4a2c1d]/30 focus:border-[#4a2c1d] focus:bg-white transition-all shadow-2xs"
               />
               <svg class="w-4 h-4 text-stone-400 absolute left-3.5 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
@@ -551,7 +551,7 @@
                 required
                 autocomplete="current-password"
                 placeholder="Masukkan kata sandi Anda"
-                class="w-full pl-10 pr-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all shadow-2xs"
+                class="w-full pl-10 pr-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#4a2c1d]/30 focus:border-[#4a2c1d] focus:bg-white transition-all shadow-2xs"
               />
               <svg class="w-4 h-4 text-stone-400 absolute left-3.5 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                 <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
@@ -575,7 +575,7 @@
         <button
           type="submit"
           :disabled="loginLoading"
-          class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs sm:text-sm shadow-md transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
+          class="w-full py-3 bg-[#4a2c1d] hover:bg-[#3b2317] text-white font-bold rounded-xl text-xs sm:text-sm shadow-md transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
         >
           <svg v-if="loginLoading" class="w-4 h-4 spin text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <circle cx="12" cy="12" r="10" stroke-width="4" stroke="currentColor" class="opacity-25"></circle>
@@ -614,7 +614,7 @@
       <!-- Expanded Brand Header -->
       <template v-if="sidebarOpen">
         <div class="flex items-center gap-2.5 overflow-hidden">
-          <div class="w-8 h-8 rounded-xl bg-blue-600 flex items-center justify-center font-black text-white text-xs shadow-xs flex-shrink-0">
+          <div class="w-8 h-8 rounded-xl bg-[#4a2c1d] flex items-center justify-center font-black text-white text-xs shadow-xs flex-shrink-0">
             SJA
           </div>
           <div class="whitespace-nowrap overflow-hidden leading-tight">
@@ -883,13 +883,13 @@
             v-if="activeTab === 'pipeline'"
             type="button"
             @click="navigateToPipeline"
-            class="text-xs font-extrabold uppercase tracking-wider text-stone-900 hover:text-blue-600 transition-colors cursor-pointer flex items-center gap-1.5 group text-left"
+            class="text-xs font-extrabold uppercase tracking-wider text-stone-900 hover:text-[#4a2c1d] transition-colors cursor-pointer flex items-center gap-1.5 group text-left"
             title="Klik untuk kembali ke Direktori Work Order"
           >
             <span class="group-hover:underline">Batch Traceability</span>
             <span v-if="activeSession" class="text-stone-400 font-normal text-[11px] normal-case flex items-center gap-1">
               <span>&rsaquo;</span>
-              <span class="font-extrabold text-blue-600 bg-amber-50 border border-amber-200/90 px-1.5 py-0.5 rounded font-mono">{{ activeSession.code || activeSession.id }}</span>
+              <span class="font-extrabold text-[#4a2c1d] bg-amber-50 border border-amber-200/90 px-1.5 py-0.5 rounded font-mono">{{ activeSession.code || activeSession.id }}</span>
             </span>
           </button>
           <span v-else class="text-xs font-bold uppercase tracking-wider text-stone-900">
@@ -927,7 +927,7 @@
         <button
           v-if="activeTab === 'report'"
           @click="printForm"
-          class="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow-sm transition-all cursor-pointer text-xs btn-action"
+          class="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-[#4a2c1d] hover:bg-[#3c2415] text-white font-bold rounded-lg shadow-sm transition-all cursor-pointer text-xs btn-action"
         >
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
             <polyline points="6 9 6 2 18 2 18 9"></polyline>
@@ -996,7 +996,7 @@
             <button
               type="button"
               @click="activeTab = 'pipeline'"
-              class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs shadow-sm transition-all flex items-center gap-2 cursor-pointer btn-action"
+              class="px-5 py-2.5 bg-[#4a2c1d] hover:bg-[#3c2415] text-white font-bold rounded-xl text-xs shadow-sm transition-all flex items-center gap-2 cursor-pointer btn-action"
             >
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
               <span>Buka Penelusuran Batch</span>
@@ -1102,7 +1102,7 @@
       <div v-if="!activeSessionId" class="space-y-4">
         
         <!-- Header Banner Work Order -->
-        <div class="clean-card border-l-4 border-l-blue-600">
+        <div class="clean-card border-l-4 border-l-[#4a2c1d]">
           <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div class="flex items-start gap-3.5">
               <div class="w-10 h-10 rounded-xl bg-amber-900/10 border border-amber-900/20 flex items-center justify-center text-amber-900 shrink-0 mt-0.5">
@@ -1136,7 +1136,7 @@
               <button
                 type="button"
                 @click="openCreateSessionModal"
-                class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs shadow-sm transition-all flex items-center gap-2 cursor-pointer btn-action shrink-0"
+                class="px-5 py-2.5 bg-[#4a2c1d] hover:bg-[#3c2415] text-white font-bold rounded-xl text-xs shadow-sm transition-all flex items-center gap-2 cursor-pointer btn-action shrink-0"
               >
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
                   <line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line>
@@ -1184,7 +1184,7 @@
               <button
                 type="button"
                 @click="openCreateSessionModal"
-                class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs shadow-sm transition-all inline-flex items-center gap-2 cursor-pointer"
+                class="px-5 py-2.5 bg-[#4a2c1d] hover:bg-[#3c2415] text-white font-bold rounded-xl text-xs shadow-sm transition-all inline-flex items-center gap-2 cursor-pointer"
               >
                 + Buat Sesi Traceability Pertama
               </button>
@@ -1259,11 +1259,11 @@
                 <div class="flex items-center gap-2 flex-wrap">
                   <div class="text-sm font-extrabold text-stone-900">
                     <template v-if="session.jenis === 'Backward'">
-                      Batch Finished Good: <span class="font-mono text-blue-600 uppercase">{{ session.noBatch }}</span>
+                      Batch Finished Good: <span class="font-mono text-[#4a2c1d] uppercase">{{ session.noBatch }}</span>
                       <span class="text-xs font-normal text-stone-500 ml-1.5">(Tower {{ session.tower || '1' }})</span>
                     </template>
                     <template v-else>
-                      Bahan Mentah: <span class="text-blue-600">{{ session.forward?.namaBahan || '-' }}</span>
+                      Bahan Mentah: <span class="text-[#4a2c1d]">{{ session.forward?.namaBahan || '-' }}</span>
                       <span v-if="session.forward?.supplierBahan" class="text-xs font-normal text-stone-500 ml-1.5">&bull; Supplier: {{ session.forward.supplierBahan }}</span>
                     </template>
                   </div>
@@ -1313,7 +1313,7 @@
                     v-if="session.status === 'completed'"
                     type="button"
                     @click="openSession(session)"
-                    class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs transition-all flex items-center gap-1.5 cursor-pointer shadow-xs btn-action"
+                    class="px-4 py-2 bg-[#4a2c1d] hover:bg-[#3c2415] text-white font-bold rounded-xl text-xs transition-all flex items-center gap-1.5 cursor-pointer shadow-xs btn-action"
                   >
                     <span>Lihat Hasil Penelusuran</span>
                     <span>&rarr;</span>
@@ -1333,7 +1333,7 @@
                     v-else
                     type="button"
                     @click="openSession(session); startTraceabilityAudit();"
-                    class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs transition-all flex items-center gap-1.5 cursor-pointer shadow-xs btn-action"
+                    class="px-4 py-2 bg-[#4a2c1d] hover:bg-[#3c2415] text-white font-bold rounded-xl text-xs transition-all flex items-center gap-1.5 cursor-pointer shadow-xs btn-action"
                   >
                     <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
                     <span>Mulai Traceability</span>
@@ -1395,7 +1395,7 @@
             <button
               type="button"
               @click="backToWorkOrderList"
-              class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-sm hover:shadow transition-all cursor-pointer group shrink-0"
+              class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#4a2c1d] hover:bg-[#3c2415] text-white font-bold text-xs shadow-sm hover:shadow transition-all cursor-pointer group shrink-0"
               title="Kembali ke Direktori Seluruh Sesi Work Order Traceability"
             >
               <svg class="w-4 h-4 text-amber-200 transition-transform group-hover:-translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
@@ -1432,7 +1432,7 @@
             <select
               :value="activeSessionId"
               @change="openSession($event.target.value)"
-              class="bg-white border border-stone-200 rounded-xl text-xs font-semibold px-2.5 py-1.5 text-stone-800 outline-none focus:border-blue-500 shadow-2xs"
+              class="bg-white border border-stone-200 rounded-xl text-xs font-semibold px-2.5 py-1.5 text-stone-800 outline-none focus:border-[#4a2c1d] shadow-2xs"
             >
               <option v-for="s in traceabilitySessions" :key="s.id" :value="s.id">
                 {{ s.code || s.id }} &bull; {{ s.jenis }} ({{ s.noBatch || s.forward?.namaBahan }}) [{{ s.status }}]
@@ -1739,31 +1739,31 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-xs">
               <div>
                 <label class="block font-bold text-stone-700 mb-1">Area Audit</label>
-                <input v-model="auditSession.area" type="text" class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-blue-500" />
+                <input v-model="auditSession.area" type="text" class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-[#4a2c1d]" />
               </div>
               <div>
                 <label class="block font-bold text-stone-700 mb-1">Tanggal Pelaksanaan</label>
-                <input v-model="auditSession.tanggalPelaksanaan" type="text" class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-blue-500" />
+                <input v-model="auditSession.tanggalPelaksanaan" type="text" class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-[#4a2c1d]" />
               </div>
               <div>
                 <label class="block font-bold text-stone-700 mb-1">PIC Pelaksana</label>
-                <input v-model="auditSession.picPelaksana" type="text" class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-blue-500" />
+                <input v-model="auditSession.picPelaksana" type="text" class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-[#4a2c1d]" />
               </div>
               <div>
                 <label class="block font-bold text-stone-700 mb-1">FSTL (Food Safety Team Leader)</label>
-                <input v-model="auditSession.fstl" type="text" class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-blue-500" />
+                <input v-model="auditSession.fstl" type="text" class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-[#4a2c1d]" />
               </div>
               <div>
                 <label class="block font-bold text-stone-700 mb-1">Auditor (Nama &amp; TTD)</label>
-                <textarea v-model="auditSession.auditor" rows="2" class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-blue-500 resize-none"></textarea>
+                <textarea v-model="auditSession.auditor" rows="2" class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-[#4a2c1d] resize-none"></textarea>
               </div>
               <div>
                 <label class="block font-bold text-stone-700 mb-1">Auditee (Nama &amp; TTD)</label>
-                <textarea v-model="auditSession.auditee" rows="2" class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-blue-500 resize-none"></textarea>
+                <textarea v-model="auditSession.auditee" rows="2" class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-[#4a2c1d] resize-none"></textarea>
               </div>
               <div class="sm:col-span-2">
                 <label class="block font-bold text-stone-700 mb-1">Scenario / Case Traceability</label>
-                <input v-model="auditSession.scenario" type="text" class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-blue-500" />
+                <input v-model="auditSession.scenario" type="text" class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-[#4a2c1d]" />
               </div>
             </div>
 
@@ -1779,7 +1779,7 @@
               <button
                 type="button"
                 @click="showAuditDetails = false"
-                class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs cursor-pointer shadow-xs"
+                class="px-5 py-2 bg-[#4a2c1d] hover:bg-[#3c2415] text-white font-bold rounded-xl text-xs cursor-pointer shadow-xs"
               >
                 Simpan &amp; Tutup
               </button>
@@ -2516,7 +2516,7 @@
                   v-model="draftSession.area"
                   type="text"
                   placeholder="Contoh: SJA Sukodono"
-                  class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-blue-500"
+                  class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-[#4a2c1d]"
                 />
               </div>
 
@@ -2528,7 +2528,7 @@
                   v-model="draftSession.tanggalPelaksanaan"
                   type="text"
                   placeholder="Contoh: 13 Oktober 2026"
-                  class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-blue-500"
+                  class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-[#4a2c1d]"
                 />
               </div>
 
@@ -2540,7 +2540,7 @@
                   v-model="draftSession.picPelaksana"
                   type="text"
                   placeholder="Contoh: Frengky Wahyudi"
-                  class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-blue-500"
+                  class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-[#4a2c1d]"
                 />
               </div>
 
@@ -2552,7 +2552,7 @@
                   v-model="draftSession.fstl"
                   type="text"
                   placeholder="Contoh: Suhendar Adikusuma"
-                  class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-blue-500"
+                  class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-[#4a2c1d]"
                 />
               </div>
 
@@ -2564,7 +2564,7 @@
                   v-model="draftSession.auditor"
                   rows="2"
                   placeholder="Contoh: Pak Armando&#10;Ibu Asih"
-                  class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-blue-500 resize-none"
+                  class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-[#4a2c1d] resize-none"
                 ></textarea>
               </div>
 
@@ -2576,7 +2576,7 @@
                   v-model="draftSession.auditee"
                   rows="2"
                   placeholder="Contoh: Meisy, Dini, Udin, Yolanda"
-                  class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-blue-500 resize-none"
+                  class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-[#4a2c1d] resize-none"
                 ></textarea>
               </div>
 
@@ -2588,7 +2588,7 @@
                   v-model="draftSession.scenario"
                   type="text"
                   placeholder="Contoh: Simulasi traceability untuk audit eksternal FSSC"
-                  class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-blue-500"
+                  class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-[#4a2c1d]"
                 />
               </div>
             </div>
@@ -2614,7 +2614,7 @@
                   type="button"
                   @click="newSessionStep = 2"
                   :disabled="!draftSession.area || !draftSession.tanggalPelaksanaan || !draftSession.picPelaksana"
-                  class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs cursor-pointer shadow-xs disabled:opacity-50 disabled:cursor-not-allowed"
+                  class="px-5 py-2 bg-[#4a2c1d] hover:bg-[#3c2415] text-white font-bold rounded-xl text-xs cursor-pointer shadow-xs disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Lanjut ke Step 2: Konfigurasi Penelusuran &rarr;
                 </button>
@@ -2666,7 +2666,7 @@
                     v-model="draftSession.noBatch"
                     type="text"
                     placeholder="Contoh: A370/26 atau 370"
-                    class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-mono font-bold uppercase focus:outline-none focus:border-blue-500 bg-white"
+                    class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-mono font-bold uppercase focus:outline-none focus:border-[#4a2c1d] bg-white"
                   />
                 </div>
                 <div>
@@ -2677,7 +2677,7 @@
                     <button
                       type="button"
                       @click="draftSession.tower = '1'"
-                      :class="draftSession.tower === '1' ? 'bg-blue-600 text-white font-bold shadow-2xs' : 'bg-white text-stone-700 border border-stone-200'"
+                      :class="draftSession.tower === '1' ? 'bg-[#4a2c1d] text-white font-bold shadow-2xs' : 'bg-white text-stone-700 border border-stone-200'"
                       class="flex-1 py-2 rounded-xl text-xs transition-all cursor-pointer font-semibold"
                     >
                       Tower 1
@@ -2685,7 +2685,7 @@
                     <button
                       type="button"
                       @click="draftSession.tower = '2'"
-                      :class="draftSession.tower === '2' ? 'bg-blue-600 text-white font-bold shadow-2xs' : 'bg-white text-stone-700 border border-stone-200'"
+                      :class="draftSession.tower === '2' ? 'bg-[#4a2c1d] text-white font-bold shadow-2xs' : 'bg-white text-stone-700 border border-stone-200'"
                       class="flex-1 py-2 rounded-xl text-xs transition-all cursor-pointer font-semibold"
                     >
                       Tower 2
@@ -2709,7 +2709,7 @@
                     v-model="draftSession.forward.namaBahan"
                     type="text"
                     placeholder="Contoh: Biji Kopi Robusta Mentah"
-                    class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-bold focus:outline-none focus:border-blue-500 bg-white"
+                    class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-bold focus:outline-none focus:border-[#4a2c1d] bg-white"
                   />
                 </div>
                 <div>
@@ -2720,7 +2720,7 @@
                     v-model="draftSession.forward.supplierBahan"
                     type="text"
                     placeholder="Contoh: PT. Santos Jaya Abadi Rekanan"
-                    class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-blue-500 bg-white"
+                    class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-[#4a2c1d] bg-white"
                   />
                 </div>
                 <div>
@@ -2731,7 +2731,7 @@
                     v-model="draftSession.forward.tglKedatangan"
                     type="text"
                     placeholder="Contoh: 25 Agustus 2026"
-                    class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-blue-500 bg-white"
+                    class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-[#4a2c1d] bg-white"
                   />
                 </div>
                 <div>
@@ -2742,7 +2742,7 @@
                     v-model="draftSession.forward.lokasiBahan"
                     type="text"
                     placeholder="Contoh: Gudang GBJ / Silo UPBM"
-                    class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-blue-500 bg-white"
+                    class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-[#4a2c1d] bg-white"
                   />
                 </div>
               </div>
@@ -2770,7 +2770,7 @@
                   type="button"
                   @click="saveDraftSession(true)"
                   :disabled="draftSession.jenis === 'Backward' ? !draftSession.noBatch : !draftSession.forward.namaBahan"
-                  class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs cursor-pointer shadow-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed btn-action"
+                  class="px-5 py-2.5 bg-[#4a2c1d] hover:bg-[#3c2415] text-white font-bold rounded-xl text-xs cursor-pointer shadow-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed btn-action"
                 >
                   <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
                   <span>Simpan &amp; Mulai Traceability</span>
@@ -2789,7 +2789,7 @@
     <div v-if="activeTab==='report'" class="space-y-5 slow-smooth-entrance">
 
       <!-- ── TOP CONTROL BAR: OPERATION LOG & WORK ORDER SWITCHER (SUSUN PERSIS MOCKUP) ── -->
-      <div class="no-print bg-white rounded-2xl sm:rounded-3xl border border-stone-200/90 shadow-sm border-l-[6px] border-l-blue-600 overflow-hidden">
+      <div class="no-print bg-white rounded-2xl sm:rounded-3xl border border-stone-200/90 shadow-sm border-l-[6px] border-l-[#4a2c1d] overflow-hidden">
         
         <!-- SECTION 1: HEADER PUTIH (Judul, Badges, Deskripsi & Tombol Aksi) -->
         <div class="p-5 sm:p-6 sm:px-7 flex flex-col lg:flex-row lg:items-start justify-between gap-4 sm:gap-6 bg-white">
@@ -2831,7 +2831,7 @@
             <button
               type="button"
               @click="printForm"
-              class="flex-1 sm:flex-initial px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-bold rounded-xl transition-all shadow-xs hover:shadow-md active:scale-[0.98] cursor-pointer whitespace-nowrap text-center"
+              class="flex-1 sm:flex-initial px-5 py-2 bg-[#4a2c1d] hover:bg-[#382116] text-white text-xs sm:text-sm font-bold rounded-xl transition-all shadow-xs hover:shadow-md active:scale-[0.98] cursor-pointer whitespace-nowrap text-center"
               title="Cetak Formulir Audit F/QC/01.030"
             >
               Cetak / PDF
@@ -2851,7 +2851,7 @@
                 id="wo-select-header"
                 :value="activeSessionId || ''"
                 @change="openSession($event.target.value)"
-                class="bg-white hover:bg-stone-50/90 border border-stone-200/90 rounded-2xl text-xs sm:text-sm font-semibold text-stone-900 pl-4 pr-9 py-2 cursor-pointer shadow-2xs focus:border-blue-500 focus:ring-1 focus:ring-[#4a2c1d] outline-none transition-all appearance-none min-w-[160px]"
+                class="bg-white hover:bg-stone-50/90 border border-stone-200/90 rounded-2xl text-xs sm:text-sm font-semibold text-stone-900 pl-4 pr-9 py-2 cursor-pointer shadow-2xs focus:border-[#4a2c1d] focus:ring-1 focus:ring-[#4a2c1d] outline-none transition-all appearance-none min-w-[160px]"
               >
                 <option value="" disabled :selected="!activeSessionId">Pilih Work Order…</option>
                 <option v-for="s in traceabilitySessions" :key="s.id" :value="s.id">
@@ -2904,7 +2904,7 @@
             <div class="relative inline-flex bg-white p-1 rounded-2xl border border-stone-200/90 shadow-2xs select-none">
               <!-- Sliding Brown Pill Indicator -->
               <div
-                class="absolute top-1 bottom-1 left-1 rounded-xl bg-blue-600 shadow-xs pointer-events-none transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]"
+                class="absolute top-1 bottom-1 left-1 rounded-xl bg-[#4a2c1d] shadow-xs pointer-events-none transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]"
                 :style="{
                   width: 'calc(50% - 4px)',
                   transform: reportViewMode === 'log' ? 'translateX(0)' : 'translateX(100%)'
@@ -2972,7 +2972,7 @@
             <button
               type="button"
               @click="openCreateSessionModal"
-              class="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer btn-action flex items-center gap-1.5"
+              class="px-3.5 py-1.5 bg-[#4a2c1d] hover:bg-[#3c2415] text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer btn-action flex items-center gap-1.5"
             >
               <span>+ Buat Sesi Baru</span>
             </button>
@@ -3006,10 +3006,10 @@
                   <div class="text-[10px] text-stone-400 font-mono">{{ s.manualWaktuStart ? (s.manualWaktuStart + ' - ' + s.manualWaktuEnd) : '' }}</div>
                 </td>
                 <td class="p-3">
-                  <div v-if="s.jenis === 'Backward'" class="font-mono font-bold text-blue-600">
+                  <div v-if="s.jenis === 'Backward'" class="font-mono font-bold text-[#4a2c1d]">
                     {{ s.noBatch }} <span class="text-[11px] font-normal text-stone-500">(Tower {{ s.tower || '1' }})</span>
                   </div>
-                  <div v-else class="font-bold text-blue-600">
+                  <div v-else class="font-bold text-[#4a2c1d]">
                     {{ s.forward?.namaBahan || '-' }}
                     <span v-if="s.forward?.supplierBahan" class="text-[11px] font-normal text-stone-500 block">&bull; {{ s.forward.supplierBahan }}</span>
                   </div>
@@ -3055,7 +3055,7 @@
                     <button
                       type="button"
                       @click="openSessionReport(s)"
-                      class="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold cursor-pointer shadow-2xs"
+                      class="px-2.5 py-1 bg-[#4a2c1d] hover:bg-[#3c2415] text-white rounded-lg text-xs font-semibold cursor-pointer shadow-2xs"
                       title="Buka Dokumen Form F/QC/01.030 untuk sesi ini"
                     >
                       Buka Dokumen
@@ -3106,7 +3106,7 @@
             type="button"
             @click="doTrace"
             :disabled="tracing"
-            class="px-3.5 py-1.5 bg-blue-600 text-white font-bold rounded-lg hover:bg-[#3c2415] cursor-pointer shadow-2xs flex items-center gap-1.5"
+            class="px-3.5 py-1.5 bg-[#4a2c1d] text-white font-bold rounded-lg hover:bg-[#3c2415] cursor-pointer shadow-2xs flex items-center gap-1.5"
           >
             <span>{{ tracing ? 'Menarik...' : 'Tarik Data Traceability Sekarang' }}</span>
           </button>
@@ -3491,7 +3491,7 @@
               <button
                 type="button"
                 @click="openLoginModal"
-                class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-lg transition-colors cursor-pointer shrink-0"
+                class="px-3 py-1.5 bg-[#4a2c1d] hover:bg-[#3c2415] text-white font-bold text-xs rounded-lg transition-colors cursor-pointer shrink-0"
               >
                 Ganti Akun Admin
               </button>
@@ -3857,7 +3857,7 @@
             type="button"
             @click="refreshAndSyncActiveTable(false)"
             :disabled="isSyncingActiveTable"
-            class="inline-flex items-center gap-2 px-3.5 py-1.5 bg-blue-600 hover:bg-[#3d2417] text-white rounded-xl text-xs font-semibold transition-all cursor-pointer shadow-2xs disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+            class="inline-flex items-center gap-2 px-3.5 py-1.5 bg-[#4a2c1d] hover:bg-[#3d2417] text-white rounded-xl text-xs font-semibold transition-all cursor-pointer shadow-2xs disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
             :title="authRole === 'admin' ? 'Tarik seluruh data terbaru dari semua PIC dan tabel Google Sheets secara real-time' : 'Segarkan tampilan tabel dari database lokal'"
           >
             <svg :class="{ 'spin': isSyncingActiveTable }" class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -3895,7 +3895,7 @@
                 id="select-pic"
                 v-model="selectedPic"
                 @change="changePic(selectedPic); autoSelectFirstPicTable();"
-                class="w-full appearance-none bg-white hover:bg-stone-50/80 border border-stone-200/90 focus:border-blue-500 focus:ring-2 focus:ring-[#4a2c1d]/15 rounded-xl px-3.5 py-2 text-xs font-semibold text-stone-800 pr-9 transition-all cursor-pointer shadow-2xs"
+                class="w-full appearance-none bg-white hover:bg-stone-50/80 border border-stone-200/90 focus:border-[#4a2c1d] focus:ring-2 focus:ring-[#4a2c1d]/15 rounded-xl px-3.5 py-2 text-xs font-semibold text-stone-800 pr-9 transition-all cursor-pointer shadow-2xs"
               >
                 <option v-for="pic in picList" :key="pic" :value="pic">
                   {{ pic }} ({{ getPicTablesCount(pic) }})
@@ -3923,7 +3923,7 @@
                 id="select-tower"
                 v-model="selectedTower"
                 @change="changeTower(selectedTower); autoSelectFirstPicTable();"
-                class="w-full appearance-none bg-white hover:bg-stone-50/80 border border-stone-200/90 focus:border-blue-500 focus:ring-2 focus:ring-[#4a2c1d]/15 rounded-xl px-3.5 py-2 text-xs font-semibold text-stone-800 pr-9 transition-all cursor-pointer shadow-2xs"
+                class="w-full appearance-none bg-white hover:bg-stone-50/80 border border-stone-200/90 focus:border-[#4a2c1d] focus:ring-2 focus:ring-[#4a2c1d]/15 rounded-xl px-3.5 py-2 text-xs font-semibold text-stone-800 pr-9 transition-all cursor-pointer shadow-2xs"
               >
                 <option v-for="tw in towerOptions" :key="tw" :value="tw">
                   {{ tw }}
@@ -4100,7 +4100,7 @@
                 type="date"
                 v-model="picFilterDate"
                 @change="searchPicTable"
-                class="appearance-none bg-white hover:bg-stone-50 border border-stone-200 focus:border-blue-500 focus:ring-1 focus:ring-[#4a2c1d] rounded-xl px-2.5 py-1.5 text-xs font-semibold text-stone-800 transition-all cursor-pointer shadow-2xs outline-none"
+                class="appearance-none bg-white hover:bg-stone-50 border border-stone-200 focus:border-[#4a2c1d] focus:ring-1 focus:ring-[#4a2c1d] rounded-xl px-2.5 py-1.5 text-xs font-semibold text-stone-800 transition-all cursor-pointer shadow-2xs outline-none"
                 title="Pilih Tanggal Presisi (Tanggal, Bulan, Tahun). Kosongkan untuk filter umum."
               />
             </div>
@@ -4110,7 +4110,7 @@
               <select
                 v-model="picFilterYear"
                 @change="searchPicTable"
-                class="appearance-none bg-white hover:bg-stone-50 border border-stone-200 focus:border-blue-500 focus:ring-1 focus:ring-[#4a2c1d] rounded-xl pl-3 pr-7 py-1.5 text-xs font-bold text-stone-800 transition-all cursor-pointer shadow-2xs"
+                class="appearance-none bg-white hover:bg-stone-50 border border-stone-200 focus:border-[#4a2c1d] focus:ring-1 focus:ring-[#4a2c1d] rounded-xl pl-3 pr-7 py-1.5 text-xs font-bold text-stone-800 transition-all cursor-pointer shadow-2xs"
                 title="Pilih Tahun Rekaman"
               >
                 <option value="2026">Thn 2026</option>
@@ -4130,7 +4130,7 @@
               <select
                 v-model="picFilterBean"
                 @change="searchPicTable"
-                class="appearance-none bg-amber-50 hover:bg-amber-100/70 border border-amber-300 text-amber-950 focus:border-blue-500 focus:ring-1 focus:ring-[#4a2c1d] rounded-xl pl-3 pr-8 py-1.5 text-xs font-bold transition-all cursor-pointer shadow-2xs outline-none"
+                class="appearance-none bg-amber-50 hover:bg-amber-100/70 border border-amber-300 text-amber-950 focus:border-[#4a2c1d] focus:ring-1 focus:ring-[#4a2c1d] rounded-xl pl-3 pr-8 py-1.5 text-xs font-bold transition-all cursor-pointer shadow-2xs outline-none"
                 title="Khusus Roasting: Filter Jenis Biji Kopi Mentah (Opsional)"
               >
                 <option value="">Semua Biji Mentah</option>
@@ -4160,7 +4160,7 @@
 
             <button
               @click="searchPicTable"
-              class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition-all cursor-pointer btn-action shadow-2xs flex items-center gap-1.5"
+              class="px-3 py-1.5 bg-[#4a2c1d] hover:bg-[#3c2415] text-white text-xs font-bold rounded-xl transition-all cursor-pointer btn-action shadow-2xs flex items-center gap-1.5"
             >
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
               <span>Cari</span>
@@ -4298,7 +4298,7 @@
                     v-model.number="pageJumpInput"
                     @keydown.enter.prevent="jumpToPicPage"
                     @keyup.enter.prevent="jumpToPicPage"
-                    class="w-12 text-center font-bold text-xs bg-white border border-stone-300 rounded px-1 py-0.5 text-stone-900 focus:outline-none focus:border-blue-500 shadow-2xs"
+                    class="w-12 text-center font-bold text-xs bg-white border border-stone-300 rounded px-1 py-0.5 text-stone-900 focus:outline-none focus:border-[#4a2c1d] shadow-2xs"
                     placeholder="1"
                     title="Ketik nomor halaman lalu tekan Enter"
                   />
@@ -4306,7 +4306,7 @@
                   <button
                     type="button"
                     @click="jumpToPicPage"
-                    class="px-1.5 py-0.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-[10px] font-bold transition-all cursor-pointer shadow-2xs"
+                    class="px-1.5 py-0.5 bg-[#4a2c1d] hover:bg-[#3c2415] text-white rounded text-[10px] font-bold transition-all cursor-pointer shadow-2xs"
                     title="Lompat ke halaman yang diketik"
                   >
                     Go
@@ -4677,7 +4677,7 @@
           <span>Menampilkan 5 baris cuplikan pertama</span>
           <button
             @click="closeTablePreview"
-            class="px-4 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white transition-all font-semibold cursor-pointer btn-action shadow-2xs"
+            class="px-4 py-1.5 rounded-xl bg-[#4a2c1d] hover:bg-[#3c2415] text-white transition-all font-semibold cursor-pointer btn-action shadow-2xs"
           >
             Tutup Pratinjau
           </button>
@@ -4769,7 +4769,7 @@
         <!-- Modal Header -->
         <div class="p-5 bg-stone-50 border-b border-stone-200/80 flex items-center justify-between">
           <div class="flex items-center gap-2.5">
-            <div class="w-8 h-8 rounded-xl bg-blue-600 flex items-center justify-center font-bold text-white text-xs">
+            <div class="w-8 h-8 rounded-xl bg-[#4a2c1d] flex items-center justify-center font-bold text-white text-xs">
               SJA
             </div>
             <div>
@@ -4799,7 +4799,7 @@
                 required
                 autocomplete="username"
                 placeholder="Masukkan username Anda"
-                class="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all shadow-2xs"
+                class="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#4a2c1d]/30 focus:border-[#4a2c1d] focus:bg-white transition-all shadow-2xs"
               />
             </div>
             <div>
@@ -4810,7 +4810,7 @@
                 required
                 autocomplete="current-password"
                 placeholder="Masukkan kata sandi Anda"
-                class="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all shadow-2xs"
+                class="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#4a2c1d]/30 focus:border-[#4a2c1d] focus:bg-white transition-all shadow-2xs"
               />
             </div>
           </div>
@@ -4830,7 +4830,7 @@
             <button
               type="submit"
               :disabled="loginLoading"
-              class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-xs cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
+              class="px-5 py-2 bg-[#4a2c1d] hover:bg-[#3c2415] text-white rounded-xl text-xs font-bold shadow-xs cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
             >
               <svg v-if="loginLoading" class="w-3.5 h-3.5 spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <circle cx="12" cy="12" r="10" stroke-width="4" stroke="currentColor" class="opacity-25"></circle>
