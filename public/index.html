@@ -2277,7 +2277,7 @@
 
                 <!-- ── CONTAINER 3: PIC QC (Quality Control & Laboratorium) ── -->
                 <div
-                  v-if="(flow.qcSections && flow.qcSections.length > 0) || (flow.qcMetrics && flow.qcMetrics.length > 0) || (flow.cuptestMetrics && flow.cuptestMetrics.length > 0) || flow.qcTable || (flow.extraQcBlocks && flow.extraQcBlocks.length > 0)"
+                  v-if="(flow.qcSections && flow.qcSections.length > 0) || (flow.qcMetrics && flow.qcMetrics.length > 0) || (flow.cuptestMetrics && flow.cuptestMetrics.length > 0) || flow.qcTable || (flow.extraQcBlocks && flow.extraQcBlocks.length > 0) || flow.qcNotice"
                   class="border border-blue-900/20 bg-blue-50/15 rounded-2xl p-4 sm:p-5 shadow-2xs"
                 >
                   <div class="flex flex-wrap items-center justify-between gap-3 mb-4 pb-3 border-b border-blue-900/10">
@@ -2303,6 +2303,15 @@
                       </span>
                       <svg class="w-3.5 h-3.5 transition-transform duration-200" :class="{ 'rotate-180': openQcTables[flow.flowNumber] }" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" /></svg>
                     </button>
+                  </div>
+
+                  <!-- Banner Pemberitahuan jika QC untuk alur ini belum ada di database -->
+                  <div v-if="flow.qcNotice" class="p-3.5 rounded-xl bg-amber-50/80 border border-amber-300/80 text-xs text-amber-950 flex items-start gap-2.5 mb-3 shadow-2xs">
+                    <svg class="w-4 h-4 text-amber-700 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                    <div>
+                      <span class="font-bold text-amber-950 block text-xs sm:text-sm">Pemberitahuan Data QC</span>
+                      <span class="text-amber-900/90 leading-relaxed block mt-0.5">{{ flow.qcNotice }}</span>
+                    </div>
                   </div>
 
                   <!-- ── RENDER MODULAR SUB-SEKSI QC (Grinding, Aroma, Hidrolise, dll) ── -->

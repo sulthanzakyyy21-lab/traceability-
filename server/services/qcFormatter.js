@@ -163,29 +163,12 @@ function formatQcTrace(qcFlow, packingFlow, roastingFlow) {
   }
 
   // ── 5. ROASTING: Analisa Kualitas Kopi Goreng ──
-  const roastRows = roastingFlow?.raw_rows || [];
-  if (roastRows.length > 0) {
-    const warnas = roastRows.map((r) => parseFloat(String(r.Warna || '').replace(',', '.'))).filter((n) => !isNaN(n) && n > 0);
-    const avgWarna = warnas.length ? (warnas.reduce((a, b) => a + b, 0) / warnas.length).toFixed(0) : '115';
-    qcMap['qc_roast_visual_fm'] = roastRows.every((r) => String(r['Foreign Matter']).toUpperCase() === 'OK') ? 'OK / Bebas Benda Asing' : 'OK';
-    qcMap['qc_roast_warna'] = avgWarna;
-    qcMap['qc_roast_kadar_air'] = '5.05%';
-    qcMap['qc_roast_ph'] = '6.33';
-    qcMap['qc_roast_brix'] = '1.19';
-    qcMap['qc_roast_wangi'] = '2.5';
-    qcMap['qc_roast_asam'] = '3.0';
-    qcMap['qc_roast_pahit'] = '2.9';
-    qcMap['qc_roast_sepat'] = '2.75';
-    qcMap['qc_roast_body'] = '2.75';
-    qcMap['qc_roast_bau_asing'] = roastRows.every((r) => String(r.Bau).toUpperCase() === 'OK') ? '0 (Bebas Bau Asing)' : '0';
-    qcMap['qc_roast_pic'] = 'Arul, Gufron, Wawan, Argo, Hapy';
-  } else {
-    [
-      'qc_roast_visual_fm', 'qc_roast_warna', 'qc_roast_kadar_air', 'qc_roast_ph',
-      'qc_roast_brix', 'qc_roast_wangi', 'qc_roast_asam', 'qc_roast_pahit',
-      'qc_roast_sepat', 'qc_roast_body', 'qc_roast_bau_asing', 'qc_roast_pic',
-    ].forEach((k) => { qcMap[k] = '-'; });
-  }
+  // Catatan: Tabel qc_roasting belum ada di database MySQL. Seluruh metrik ditandai 'Data tidak ditemukan'.
+  [
+    'qc_roast_visual_fm', 'qc_roast_warna', 'qc_roast_kadar_air', 'qc_roast_ph',
+    'qc_roast_brix', 'qc_roast_wangi', 'qc_roast_asam', 'qc_roast_pahit',
+    'qc_roast_sepat', 'qc_roast_body', 'qc_roast_bau_asing', 'qc_roast_pic',
+  ].forEach((k) => { qcMap[k] = 'Data tidak ditemukan'; });
 
   return qcMap;
 }
