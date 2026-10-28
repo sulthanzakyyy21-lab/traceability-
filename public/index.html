@@ -1953,16 +1953,18 @@
                     <button
                       v-if="flow.prodTable && flow.prodTable.rows?.length > 0"
                       type="button"
-                      @click="toggleFlowProdTable(flow)"
-                      class="btn-secondary-action inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold border rounded-xl transition-all cursor-pointer shadow-2xs"
-                      :class="openProdTables[flow.flowNumber] ? 'bg-amber-950 text-white border-amber-950 shadow-xs' : 'bg-white hover:bg-amber-50 text-amber-950 border-amber-900/20 shadow-2xs'"
+                      @click="openInspectProd(flow)"
+                      class="btn-secondary-action inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-white hover:bg-amber-50 text-amber-950 border border-amber-900/20 rounded-xl transition-all cursor-pointer shadow-2xs hover:shadow-xs"
+                      title="Inspect data produksi di pop-up modal"
                     >
-                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
-                      <span>Raw Data MySQL ({{ getProdRole(flow) }})</span>
-                      <span class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-amber-100/70 text-amber-900 font-bold">
+                      <svg class="w-3.5 h-3.5 text-amber-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+                      <span>Inspect Data ({{ getProdRole(flow) }})</span>
+                      <span class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-amber-100/80 text-amber-900 font-bold">
                         {{ flow.prodTable.rows.length }} Baris
                       </span>
-                      <svg class="w-3.5 h-3.5 transition-transform duration-200" :class="{ 'rotate-180': openProdTables[flow.flowNumber] }" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" /></svg>
+                      <span class="text-[9.5px] font-mono px-1.5 py-0.2 rounded bg-amber-800 text-white font-bold">
+                        Pop-up
+                      </span>
                     </button>
                   </div>
 
@@ -2045,59 +2047,6 @@
                     Belum ada rekaman parameter operasional di database untuk alur ini.
                   </div>
 
-                  <!-- Tabel Inline PIC Produksi (Langsung di bawah blok Produksi) -->
-                  <div
-                    v-if="flow.prodTable && openProdTables[flow.flowNumber]"
-                    class="mt-4 border border-amber-900/20 bg-amber-50/20 rounded-xl p-4 sm:p-5"
-                  >
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
-                      <div class="flex items-center gap-2 flex-wrap">
-                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
-                        <h6 class="text-xs sm:text-sm font-bold text-slate-900">
-                          {{ flow.prodTable.title }} &bull; <span class="font-mono text-amber-900">{{ flow.prodTable.tableName }}</span>
-                        </h6>
-                        <span class="text-[10px] font-mono px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-900 font-bold border border-emerald-300">
-                          {{ flow.prodTable.columns.length }} Kolom &bull; {{ flow.prodTable.rows.length }} Baris Terverifikasi
-                        </span>
-                      </div>
-                      <button
-                        type="button"
-                        @click="toggleFlowProdTable(flow)"
-                        class="text-xs font-bold text-slate-600 hover:text-slate-900 px-3 py-1 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 cursor-pointer shadow-2xs self-start sm:self-auto"
-                      >
-                        Tutup Tabel &times;
-                      </button>
-                    </div>
-
-                    <div class="param-stacked-container no-print">
-                      <div class="param-scroll-box rounded-xl border border-black overflow-x-auto shadow-xs bg-white max-h-[420px]">
-                        <table class="param-stacked-table mb-0 w-full text-xs">
-                          <thead class="sticky top-0 z-10">
-                            <tr>
-                              <th class="param-th-no">No</th>
-                              <th v-for="col in flow.prodTable.columns" :key="col" class="param-green-th" :title="col">
-                                {{ formatColHeader(col) }}
-                              </th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            <tr v-for="(row, rIdx) in flow.prodTable.rows" :key="rIdx" class="param-tr">
-                              <td class="param-td-no">{{ rIdx + 1 }}</td>
-                              <td v-for="col in flow.prodTable.columns" :key="col" class="param-td">
-                                {{ formatParamCell(row[col], col) }}
-                              </td>
-                            </tr>
-                            <tr v-if="flow.prodTable.rows.length === 0">
-                              <td :colspan="Math.max(flow.prodTable.columns.length + 1, 1)" class="text-center py-6 text-slate-400 italic">
-                                Belum ada rekaman data di tabel {{ flow.prodTable.tableName }}.
-                              </td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  </div>
-
                   <!-- Petugas PIC Produksi (Di bawah Container Produksi) -->
                   <div
                     v-if="(flow.pic?.operasional && flow.pic.operasional !== '-') || (getProdRole(flow) === 'PA' && flow.pic?.pa)"
@@ -2129,33 +2078,37 @@
                       <button
                         v-if="flow.cipChecklist"
                         type="button"
-                        @click="toggleFlowCipChecklist(flow)"
-                        class="btn-secondary-action inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold border rounded-xl transition-all cursor-pointer shadow-2xs"
-                        :class="openCipChecklists[flow.flowNumber] ? 'bg-emerald-800 text-white border-emerald-800 shadow-xs' : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-950 border-emerald-300 shadow-2xs'"
+                        @click="openInspectCip(flow.cipChecklist)"
+                        class="btn-secondary-action inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-emerald-50 hover:bg-emerald-100 text-emerald-950 border border-emerald-300 rounded-xl transition-all cursor-pointer shadow-2xs hover:shadow-xs"
+                        title="Buka checklist sanitasi CIP di pop-up inspector"
                       >
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
-                        <span>Checklist CIP ({{ flow.cipChecklist.plantName }})</span>
-                        <span class="text-[10px] font-mono px-1.5 py-0.2 rounded font-bold" :class="openCipChecklists[flow.flowNumber] ? 'bg-emerald-950 text-white' : 'bg-white text-emerald-900 border border-emerald-200'">
+                        <svg class="w-3.5 h-3.5 text-emerald-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
+                        <span>Inspect Checklist CIP</span>
+                        <span class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-white text-emerald-900 border border-emerald-200 font-bold">
                           {{ flow.cipChecklist.recordedItems }} / {{ flow.cipChecklist.totalItems }} Titik
                         </span>
-                        <svg class="w-3.5 h-3.5 transition-transform duration-200" :class="{ 'rotate-180': openCipChecklists[flow.flowNumber] }" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" /></svg>
+                        <span class="text-[9.5px] font-mono px-1.5 py-0.2 rounded bg-emerald-700 text-white font-bold">
+                          Pop-up
+                        </span>
                       </button>
 
                       <!-- Tombol Raw Data MySQL PA -->
                       <button
                         v-if="flow.paTable && flow.paTable.rows?.length > 0"
                         type="button"
-                        @click="toggleFlowPaTable(flow)"
-                      class="btn-secondary-action inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold border rounded-xl transition-all cursor-pointer shadow-2xs"
-                      :class="openPaTables[flow.flowNumber] ? 'bg-emerald-900 text-white border-emerald-900 shadow-xs' : 'bg-white hover:bg-emerald-50 text-emerald-950 border-emerald-900/20 shadow-2xs'"
-                    >
-                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
-                      <span>Raw Data MySQL (PA)</span>
-                      <span class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-emerald-100/70 text-emerald-900 font-bold">
-                        {{ flow.paTable.rows.length }} Baris
-                      </span>
-                      <svg class="w-3.5 h-3.5 transition-transform duration-200" :class="{ 'rotate-180': openPaTables[flow.flowNumber] }" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" /></svg>
-                    </button>
+                        @click="openInspectPa(flow)"
+                        class="btn-secondary-action inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-white hover:bg-emerald-50 text-emerald-950 border border-emerald-900/20 rounded-xl transition-all cursor-pointer shadow-2xs hover:shadow-xs"
+                        title="Buka raw data PA di pop-up inspector"
+                      >
+                        <svg class="w-3.5 h-3.5 text-emerald-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
+                        <span>Inspect Raw Data PA</span>
+                        <span class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-emerald-100/70 text-emerald-900 font-bold">
+                          {{ flow.paTable.rows.length }} Baris
+                        </span>
+                        <span class="text-[9.5px] font-mono px-1.5 py-0.2 rounded bg-emerald-800 text-white font-bold">
+                          Pop-up
+                        </span>
+                      </button>
                       <span v-else-if="!flow.cipChecklist" class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-100/80 text-emerald-900 font-bold border border-emerald-300/60">
                         Sanitasi & Product Assurance
                       </span>
@@ -2232,236 +2185,6 @@
                     </div>
                   </div>
 
-                  <!-- ── PANEL CHECKLIST CIP & FLUSHING AREA EXTRACTION ── -->
-                  <div
-                    v-if="flow.cipChecklist && openCipChecklists[flow.flowNumber]"
-                    class="mt-4 border-2 border-emerald-600/30 bg-white rounded-2xl p-4 sm:p-6 shadow-md transition-all"
-                  >
-                    <!-- Header Panel -->
-                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-4 border-b border-emerald-100">
-                      <div>
-                        <div class="flex items-center gap-2 flex-wrap mb-1">
-                          <span class="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
-                          <h6 class="text-sm font-bold text-slate-900 tracking-wide uppercase">
-                            Checklist CIP & Flushing Area Extraction ({{ flow.cipChecklist.plantName }})
-                          </h6>
-                          <span class="px-2 py-0.5 rounded text-[11px] font-mono font-bold bg-emerald-100 text-emerald-900 border border-emerald-300">
-                            QF/PDQC/SS/010
-                          </span>
-                          <span class="px-2 py-0.5 rounded text-[11px] font-mono font-medium bg-slate-100 text-slate-700 border border-slate-200">
-                            MySQL: {{ flow.cipChecklist.tableName }}
-                          </span>
-                        </div>
-                        <p class="text-xs text-slate-500">
-                          Pengambilan data waktu CIP terakhir untuk setiap titik instrument/area ekstraksi sebelum tanggal proses batch.
-                        </p>
-                      </div>
-                      <div class="flex items-center gap-2 self-start md:self-auto">
-                        <button
-                          type="button"
-                          @click="toggleFlowCipChecklist(flow)"
-                          class="text-xs font-bold text-slate-600 hover:text-slate-900 px-3 py-1.5 rounded-lg border border-slate-300 bg-slate-50 hover:bg-slate-100 cursor-pointer shadow-2xs"
-                        >
-                          Tutup Checklist &times;
-                        </button>
-                      </div>
-                    </div>
-
-                    <!-- Summary Stats & Filter Controls -->
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-3 border-b border-slate-100">
-                      <!-- Pills Statistik -->
-                      <div class="flex items-center gap-2 flex-wrap text-xs">
-                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-900 font-semibold border border-emerald-200">
-                          <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-                          Terverifikasi DB: <strong>{{ flow.cipChecklist.recordedItems }}</strong> / {{ flow.cipChecklist.totalItems }} Titik
-                        </span>
-                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-50 text-amber-900 font-semibold border border-amber-200" v-if="flow.cipChecklist.totalItems - flow.cipChecklist.recordedItems > 0">
-                          <span class="w-2 h-2 rounded-full bg-amber-500"></span>
-                          Belum Tercatat: <strong>{{ flow.cipChecklist.totalItems - flow.cipChecklist.recordedItems }}</strong> Titik (-)
-                        </span>
-                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 font-medium">
-                          Sesi Terakhir: <strong>{{ flow.cipChecklist.latestCipDate }}</strong>
-                        </span>
-                      </div>
-
-                      <!-- Filter Tabs -->
-                      <div class="flex items-center gap-1 bg-stone-100 p-1 rounded-xl text-xs font-medium shadow-2xs">
-                        <button
-                          type="button"
-                          @click="setCipChecklistFilter('all')"
-                          :class="cipChecklistFilter === 'all' ? 'bg-[#4a2c1d] text-white font-bold shadow-xs' : 'text-stone-700 hover:text-stone-900 hover:bg-stone-200/60 font-medium'"
-                          class="px-3 py-1.5 rounded-lg transition-all cursor-pointer whitespace-nowrap"
-                        >
-                          Semua ({{ flow.cipChecklist.totalItems }})
-                        </button>
-                        <button
-                          type="button"
-                          @click="setCipChecklistFilter('lt1')"
-                          :class="cipChecklistFilter === 'lt1' ? 'bg-[#4a2c1d] text-white font-bold shadow-xs' : 'text-stone-700 hover:text-stone-900 hover:bg-stone-200/60 font-medium'"
-                          class="px-3 py-1.5 rounded-lg transition-all cursor-pointer whitespace-nowrap"
-                        >
-                          Lt. 1
-                        </button>
-                        <button
-                          type="button"
-                          @click="setCipChecklistFilter('lt2')"
-                          :class="cipChecklistFilter === 'lt2' ? 'bg-[#4a2c1d] text-white font-bold shadow-xs' : 'text-stone-700 hover:text-stone-900 hover:bg-stone-200/60 font-medium'"
-                          class="px-3 py-1.5 rounded-lg transition-all cursor-pointer whitespace-nowrap"
-                        >
-                          Lt. 2
-                        </button>
-                        <button
-                          type="button"
-                          @click="setCipChecklistFilter('lt3')"
-                          :class="cipChecklistFilter === 'lt3' ? 'bg-[#4a2c1d] text-white font-bold shadow-xs' : 'text-stone-700 hover:text-stone-900 hover:bg-stone-200/60 font-medium'"
-                          class="px-3 py-1.5 rounded-lg transition-all cursor-pointer whitespace-nowrap"
-                        >
-                          Lt. 3+
-                        </button>
-                        <button
-                          type="button"
-                          @click="setCipChecklistFilter('swab')"
-                          :class="cipChecklistFilter === 'swab' ? 'bg-[#4a2c1d] text-white font-bold shadow-xs' : 'text-stone-700 hover:text-stone-900 hover:bg-stone-200/60 font-medium'"
-                          class="px-3 py-1.5 rounded-lg transition-all cursor-pointer whitespace-nowrap"
-                        >
-                          Khusus Swab
-                        </button>
-                      </div>
-                    </div>
-
-                    <!-- Tabel Data Checklist (Rapi, Lebar Penuh, Kolom Tidak Terpotong) -->
-                    <div class="overflow-x-auto max-h-[520px] mt-3 rounded-xl border border-slate-200 shadow-2xs">
-                      <table class="w-full min-w-[980px] text-left text-xs border-collapse">
-                        <thead class="sticky top-0 bg-slate-100 z-10 text-[11px] font-bold text-slate-700 uppercase tracking-wider">
-                          <tr class="border-b border-slate-200">
-                            <th class="py-2.5 px-3 w-12 text-center whitespace-nowrap">No.</th>
-                            <th class="py-2.5 px-3 min-w-[240px]">Instrument / Area</th>
-                            <th class="py-2.5 px-3 w-20 text-center whitespace-nowrap">Lokasi</th>
-                            <th class="py-2.5 px-3 w-24 text-center whitespace-nowrap">Swab Test</th>
-                            <th class="py-2.5 px-3 min-w-[150px] text-center whitespace-nowrap">Waktu CIP Terakhir</th>
-                            <th class="py-2.5 px-3 w-20 text-right whitespace-nowrap">pH Lab</th>
-                            <th class="py-2.5 px-3 w-24 text-right whitespace-nowrap">Conductivity</th>
-                            <th class="py-2.5 px-3 w-28 text-center whitespace-nowrap">Hasil Swab</th>
-                            <th class="py-2.5 px-3 w-28 text-center whitespace-nowrap">Status</th>
-                          </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-100 font-mono">
-                          <tr
-                            v-for="item in filteredCipItems(flow.cipChecklist.items)"
-                            :key="item.no"
-                            class="hover:bg-emerald-50/40 transition-colors"
-                            :class="item.status === 'OK' ? 'bg-white' : 'bg-slate-50/50'"
-                          >
-                            <td class="py-2.5 px-3 text-center text-slate-500 font-sans whitespace-nowrap">{{ item.no }}</td>
-                            <td class="py-2.5 px-3 font-sans font-medium text-slate-900">
-                              {{ item.item }}
-                            </td>
-                            <td class="py-2.5 px-3 text-center whitespace-nowrap">
-                              <span class="inline-flex items-center justify-center px-2.5 py-0.5 rounded text-[10.5px] font-semibold bg-slate-100 text-slate-700 whitespace-nowrap min-w-[42px]">
-                                {{ item.floor }}
-                              </span>
-                            </td>
-                            <td class="py-2.5 px-3 text-center whitespace-nowrap">
-                              <span v-if="item.swabTarget && item.swabTarget !== '-'" class="inline-flex items-center justify-center px-2 py-0.5 rounded text-[10.5px] font-bold bg-amber-100 text-amber-900 border border-amber-300 whitespace-nowrap min-w-[28px]">
-                                {{ item.swabTarget }}
-                              </span>
-                              <span v-else class="text-slate-300">-</span>
-                            </td>
-                            <td class="py-2.5 px-3 text-slate-700 text-xs whitespace-nowrap text-center">
-                              {{ item.waktuCip }}
-                            </td>
-                            <td class="py-2.5 px-3 text-right font-semibold whitespace-nowrap" :class="item.phLab ? 'text-slate-800' : 'text-slate-300'">
-                              {{ item.phLab || '-' }}
-                            </td>
-                            <td class="py-2.5 px-3 text-right whitespace-nowrap" :class="item.conductivity ? 'text-slate-800' : 'text-slate-300'">
-                              {{ item.conductivity || '-' }}
-                            </td>
-                            <td class="py-2.5 px-3 text-center whitespace-nowrap">
-                              <span v-if="item.swabResult !== ''" class="inline-flex items-center justify-center px-2.5 py-0.5 rounded text-[10.5px] font-bold whitespace-nowrap min-w-[65px]" :class="item.swabResult === '0' ? 'bg-emerald-100 text-emerald-900' : 'bg-rose-100 text-rose-900'">
-                                {{ item.swabResult === '0' ? '0 (Negatif)' : item.swabResult }}
-                              </span>
-                              <span v-else class="text-slate-300">-</span>
-                            </td>
-                            <td class="py-2.5 px-3 text-center whitespace-nowrap">
-                              <span v-if="item.status === 'OK'" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10.5px] font-bold bg-emerald-100 text-emerald-900 whitespace-nowrap">
-                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-600 shrink-0"></span> OK
-                              </span>
-                              <span v-else class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10.5px] font-medium bg-slate-100 text-slate-500 whitespace-nowrap">
-                                (-) Belum
-                              </span>
-                            </td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-
-                  <!-- Tabel Inline PIC PA (Langsung di bawah blok PA) -->
-                  <div
-                    v-if="flow.paTable && openPaTables[flow.flowNumber]"
-                    class="mt-4 border border-emerald-900/20 bg-emerald-50/20 rounded-xl p-4 sm:p-5"
-                  >
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
-                      <div class="flex items-center gap-2 flex-wrap">
-                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
-                        <h6 class="text-xs sm:text-sm font-bold text-slate-900">
-                          {{ flow.paTable.title }} &bull; <span class="font-mono text-emerald-900">{{ flow.paTable.tableName }}</span>
-                        </h6>
-                        <span class="text-[10px] font-mono px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-900 font-bold border border-emerald-300">
-                          {{ flow.paTable.columns.length }} Kolom &bull; {{ flow.paTable.rows.length }} Baris Terverifikasi
-                        </span>
-                      </div>
-                      <button
-                        type="button"
-                        @click="toggleFlowPaTable(flow)"
-                        class="text-xs font-bold text-slate-600 hover:text-slate-900 px-3 py-1 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 cursor-pointer shadow-2xs self-start sm:self-auto"
-                      >
-                        Tutup Tabel &times;
-                      </button>
-                    </div>
-
-                    <div class="param-stacked-container no-print">
-                      <div class="param-scroll-box rounded-xl border border-black overflow-x-auto shadow-xs bg-white max-h-[420px]">
-                        <table class="param-stacked-table mb-0 w-full text-xs">
-                          <thead class="sticky top-0 z-10">
-                            <tr>
-                              <th class="param-th-no">No</th>
-                              <th v-for="col in flow.paTable.columns" :key="col" class="param-green-th" :title="col">
-                                {{ formatColHeader(col) }}
-                              </th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            <tr v-for="(row, rIdx) in flow.paTable.rows" :key="rIdx" class="param-tr">
-                              <td class="param-td-no">{{ rIdx + 1 }}</td>
-                              <td v-for="col in flow.paTable.columns" :key="col" class="param-td">
-                                {{ formatParamCell(row[col], col) }}
-                              </td>
-                            </tr>
-                            <tr v-if="flow.paTable.rows.length === 0">
-                              <td :colspan="Math.max(flow.paTable.columns.length + 1, 1)" class="text-center py-6 text-slate-400 italic">
-                                Belum ada rekaman data di tabel {{ flow.paTable.tableName }}.
-                              </td>
-                            </tr>
-                          </tbody>
-                          <!-- FOOTER: BARIS RATA-RATA HASIL ANALISIS -->
-                          <tfoot v-if="flow.paTable.rows.length > 0 && flow.paTable.averages && Object.keys(flow.paTable.averages).length > 0">
-                            <tr class="bg-emerald-100/90 font-bold border-t-2 border-emerald-900 text-emerald-950">
-                              <td class="param-td-no text-center font-extrabold uppercase text-[10px] tracking-wider py-2 bg-emerald-200/80">Avg</td>
-                              <td v-for="col in flow.paTable.columns" :key="col" class="param-td font-semibold text-[11px]">
-                                <span v-if="flow.paTable.averages[col] !== undefined" class="inline-flex items-center gap-1 font-mono font-bold text-emerald-950 bg-emerald-200/90 px-1.5 py-0.5 rounded shadow-2xs" title="Rata-rata Hasil Analisa">
-                                  <span class="text-[9px] font-normal text-emerald-800">x̄ =</span>
-                                  <span>{{ flow.paTable.averages[col] }}</span>
-                                </span>
-                                <span v-else class="text-slate-400 font-normal text-[10px]">-</span>
-                              </td>
-                            </tr>
-                          </tfoot>
-                        </table>
-                      </div>
-                    </div>
-                  </div>
-
                   <!-- Petugas PIC PA (Di bawah Container PA) -->
                   <div
                     v-if="flow.pic?.pa && flow.pic.pa !== '-'"
@@ -2492,16 +2215,18 @@
                     <button
                       v-if="flow.qcTable && flow.qcTable.rows?.length > 0"
                       type="button"
-                      @click="toggleFlowQcTable(flow)"
-                      class="btn-secondary-action inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold border rounded-xl transition-all cursor-pointer shadow-2xs"
-                      :class="openQcTables[flow.flowNumber] ? 'bg-blue-900 text-white border-blue-900 shadow-xs' : 'bg-white hover:bg-blue-50 text-blue-950 border-blue-900/20 shadow-2xs'"
+                      @click="openInspectQc(flow)"
+                      class="btn-secondary-action inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-white hover:bg-blue-50 text-blue-950 border border-blue-900/20 rounded-xl transition-all cursor-pointer shadow-2xs hover:shadow-xs"
+                      title="Inspect data QC di pop-up modal"
                     >
-                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
-                      <span>Raw Data MySQL (QC)</span>
+                      <svg class="w-3.5 h-3.5 text-blue-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                      <span>Inspect Raw Data ({{ getQcRole(flow) }})</span>
                       <span class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-blue-100/70 text-blue-900 font-bold">
                         {{ flow.qcTable.rows.length }} Baris
                       </span>
-                      <svg class="w-3.5 h-3.5 transition-transform duration-200" :class="{ 'rotate-180': openQcTables[flow.flowNumber] }" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" /></svg>
+                      <span class="text-[9.5px] font-mono px-1.5 py-0.2 rounded bg-blue-800 text-white font-bold">
+                        Pop-up
+                      </span>
                     </button>
                   </div>
 
@@ -2691,59 +2416,6 @@
                       </div>
                     </template>
                   </template>
-
-                  <!-- Tabel Inline PIC QC (Langsung di bawah blok QC) -->
-                  <div
-                    v-if="flow.qcTable && openQcTables[flow.flowNumber]"
-                    class="mt-4 border border-blue-900/20 bg-blue-50/20 rounded-xl p-4 sm:p-5"
-                  >
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
-                      <div class="flex items-center gap-2 flex-wrap">
-                        <span class="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
-                        <h6 class="text-xs sm:text-sm font-bold text-slate-900">
-                          {{ flow.qcTable.title }} &bull; <span class="font-mono text-blue-900">{{ flow.qcTable.tableName }}</span>
-                        </h6>
-                        <span class="text-[10px] font-mono px-2 py-0.5 rounded-md bg-blue-100 text-blue-900 font-bold border border-blue-300">
-                          {{ flow.qcTable.columns.length }} Kolom &bull; {{ flow.qcTable.rows.length }} Baris Terverifikasi
-                        </span>
-                      </div>
-                      <button
-                        type="button"
-                        @click="toggleFlowQcTable(flow)"
-                        class="text-xs font-bold text-slate-600 hover:text-slate-900 px-3 py-1 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 cursor-pointer shadow-2xs self-start sm:self-auto"
-                      >
-                        Tutup Tabel &times;
-                      </button>
-                    </div>
-
-                    <div class="param-stacked-container no-print">
-                      <div class="param-scroll-box rounded-xl border border-black overflow-x-auto shadow-xs bg-white max-h-[420px]">
-                        <table class="param-stacked-table mb-0 w-full text-xs">
-                          <thead class="sticky top-0 z-10">
-                            <tr>
-                              <th class="param-th-no">No</th>
-                              <th v-for="col in flow.qcTable.columns" :key="col" class="param-green-th" :title="col">
-                                {{ formatColHeader(col) }}
-                              </th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            <tr v-for="(row, rIdx) in flow.qcTable.rows" :key="rIdx" class="param-tr">
-                              <td class="param-td-no">{{ rIdx + 1 }}</td>
-                              <td v-for="col in flow.qcTable.columns" :key="col" class="param-td">
-                                {{ formatParamCell(row[col], col) }}
-                              </td>
-                            </tr>
-                            <tr v-if="flow.qcTable.rows.length === 0">
-                              <td :colspan="Math.max(flow.qcTable.columns.length + 1, 1)" class="text-center py-6 text-slate-400 italic">
-                                Belum ada rekaman data di tabel {{ flow.qcTable.tableName }}.
-                              </td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  </div>
 
                   <!-- Petugas PIC QC (Di bawah Container QC) -->
                   <div
@@ -3641,194 +3313,44 @@
                                 <button
                                   v-if="traceResult?.pa?.extraction_cip_checklist"
                                   type="button"
-                                  @click="showReportCipTable = !showReportCipTable"
-                                  class="no-print inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-bold text-emerald-900 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 rounded-lg cursor-pointer transition-all shadow-2xs"
-                                  :title="showReportCipTable ? 'Tutup tabel checklist' : 'Buka tabel checklist sanitasi'"
+                                  @click="openInspectCip(traceResult.pa.extraction_cip_checklist)"
+                                  class="no-print inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-bold text-emerald-950 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 rounded-lg cursor-pointer transition-all shadow-2xs hover:shadow-xs"
+                                  title="Inspect checklist sanitasi CIP di pop-up modal"
                                 >
-                                  <span class="font-mono font-bold">{{ showReportCipTable ? 'v' : '>' }}</span>
-                                  <span>{{ showReportCipTable ? 'Tutup Checklist' : 'Buka Tabel Sanitasi' }}</span>
+                                  <svg class="w-3.5 h-3.5 text-emerald-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                  </svg>
+                                  <span>Inspect Checklist (Pop-up)</span>
                                   <span class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-white text-emerald-950 border border-emerald-200 font-bold">
                                     {{ traceResult.pa.extraction_cip_checklist.totalItems }} Titik
                                   </span>
                                 </button>
                               </div>
                             </template>
-                            <!-- Parameter Kritis: langsung tombol > buka tabel / v tutup tabel -->
+                            <!-- Parameter Kritis: langsung tombol inspect pop-up modal -->
                             <template v-else>
                               <button
                                 v-if="getProcessRows(item.key).length > 0"
                                 type="button"
-                                @click="toggleParamTable(getProcessKey(item.key))"
-                                class="no-print inline-flex items-center gap-1.5 text-[11px] font-bold text-emerald-800 hover:text-emerald-950 hover:underline cursor-pointer transition-colors"
-                                :title="showParamTable[getProcessKey(item.key)] ? 'Tutup tabel' : 'Buka tabel'"
+                                @click="openInspectScada(getProcessKey(item.key))"
+                                class="no-print inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-bold text-emerald-950 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 rounded-lg cursor-pointer transition-all shadow-2xs hover:shadow-xs"
+                                :title="'Inspect parameter kritis ' + getProcessTitle(item.key)"
                               >
-                                <span class="font-mono font-bold">{{ showParamTable[getProcessKey(item.key)] ? 'v' : '>' }}</span>
-                                <span>{{ showParamTable[getProcessKey(item.key)] ? 'tutup tabel' : 'buka tabel' }}</span>
-                                <span class="text-[10px] font-normal text-slate-500">({{ getProcessColumns(item.key).length }} kolom &bull; {{ getProcessRows(item.key).length }} baris)</span>
+                                <svg class="w-3.5 h-3.5 text-emerald-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                </svg>
+                                <span>Inspect Parameter (Pop-up)</span>
+                                <span class="text-[10px] font-normal text-slate-500">({{ getProcessColumns(item.key).length }} kol &bull; {{ getProcessRows(item.key).length }} baris)</span>
                               </button>
                               <span v-else class="text-slate-400 text-xs">-</span>
                             </template>
                           </div>
-
-                          <!-- Tombol Layar Penuh (muncul saat tabel dibuka) -->
-                          <button
-                            v-if="isParamKritis(item.key) && showParamTable[getProcessKey(item.key)]"
-                            type="button"
-                            @click="activeModalProcess = getProcessKey(item.key)"
-                            class="no-print inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold border border-emerald-800 bg-emerald-800 text-white rounded hover:bg-emerald-700 transition-colors cursor-pointer shadow-xs"
-                            title="Buka tabel di satu layar penuh"
-                          >
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                              <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"></path>
-                            </svg>
-                            <span>Layar Penuh</span>
-                          </button>
-                        </div>
-                      </div>
-
-                      <!-- Sub-Tabel Checklist Sanitasi CIP Extraction di Quality Audit Report -->
-                      <div
-                        v-if="item.key === 'pa_ext_cip_checklist' && showReportCipTable && traceResult?.pa?.extraction_cip_checklist"
-                        class="mt-3 border-2 border-emerald-700/30 rounded-2xl overflow-hidden bg-white shadow-md no-print"
-                      >
-                        <div class="p-3.5 bg-emerald-50/90 border-b border-emerald-200 flex flex-wrap items-center justify-between gap-2.5">
-                          <div class="flex items-center gap-2 flex-wrap">
-                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
-                            <span class="text-xs font-bold text-slate-900 tracking-wide uppercase">
-                              Checklist CIP &amp; Flushing Area Extraction ({{ traceResult.pa.extraction_cip_checklist.plantName }})
-                            </span>
-                            <span class="text-[10.5px] font-mono px-2 py-0.5 rounded bg-emerald-100 text-emerald-900 font-bold border border-emerald-300">
-                              QF/PDQC/SS/010
-                            </span>
-                            <span class="text-[10.5px] font-mono px-2 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200">
-                              MySQL: {{ traceResult.pa.extraction_cip_checklist.tableName }}
-                            </span>
-                          </div>
-                          <!-- Quick Filter Tabs di Dokumen Audit -->
-                          <div class="flex items-center gap-1 bg-stone-100 p-0.5 rounded-xl border border-stone-200 text-xs shadow-2xs">
-                            <button
-                              type="button"
-                              @click="setCipChecklistFilter('all')"
-                              :class="cipChecklistFilter === 'all' ? 'bg-[#4a2c1d] text-white font-bold shadow-2xs' : 'text-stone-700 hover:text-stone-900'"
-                              class="px-2.5 py-1 rounded-lg cursor-pointer whitespace-nowrap"
-                            >Semua ({{ traceResult.pa.extraction_cip_checklist.totalItems }})</button>
-                            <button
-                              type="button"
-                              @click="setCipChecklistFilter('lt1')"
-                              :class="cipChecklistFilter === 'lt1' ? 'bg-[#4a2c1d] text-white font-bold shadow-2xs' : 'text-stone-700 hover:text-stone-900'"
-                              class="px-2.5 py-1 rounded-lg cursor-pointer whitespace-nowrap"
-                            >Lt. 1</button>
-                            <button
-                              type="button"
-                              @click="setCipChecklistFilter('lt2')"
-                              :class="cipChecklistFilter === 'lt2' ? 'bg-[#4a2c1d] text-white font-bold shadow-2xs' : 'text-stone-700 hover:text-stone-900'"
-                              class="px-2.5 py-1 rounded-lg cursor-pointer whitespace-nowrap"
-                            >Lt. 2</button>
-                            <button
-                              type="button"
-                              @click="setCipChecklistFilter('lt3')"
-                              :class="cipChecklistFilter === 'lt3' ? 'bg-[#4a2c1d] text-white font-bold shadow-2xs' : 'text-stone-700 hover:text-stone-900'"
-                              class="px-2.5 py-1 rounded-lg cursor-pointer whitespace-nowrap"
-                            >Lt. 3+</button>
-                            <button
-                              type="button"
-                              @click="setCipChecklistFilter('swab')"
-                              :class="cipChecklistFilter === 'swab' ? 'bg-[#4a2c1d] text-white font-bold shadow-2xs' : 'text-stone-700 hover:text-stone-900'"
-                              class="px-2.5 py-1 rounded-lg cursor-pointer whitespace-nowrap"
-                            >Khusus Swab</button>
-                          </div>
-                        </div>
-                        <div class="overflow-x-auto max-h-[420px] p-1">
-                          <table class="w-full min-w-[960px] text-left text-xs border-collapse">
-                            <thead class="sticky top-0 bg-slate-100 z-10 text-[10.5px] font-bold text-slate-700 uppercase tracking-wider">
-                              <tr class="border-b border-slate-200">
-                                <th class="py-2.5 px-3 w-12 text-center whitespace-nowrap">No.</th>
-                                <th class="py-2.5 px-3 min-w-[240px]">Instrument / Area</th>
-                                <th class="py-2.5 px-3 w-20 text-center whitespace-nowrap">Lokasi</th>
-                                <th class="py-2.5 px-3 w-24 text-center whitespace-nowrap">Swab Test</th>
-                                <th class="py-2.5 px-3 min-w-[150px] text-center whitespace-nowrap">Waktu CIP Terakhir</th>
-                                <th class="py-2.5 px-3 w-20 text-right whitespace-nowrap">pH Lab</th>
-                                <th class="py-2.5 px-3 w-24 text-right whitespace-nowrap">Conductivity</th>
-                                <th class="py-2.5 px-3 w-28 text-center whitespace-nowrap">Hasil Swab</th>
-                                <th class="py-2.5 px-3 w-28 text-center whitespace-nowrap">Status</th>
-                              </tr>
-                            </thead>
-                            <tbody class="divide-y divide-slate-100 font-mono text-xs">
-                              <tr
-                                v-for="item in filteredCipItems(traceResult.pa.extraction_cip_checklist.items)"
-                                :key="item.no"
-                                class="hover:bg-emerald-50/40 transition-colors"
-                                :class="item.status === 'OK' ? 'bg-white' : 'bg-slate-50/50'"
-                              >
-                                <td class="py-2 px-3 text-center text-slate-500 font-sans whitespace-nowrap">{{ item.no }}</td>
-                                <td class="py-2 px-3 font-sans font-medium text-slate-900">{{ item.item }}</td>
-                                <td class="py-2 px-3 text-center whitespace-nowrap">
-                                  <span class="inline-flex items-center justify-center px-2.5 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-700 whitespace-nowrap min-w-[42px]">
-                                    {{ item.floor }}
-                                  </span>
-                                </td>
-                                <td class="py-2 px-3 text-center whitespace-nowrap">
-                                  <span v-if="item.swabTarget && item.swabTarget !== '-'" class="inline-flex items-center justify-center px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300 whitespace-nowrap min-w-[28px]">
-                                    {{ item.swabTarget }}
-                                  </span>
-                                  <span v-else class="text-slate-300">-</span>
-                                </td>
-                                <td class="py-2 px-3 text-slate-700 text-xs whitespace-nowrap text-center">{{ item.waktuCip }}</td>
-                                <td class="py-2 px-3 text-right font-semibold whitespace-nowrap" :class="item.phLab ? 'text-slate-800' : 'text-slate-300'">
-                                  {{ item.phLab || '-' }}
-                                </td>
-                                <td class="py-2 px-3 text-right whitespace-nowrap" :class="item.conductivity ? 'text-slate-800' : 'text-slate-300'">
-                                  {{ item.conductivity || '-' }}
-                                </td>
-                                <td class="py-2 px-3 text-center whitespace-nowrap">
-                                  <span v-if="item.swabResult !== ''" class="inline-flex items-center justify-center px-2.5 py-0.5 rounded text-[10px] font-bold whitespace-nowrap min-w-[65px]" :class="item.swabResult === '0' ? 'bg-emerald-100 text-emerald-900' : 'bg-rose-100 text-rose-900'">
-                                    {{ item.swabResult === '0' ? '0 (Negatif)' : item.swabResult }}
-                                  </span>
-                                  <span v-else class="text-slate-300">-</span>
-                                </td>
-                                <td class="py-2 px-3 text-center whitespace-nowrap">
-                                  <span v-if="item.status === 'OK'" class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-900 whitespace-nowrap">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-600 shrink-0"></span> OK
-                                  </span>
-                                  <span v-else class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 text-slate-500 whitespace-nowrap">
-                                    (-) Belum
-                                  </span>
-                                </td>
-                              </tr>
-                            </tbody>
-                          </table>
-                        </div>
-                      </div>
-
-                      <!-- Sub-Tabel Tunggal Parameter Kritis SCADA (Bisa Digeser / Overflow-X Auto) -->
-                      <div
-                        v-if="isParamKritis(item.key) && showParamTable[getProcessKey(item.key)]"
-                        class="param-stacked-container no-print"
-                      >
-                        <div class="param-scroll-box">
-                          <table class="param-stacked-table mb-0">
-                            <thead>
-                              <tr>
-                                <th class="param-th-no">No</th>
-                                <th v-for="col in getProcessColumns(item.key)" :key="col" class="param-green-th" :title="col">
-                                  {{ formatColHeader(col) }}
-                                </th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              <tr v-for="(row, rIdx) in getProcessRows(item.key)" :key="rIdx" class="param-tr">
-                                <td class="param-td-no">{{ rIdx + 1 }}</td>
-                                <td v-for="col in getProcessColumns(item.key)" :key="col" class="param-td">
-                                  {{ formatParamCell(row[col], col) }}
-                                </td>
-                              </tr>
-                            </tbody>
-                          </table>
                         </div>
                       </div>
                     </div>
                   </td>
-
                   <!-- Kolom Nomor & Judul Dokumen (Dirender sesuai blok PIC terkait) -->
                   <td
                     v-if="iIdx === 0"
@@ -4814,48 +4336,258 @@
     </div>
     </div> <!-- /TAB 3: activeTab === 'pic' -->
 
-    <!-- Fullscreen Modal for SCADA Parameter Kritis -->
+    <!-- ── UNIFIED INSPECTOR POP-UP MODAL (KAYAK DEVTOOLS / INSPECT) ── -->
     <div
-      v-if="activeModalProcess"
-      class="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 backdrop-blur-xs no-print"
-      @click.self="activeModalProcess = null"
+      v-if="activeInspectModal"
+      class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/80 backdrop-blur-xs no-print transition-all"
+      @click.self="closeInspectModal"
     >
-      <div class="bg-white rounded border-2 border-slate-900 shadow-2xl max-w-[96vw] w-full max-h-[92vh] flex flex-col overflow-hidden">
-        <div class="bg-slate-900 text-white px-4 py-2.5 flex items-center justify-between">
-          <div class="flex items-center gap-2">
-            <span class="w-3 h-3 bg-emerald-400 rounded-full inline-block"></span>
-            <span class="font-bold text-xs uppercase tracking-wide">
-              Tabel Parameter Kritis &bull; {{ getProcessTitleByKey(activeModalProcess) }}
-              <span class="text-emerald-300 font-normal text-[11px] ml-2">({{ getProcessColumnsByKey(activeModalProcess).length }} Kolom Database &bull; {{ getProcessRowsByKey(activeModalProcess).length }} Baris)</span>
+      <div class="bg-slate-900 border border-slate-700/80 rounded-2xl shadow-2xl max-w-[96vw] w-full max-h-[92vh] flex flex-col overflow-hidden text-slate-100">
+        <!-- Header Inspector (DevTools Style) -->
+        <div class="px-5 py-3.5 bg-slate-950 border-b border-slate-800 flex flex-wrap items-center justify-between gap-3 shrink-0">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 shrink-0">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+            </div>
+            <div class="min-w-0">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 uppercase tracking-wider">
+                  INSPECT {{ activeInspectModal.type?.toUpperCase() }}
+                </span>
+                <h3 class="text-sm sm:text-base font-bold text-white tracking-wide truncate">
+                  {{ activeInspectModal.title }}
+                </h3>
+                <span v-if="activeInspectModal.refForm" class="px-2 py-0.5 text-[10.5px] font-mono font-bold bg-amber-500/20 text-amber-300 rounded border border-amber-500/30">
+                  {{ activeInspectModal.refForm }}
+                </span>
+                <span v-if="activeInspectModal.tableName" class="px-2 py-0.5 text-[10.5px] font-mono bg-slate-800 text-slate-300 rounded border border-slate-700">
+                  MySQL: {{ activeInspectModal.tableName }}
+                </span>
+              </div>
+              <p class="text-[11.5px] text-slate-400 mt-0.5 truncate">
+                {{ activeInspectModal.subtitle }}
+              </p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2 shrink-0">
+            <!-- Live Search Input -->
+            <div class="relative">
+              <input
+                type="text"
+                v-model="inspectSearchQuery"
+                placeholder="Cari data..."
+                class="w-36 sm:w-56 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-all"
+              />
+              <span v-if="inspectSearchQuery" @click="inspectSearchQuery = ''" class="absolute right-2 top-1 text-xs text-slate-400 hover:text-white cursor-pointer">&times;</span>
+            </div>
+            <!-- Close Button -->
+            <button
+              type="button"
+              @click="closeInspectModal"
+              class="px-3 py-1 rounded-lg text-xs font-bold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-colors flex items-center gap-1.5 cursor-pointer"
+              title="Tutup (Esc)"
+            >
+              <span>✕ Tutup</span>
+              <kbd class="hidden sm:inline-block text-[10px] bg-slate-900 px-1.5 py-0.2 rounded border border-slate-700 font-mono text-slate-400">Esc</kbd>
+            </button>
+          </div>
+        </div>
+
+        <!-- Contextual Toolbar for CIP Checklist -->
+        <div
+          v-if="activeInspectModal.type === 'cip'"
+          class="px-5 py-2.5 bg-slate-900/90 border-b border-slate-800 flex flex-wrap items-center justify-between gap-2.5 shrink-0"
+        >
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="text-xs font-bold text-emerald-400 flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              Terverifikasi DB: <strong>{{ activeInspectModal.recordedItems }} / {{ activeInspectModal.totalItems }} Titik</strong>
+            </span>
+            <span class="text-xs text-amber-400 px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/20 font-medium">
+              Belum Tercatat: {{ activeInspectModal.totalItems - activeInspectModal.recordedItems }} Titik (-)
+            </span>
+            <span class="text-xs text-slate-400 font-mono px-2 py-0.5 rounded bg-slate-800 border border-slate-700">
+              Sesi Terakhir: <strong>{{ activeInspectModal.latestCipDate }}</strong>
             </span>
           </div>
-          <button
-            @click="activeModalProcess = null"
-            class="text-white hover:text-red-300 font-bold text-xs px-2 py-0.5 border border-slate-700 rounded transition-colors cursor-pointer"
-          >
-            ✕ Tutup
-          </button>
+
+          <!-- Quick Floor Filter Chips -->
+          <div class="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs">
+            <button
+              type="button"
+              @click="inspectCipFilter = 'all'"
+              :class="inspectCipFilter === 'all' ? 'bg-emerald-600 text-white font-bold shadow-xs' : 'text-slate-400 hover:text-slate-200'"
+              class="px-2.5 py-1 rounded-lg transition-colors cursor-pointer whitespace-nowrap"
+            >Semua ({{ activeInspectModal.totalItems }})</button>
+            <button
+              type="button"
+              @click="inspectCipFilter = 'lt1'"
+              :class="inspectCipFilter === 'lt1' ? 'bg-emerald-600 text-white font-bold shadow-xs' : 'text-slate-400 hover:text-slate-200'"
+              class="px-2.5 py-1 rounded-lg transition-colors cursor-pointer whitespace-nowrap"
+            >Lt. 1</button>
+            <button
+              type="button"
+              @click="inspectCipFilter = 'lt2'"
+              :class="inspectCipFilter === 'lt2' ? 'bg-emerald-600 text-white font-bold shadow-xs' : 'text-slate-400 hover:text-slate-200'"
+              class="px-2.5 py-1 rounded-lg transition-colors cursor-pointer whitespace-nowrap"
+            >Lt. 2</button>
+            <button
+              type="button"
+              @click="inspectCipFilter = 'lt3'"
+              :class="inspectCipFilter === 'lt3' ? 'bg-emerald-600 text-white font-bold shadow-xs' : 'text-slate-400 hover:text-slate-200'"
+              class="px-2.5 py-1 rounded-lg transition-colors cursor-pointer whitespace-nowrap"
+            >Lt. 3+</button>
+            <button
+              type="button"
+              @click="inspectCipFilter = 'swab'"
+              :class="inspectCipFilter === 'swab' ? 'bg-emerald-600 text-white font-bold shadow-xs' : 'text-slate-400 hover:text-slate-200'"
+              class="px-2.5 py-1 rounded-lg transition-colors cursor-pointer whitespace-nowrap"
+            >Khusus Swab</button>
+          </div>
         </div>
-        <div class="p-4 overflow-y-auto flex-1 bg-slate-100">
-          <div class="border border-black bg-white shadow-sm overflow-x-auto">
-            <table class="param-stacked-table mb-0 w-full">
-              <thead>
+
+        <!-- Contextual Toolbar for SCADA / Prod / QC / PA -->
+        <div
+          v-else-if="activeInspectModal.columns"
+          class="px-5 py-2 bg-slate-900/90 border-b border-slate-800 flex items-center justify-between text-xs text-slate-400 shrink-0"
+        >
+          <div class="flex items-center gap-2">
+            <span class="text-emerald-400 font-bold">&bull; {{ activeInspectModal.columns.length }} Kolom Database</span>
+            <span>&bull;</span>
+            <span class="text-slate-300 font-medium">{{ (activeInspectModal.rows || []).length }} Baris Terverifikasi</span>
+            <span v-if="inspectSearchQuery" class="text-amber-400 ml-2">
+              (Ditemukan: {{ filteredInspectTableRows.length }} baris)
+            </span>
+          </div>
+        </div>
+
+        <!-- Inspector Body -->
+        <div class="flex-1 overflow-auto bg-slate-950/80 p-3 sm:p-4">
+          <!-- 1. CHECKLIST CIP TABLE -->
+          <div v-if="activeInspectModal.type === 'cip'" class="overflow-x-auto rounded-xl border border-slate-700 bg-white shadow-md">
+            <table class="w-full min-w-[980px] text-left text-xs border-collapse">
+              <thead class="sticky top-0 bg-slate-100 z-10 text-[11px] font-bold text-slate-700 uppercase tracking-wider shadow-2xs">
+                <tr class="border-b border-slate-200">
+                  <th class="py-2.5 px-3 w-12 text-center whitespace-nowrap">No.</th>
+                  <th class="py-2.5 px-3 min-w-[240px]">Instrument / Area</th>
+                  <th class="py-2.5 px-3 w-20 text-center whitespace-nowrap">Lokasi</th>
+                  <th class="py-2.5 px-3 w-24 text-center whitespace-nowrap">Swab Test</th>
+                  <th class="py-2.5 px-3 min-w-[150px] text-center whitespace-nowrap">Waktu CIP Terakhir</th>
+                  <th class="py-2.5 px-3 w-20 text-right whitespace-nowrap">pH Lab</th>
+                  <th class="py-2.5 px-3 w-24 text-right whitespace-nowrap">Conductivity</th>
+                  <th class="py-2.5 px-3 w-28 text-center whitespace-nowrap">Hasil Swab</th>
+                  <th class="py-2.5 px-3 w-28 text-center whitespace-nowrap">Status</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100 font-mono text-slate-900">
+                <tr
+                  v-for="item in filteredInspectCipItems"
+                  :key="item.no"
+                  class="hover:bg-emerald-50/50 transition-colors"
+                  :class="item.status === 'OK' ? 'bg-white' : 'bg-slate-50/70'"
+                >
+                  <td class="py-2.5 px-3 text-center text-slate-500 font-sans whitespace-nowrap">{{ item.no }}</td>
+                  <td class="py-2.5 px-3 font-sans font-medium text-slate-900">{{ item.item }}</td>
+                  <td class="py-2.5 px-3 text-center whitespace-nowrap">
+                    <span class="inline-flex items-center justify-center px-2.5 py-0.5 rounded text-[10.5px] font-semibold bg-slate-100 text-slate-700 whitespace-nowrap min-w-[42px]">
+                      {{ item.floor }}
+                    </span>
+                  </td>
+                  <td class="py-2.5 px-3 text-center whitespace-nowrap">
+                    <span v-if="item.swabTarget && item.swabTarget !== '-'" class="inline-flex items-center justify-center px-2 py-0.5 rounded text-[10.5px] font-bold bg-amber-100 text-amber-900 border border-amber-300 whitespace-nowrap min-w-[28px]">
+                      {{ item.swabTarget }}
+                    </span>
+                    <span v-else class="text-slate-300">-</span>
+                  </td>
+                  <td class="py-2.5 px-3 text-slate-700 text-xs whitespace-nowrap text-center">{{ item.waktuCip }}</td>
+                  <td class="py-2.5 px-3 text-right font-semibold whitespace-nowrap" :class="item.phLab && item.phLab !== '-' ? 'text-slate-900 font-bold' : 'text-slate-300'">
+                    {{ item.phLab || '-' }}
+                  </td>
+                  <td class="py-2.5 px-3 text-right whitespace-nowrap" :class="item.conductivity && item.conductivity !== '-' ? 'text-slate-900 font-semibold' : 'text-slate-300'">
+                    {{ item.conductivity || '-' }}
+                  </td>
+                  <td class="py-2.5 px-3 text-center whitespace-nowrap">
+                    <span v-if="item.swabResult !== '' && item.swabResult !== '-'" class="inline-flex items-center justify-center px-2.5 py-0.5 rounded text-[10.5px] font-bold whitespace-nowrap min-w-[65px]" :class="item.swabResult === '0' ? 'bg-emerald-100 text-emerald-900' : 'bg-amber-100 text-amber-900 border border-amber-300'">
+                      {{ item.swabResult === '0' ? '0 (Negatif)' : (item.swabResult + ' (Perlu Tindakan)') }}
+                    </span>
+                    <span v-else class="text-slate-300">-</span>
+                  </td>
+                  <td class="py-2.5 px-3 text-center whitespace-nowrap">
+                    <span v-if="item.status === 'OK'" class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10.5px] font-bold bg-emerald-100 text-emerald-900 whitespace-nowrap">
+                      <span class="w-1.5 h-1.5 rounded-full bg-emerald-600 shrink-0"></span> OK
+                    </span>
+                    <span v-else class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10.5px] font-medium bg-slate-100 text-slate-500 whitespace-nowrap">
+                      (-) Belum
+                    </span>
+                  </td>
+                </tr>
+                <tr v-if="filteredInspectCipItems.length === 0">
+                  <td colspan="9" class="py-8 text-center text-slate-400 italic">
+                    Tidak ada titik instrumen yang sesuai filter / pencarian.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- 2. SCADA / PROD / QC / PA STACKED TABLE -->
+          <div v-else-if="activeInspectModal.columns" class="overflow-x-auto rounded-xl border border-slate-700 bg-white shadow-md">
+            <table class="param-stacked-table mb-0 w-full text-xs">
+              <thead class="sticky top-0 z-10">
                 <tr>
                   <th class="param-th-no">No</th>
-                  <th v-for="col in getProcessColumnsByKey(activeModalProcess)" :key="col" class="param-green-th" :title="col">
+                  <th v-for="col in activeInspectModal.columns" :key="col" class="param-green-th" :title="col">
                     {{ formatColHeader(col) }}
                   </th>
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="(row, rIdx) in getProcessRowsByKey(activeModalProcess)" :key="rIdx" class="param-tr">
+                <tr v-for="(row, rIdx) in filteredInspectTableRows" :key="rIdx" class="param-tr">
                   <td class="param-td-no">{{ rIdx + 1 }}</td>
-                  <td v-for="col in getProcessColumnsByKey(activeModalProcess)" :key="col" class="param-td">
+                  <td v-for="col in activeInspectModal.columns" :key="col" class="param-td">
                     {{ formatParamCell(row[col], col) }}
                   </td>
                 </tr>
+                <tr v-if="filteredInspectTableRows.length === 0">
+                  <td :colspan="activeInspectModal.columns.length + 1" class="text-center py-8 text-slate-400 italic">
+                    Belum ada rekaman data yang sesuai di tabel {{ activeInspectModal.tableName }}.
+                  </td>
+                </tr>
               </tbody>
+              <!-- Average row for PA tables if present -->
+              <tfoot v-if="activeInspectModal.averages && Object.keys(activeInspectModal.averages).length > 0">
+                <tr class="bg-emerald-100/90 font-bold border-t-2 border-emerald-900 text-emerald-950">
+                  <td class="param-td-no text-center font-extrabold uppercase text-[10px] tracking-wider py-2 bg-emerald-200/80">Avg</td>
+                  <td v-for="col in activeInspectModal.columns" :key="col" class="param-td font-semibold text-[11px]">
+                    <span v-if="activeInspectModal.averages[col] !== undefined" class="inline-flex items-center gap-1 font-mono font-bold text-emerald-950 bg-emerald-200/90 px-1.5 py-0.5 rounded shadow-2xs" title="Rata-rata Hasil Analisa">
+                      <span class="text-[9px] font-normal text-emerald-800">x̄ =</span>
+                      <span>{{ activeInspectModal.averages[col] }}</span>
+                    </span>
+                    <span v-else class="text-slate-400 font-normal text-[10px]">-</span>
+                  </td>
+                </tr>
+              </tfoot>
             </table>
+          </div>
+        </div>
+
+        <!-- Inspector Footer -->
+        <div class="px-5 py-2.5 bg-slate-950 border-t border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-400 shrink-0">
+          <div class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+            <span class="font-mono text-[11px]">Single Source of Truth: MySQL db_traceability_sja</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-[11px] text-slate-400">Tekan <kbd class="font-mono bg-slate-800 text-slate-300 px-1.5 py-0.5 rounded border border-slate-700">Esc</kbd> atau klik di luar untuk menutup</span>
+            <button
+              type="button"
+              @click="closeInspectModal"
+              class="px-3 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition-colors cursor-pointer"
+            >Tutup</button>
           </div>
         </div>
       </div>
@@ -5800,12 +5532,145 @@ createApp({
     const showReportCipTable = ref(false);
     const cipChecklistFilter = ref('all');
 
+    // ── Unified Inspector Pop-up Modal State & Methods ──
+    const activeInspectModal = ref(null);
+    const inspectSearchQuery = ref('');
+    const inspectCipFilter = ref('all');
+
+    function openInspectCip(checklistData) {
+      if (!checklistData) {
+        checklistData = traceResult.value?.pa?.extraction_cip_checklist;
+      }
+      if (!checklistData) return;
+      inspectSearchQuery.value = '';
+      inspectCipFilter.value = 'all';
+      activeInspectModal.value = {
+        type: 'cip',
+        title: `Checklist CIP & Flushing Area Extraction (${checklistData.plantName || 'Plant 1'})`,
+        subtitle: 'Pengambilan data waktu CIP terakhir untuk setiap titik instrument/area ekstraksi sebelum tanggal proses batch.',
+        tableName: checklistData.tableName || (String(checklistData.tower).includes('2') ? 'pa_cip_t2' : 'pa_cip_t1'),
+        refForm: 'QF/PDQC/SS/010',
+        plantName: checklistData.plantName || 'Plant 1',
+        totalItems: checklistData.totalItems || (checklistData.items ? checklistData.items.length : 57),
+        recordedItems: checklistData.recordedItems || (checklistData.items ? checklistData.items.filter(i => i.status === 'OK').length : 0),
+        latestCipDate: checklistData.latestCipDate || '-',
+        items: checklistData.items || []
+      };
+    }
+
+    function openInspectScada(procKey) {
+      if (!procKey) return;
+      inspectSearchQuery.value = '';
+      const title = getProcessTitleByKey(procKey);
+      const columns = getProcessColumnsByKey(procKey);
+      const rows = getProcessRowsByKey(procKey);
+      const tw = traceResult.value?.input?.tower || traceForm.tower || '1';
+      const tableNames = {
+        dryer: `dryer_tower_${tw}`,
+        evaporation: `evaporation_tower_${tw}`,
+        extraction: `extraction_tower_${tw}`,
+        roasting: 'roasting_probat'
+      };
+      activeInspectModal.value = {
+        type: 'scada',
+        procKey,
+        title: `Tabel Parameter Kritis SCADA • ${title}`,
+        subtitle: 'Rekaman telemetri parameter operasional mesin aktual dari PLC SCADA / IoT.',
+        tableName: tableNames[procKey] || procKey,
+        refForm: 'SCADA Telemetry',
+        columns,
+        rows
+      };
+    }
+
+    function openInspectProd(flow) {
+      if (!flow || !flow.prodTable) return;
+      inspectSearchQuery.value = '';
+      activeInspectModal.value = {
+        type: 'prod',
+        title: `Tabel Data Produksi • ${flow.prodTable.title || flow.flowTitle}`,
+        subtitle: `Data transaksi proses produksi batch ${traceResult.value?.input?.noBatchFull || ''} tersimpan di database MySQL.`,
+        tableName: flow.prodTable.tableName,
+        refForm: 'PROD LOG',
+        columns: flow.prodTable.columns || [],
+        rows: flow.prodTable.rows || []
+      };
+    }
+
+    function openInspectQc(flow) {
+      if (!flow || !flow.qcTable) return;
+      inspectSearchQuery.value = '';
+      activeInspectModal.value = {
+        type: 'qc',
+        title: `Tabel Pengujian Mutu (QC) • ${flow.qcTable.title || flow.flowTitle}`,
+        subtitle: 'Hasil analisa laboratorium Quality Control untuk parameter mutu batch terkait.',
+        tableName: flow.qcTable.tableName,
+        refForm: 'QC LAB',
+        columns: flow.qcTable.columns || [],
+        rows: flow.qcTable.rows || []
+      };
+    }
+
+    function openInspectPa(flow) {
+      if (!flow || !flow.paTable) return;
+      inspectSearchQuery.value = '';
+      activeInspectModal.value = {
+        type: 'pa',
+        title: `Tabel Sanitasi & Jaminan Mutu (PA) • ${flow.paTable.title || flow.flowTitle}`,
+        subtitle: 'Pencatatan monitoring mikrobiologi dan sanitasi Product Assurance dari database MySQL.',
+        tableName: flow.paTable.tableName,
+        refForm: 'PA LOG',
+        columns: flow.paTable.columns || [],
+        rows: flow.paTable.rows || [],
+        averages: flow.paTable.averages || null
+      };
+    }
+
+    function closeInspectModal() {
+      activeInspectModal.value = null;
+      activeModalProcess.value = null;
+      inspectSearchQuery.value = '';
+    }
+
+    const filteredInspectCipItems = computed(() => {
+      if (!activeInspectModal.value || activeInspectModal.value.type !== 'cip') return [];
+      const items = activeInspectModal.value.items || [];
+      let res = items;
+      const f = inspectCipFilter.value;
+      if (f === 'swab') res = res.filter(i => i.swabTarget && i.swabTarget !== '-');
+      else if (f === 'lt1') res = res.filter(i => i.floor && i.floor.includes('Lt. 1'));
+      else if (f === 'lt2') res = res.filter(i => i.floor && i.floor.includes('Lt. 2'));
+      else if (f === 'lt3') res = res.filter(i => i.floor && !i.floor.includes('Lt. 1') && !i.floor.includes('Lt. 2'));
+
+      const q = String(inspectSearchQuery.value || '').trim().toLowerCase();
+      if (q) {
+        res = res.filter(i =>
+          String(i.item || '').toLowerCase().includes(q) ||
+          String(i.floor || '').toLowerCase().includes(q) ||
+          String(i.waktuCip || '').toLowerCase().includes(q) ||
+          String(i.phLab || '').toLowerCase().includes(q) ||
+          String(i.swabResult || '').toLowerCase().includes(q)
+        );
+      }
+      return res;
+    });
+
+    const filteredInspectTableRows = computed(() => {
+      if (!activeInspectModal.value || !activeInspectModal.value.rows) return [];
+      const rows = activeInspectModal.value.rows;
+      const q = String(inspectSearchQuery.value || '').trim().toLowerCase();
+      if (!q) return rows;
+      return rows.filter(r => {
+        return Object.values(r).some(v => String(v || '').toLowerCase().includes(q));
+      });
+    });
+
     function toggleFlowCipChecklist(flow) {
-      if (!flow || !flow.flowNumber) return;
-      openCipChecklists[flow.flowNumber] = !openCipChecklists[flow.flowNumber];
+      if (flow?.cipChecklist) openInspectCip(flow.cipChecklist);
     }
 
     function setCipChecklistFilter(f) {
+      inspectCipFilter.value = f;
       cipChecklistFilter.value = f;
     }
 
@@ -5820,18 +5685,15 @@ createApp({
     }
 
     function toggleFlowProdTable(flow) {
-      if (!flow || !flow.flowNumber) return;
-      openProdTables[flow.flowNumber] = !openProdTables[flow.flowNumber];
+      if (flow?.prodTable) openInspectProd(flow);
     }
 
     function toggleFlowQcTable(flow) {
-      if (!flow || !flow.flowNumber) return;
-      openQcTables[flow.flowNumber] = !openQcTables[flow.flowNumber];
+      if (flow?.qcTable) openInspectQc(flow);
     }
 
     function toggleFlowPaTable(flow) {
-      if (!flow || !flow.flowNumber) return;
-      openPaTables[flow.flowNumber] = !openPaTables[flow.flowNumber];
+      if (flow?.paTable) openInspectPa(flow);
     }
 
     function cleanSectionTitle(title) {
@@ -7830,6 +7692,11 @@ createApp({
 
     // Auto-init on mount and scroll reveal
     onMounted(async () => {
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && activeInspectModal.value) {
+          closeInspectModal();
+        }
+      });
       if (window.sjaAuth) {
         try { await window.sjaAuth.initAuth(); } catch (e) { console.warn(e); }
       }
@@ -7981,6 +7848,17 @@ createApp({
       toggleFlowProdTable,
       toggleFlowQcTable,
       toggleFlowPaTable,
+      activeInspectModal,
+      inspectSearchQuery,
+      inspectCipFilter,
+      openInspectCip,
+      openInspectScada,
+      openInspectProd,
+      openInspectQc,
+      openInspectPa,
+      closeInspectModal,
+      filteredInspectCipItems,
+      filteredInspectTableRows,
       cleanSectionTitle,
       getProdRole,
       getQcRole,
