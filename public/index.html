@@ -62,8 +62,8 @@
     }
 
     body {
-      background: #fbfaf8;
-      color: #1c1917;
+      background: #f8fafc;
+      color: #0f172a;
       font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
       line-height: 1.4;
     }
@@ -303,49 +303,50 @@
       font-size: 9.5px;
       line-height: 1.25;
       background: #ffffff;
-      border: 1px solid #000000;
+      border: 1px solid #cbd5e1;
     }
     .param-green-th {
-      background: #165b33 !important; /* Authentic SCADA deep green matching Excel */
+      background: #1d4ed8 !important; /* Professional Industrial Blue (Tailwind blue-700) */
       color: #ffffff !important;
       padding: 5px 8px;
       font-weight: bold;
       font-size: 9.5px;
-      border: 1px solid #000000;
+      border: 1px solid #1e40af;
       text-align: center;
       vertical-align: middle;
-      white-space: nowrap !important; /* PREVENTS VERTICAL LETTER-BY-LETTER STACKING! */
+      white-space: nowrap !important;
       letter-spacing: 0.02em;
     }
     .param-th-no {
       width: 28px;
       min-width: 28px;
-      background: #0f3d23 !important;
+      background: #1e3a8a !important; /* Deep Navy Blue */
       color: #ffffff !important;
       font-size: 9.5px;
       text-align: center;
-      border: 1px solid #000000;
+      border: 1px solid #1e40af;
       white-space: nowrap !important;
     }
     .param-td-no {
       text-align: center;
       font-weight: bold;
-      background: #f1f5f9;
-      border: 1px solid #000000 !important;
+      background: #f8fafc;
+      border: 1px solid #cbd5e1 !important;
       padding: 3px 6px;
       font-size: 9.5px;
       white-space: nowrap !important;
+      color: #1e3a8a;
     }
     .param-tr:nth-child(even) {
       background: #f8fafc;
     }
     .param-tr:hover {
-      background: #f0fdf4;
+      background: #eff6ff !important;
     }
     .param-td {
-      border: 1px solid #000000 !important;
-      padding: 3px 8px;
-      color: #000000;
+      border: 1px solid #cbd5e1 !important;
+      padding: 3.5px 8px;
+      color: #0f172a;
       text-align: center;
       font-size: 9.5px;
       white-space: nowrap !important;
@@ -410,12 +411,12 @@
       color: #1c1917 !important;
     }
     .sidebar-item.active {
-      background: #4a2c1d;
+      background: #2563eb;
       color: #ffffff;
       box-shadow: 0 2px 8px -2px rgba(74, 44, 29, 0.3);
     }
     .sidebar-item-collapsed.active {
-      background: #4a2c1d !important;
+      background: #2563eb !important;
       color: #ffffff !important;
       box-shadow: 0 2px 8px -1px rgba(74, 44, 29, 0.28) !important;
     }
@@ -503,12 +504,12 @@
       
       <!-- Brand & Title Header -->
       <div class="text-center space-y-2.5">
-        <div class="w-16 h-16 rounded-2xl bg-[#4a2c1d] flex items-center justify-center font-black text-white text-lg shadow-md mx-auto tracking-wider border-2 border-[#6d422a]/40">
+        <div class="w-16 h-16 rounded-2xl bg-blue-600 flex items-center justify-center font-black text-white text-lg shadow-md mx-auto tracking-wider border-2 border-[#6d422a]/40">
           SJA
         </div>
         <div>
           <h1 class="text-xl sm:text-2xl font-black text-stone-900 tracking-tight">PT. Santos Jaya Abadi</h1>
-          <p class="text-[11px] font-extrabold text-[#4a2c1d] uppercase tracking-widest mt-0.5">Sistem Traceability &amp; Penelusuran Mutu</p>
+          <p class="text-[11px] font-extrabold text-blue-600 uppercase tracking-widest mt-0.5">Sistem Traceability &amp; Penelusuran Mutu</p>
         </div>
         <p class="text-xs text-stone-500 max-w-xs mx-auto leading-relaxed">
           Silakan masukkan kredensial akun resmi Anda untuk mengakses sistem traceability dan operasional mutu.
@@ -530,7 +531,7 @@
                 required
                 autocomplete="username"
                 placeholder="Masukkan username Anda"
-                class="w-full pl-10 pr-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#4a2c1d]/30 focus:border-[#4a2c1d] focus:bg-white transition-all shadow-2xs"
+                class="w-full pl-10 pr-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all shadow-2xs"
               />
               <svg class="w-4 h-4 text-stone-400 absolute left-3.5 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
@@ -550,7 +551,7 @@
                 required
                 autocomplete="current-password"
                 placeholder="Masukkan kata sandi Anda"
-                class="w-full pl-10 pr-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#4a2c1d]/30 focus:border-[#4a2c1d] focus:bg-white transition-all shadow-2xs"
+                class="w-full pl-10 pr-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all shadow-2xs"
               />
               <svg class="w-4 h-4 text-stone-400 absolute left-3.5 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                 <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
@@ -574,7 +575,7 @@
         <button
           type="submit"
           :disabled="loginLoading"
-          class="w-full py-3 bg-[#4a2c1d] hover:bg-[#3b2317] text-white font-bold rounded-xl text-xs sm:text-sm shadow-md transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
+          class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs sm:text-sm shadow-md transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
         >
           <svg v-if="loginLoading" class="w-4 h-4 spin text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <circle cx="12" cy="12" r="10" stroke-width="4" stroke="currentColor" class="opacity-25"></circle>
@@ -613,7 +614,7 @@
       <!-- Expanded Brand Header -->
       <template v-if="sidebarOpen">
         <div class="flex items-center gap-2.5 overflow-hidden">
-          <div class="w-8 h-8 rounded-xl bg-[#4a2c1d] flex items-center justify-center font-black text-white text-xs shadow-xs flex-shrink-0">
+          <div class="w-8 h-8 rounded-xl bg-blue-600 flex items-center justify-center font-black text-white text-xs shadow-xs flex-shrink-0">
             SJA
           </div>
           <div class="whitespace-nowrap overflow-hidden leading-tight">
@@ -882,13 +883,13 @@
             v-if="activeTab === 'pipeline'"
             type="button"
             @click="navigateToPipeline"
-            class="text-xs font-extrabold uppercase tracking-wider text-stone-900 hover:text-[#4a2c1d] transition-colors cursor-pointer flex items-center gap-1.5 group text-left"
+            class="text-xs font-extrabold uppercase tracking-wider text-stone-900 hover:text-blue-600 transition-colors cursor-pointer flex items-center gap-1.5 group text-left"
             title="Klik untuk kembali ke Direktori Work Order"
           >
             <span class="group-hover:underline">Batch Traceability</span>
             <span v-if="activeSession" class="text-stone-400 font-normal text-[11px] normal-case flex items-center gap-1">
               <span>&rsaquo;</span>
-              <span class="font-extrabold text-[#4a2c1d] bg-amber-50 border border-amber-200/90 px-1.5 py-0.5 rounded font-mono">{{ activeSession.code || activeSession.id }}</span>
+              <span class="font-extrabold text-blue-600 bg-amber-50 border border-amber-200/90 px-1.5 py-0.5 rounded font-mono">{{ activeSession.code || activeSession.id }}</span>
             </span>
           </button>
           <span v-else class="text-xs font-bold uppercase tracking-wider text-stone-900">
@@ -926,7 +927,7 @@
         <button
           v-if="activeTab === 'report'"
           @click="printForm"
-          class="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-[#4a2c1d] hover:bg-[#3c2415] text-white font-bold rounded-lg shadow-sm transition-all cursor-pointer text-xs btn-action"
+          class="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow-sm transition-all cursor-pointer text-xs btn-action"
         >
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
             <polyline points="6 9 6 2 18 2 18 9"></polyline>
@@ -995,7 +996,7 @@
             <button
               type="button"
               @click="activeTab = 'pipeline'"
-              class="px-5 py-2.5 bg-[#4a2c1d] hover:bg-[#3c2415] text-white font-bold rounded-xl text-xs shadow-sm transition-all flex items-center gap-2 cursor-pointer btn-action"
+              class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs shadow-sm transition-all flex items-center gap-2 cursor-pointer btn-action"
             >
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
               <span>Buka Penelusuran Batch</span>
@@ -1101,7 +1102,7 @@
       <div v-if="!activeSessionId" class="space-y-4">
         
         <!-- Header Banner Work Order -->
-        <div class="clean-card border-l-4 border-l-[#4a2c1d]">
+        <div class="clean-card border-l-4 border-l-blue-600">
           <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div class="flex items-start gap-3.5">
               <div class="w-10 h-10 rounded-xl bg-amber-900/10 border border-amber-900/20 flex items-center justify-center text-amber-900 shrink-0 mt-0.5">
@@ -1135,7 +1136,7 @@
               <button
                 type="button"
                 @click="openCreateSessionModal"
-                class="px-5 py-2.5 bg-[#4a2c1d] hover:bg-[#3c2415] text-white font-bold rounded-xl text-xs shadow-sm transition-all flex items-center gap-2 cursor-pointer btn-action shrink-0"
+                class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs shadow-sm transition-all flex items-center gap-2 cursor-pointer btn-action shrink-0"
               >
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
                   <line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line>
@@ -1183,7 +1184,7 @@
               <button
                 type="button"
                 @click="openCreateSessionModal"
-                class="px-5 py-2.5 bg-[#4a2c1d] hover:bg-[#3c2415] text-white font-bold rounded-xl text-xs shadow-sm transition-all inline-flex items-center gap-2 cursor-pointer"
+                class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs shadow-sm transition-all inline-flex items-center gap-2 cursor-pointer"
               >
                 + Buat Sesi Traceability Pertama
               </button>
@@ -1258,11 +1259,11 @@
                 <div class="flex items-center gap-2 flex-wrap">
                   <div class="text-sm font-extrabold text-stone-900">
                     <template v-if="session.jenis === 'Backward'">
-                      Batch Finished Good: <span class="font-mono text-[#4a2c1d] uppercase">{{ session.noBatch }}</span>
+                      Batch Finished Good: <span class="font-mono text-blue-600 uppercase">{{ session.noBatch }}</span>
                       <span class="text-xs font-normal text-stone-500 ml-1.5">(Tower {{ session.tower || '1' }})</span>
                     </template>
                     <template v-else>
-                      Bahan Mentah: <span class="text-[#4a2c1d]">{{ session.forward?.namaBahan || '-' }}</span>
+                      Bahan Mentah: <span class="text-blue-600">{{ session.forward?.namaBahan || '-' }}</span>
                       <span v-if="session.forward?.supplierBahan" class="text-xs font-normal text-stone-500 ml-1.5">&bull; Supplier: {{ session.forward.supplierBahan }}</span>
                     </template>
                   </div>
@@ -1312,7 +1313,7 @@
                     v-if="session.status === 'completed'"
                     type="button"
                     @click="openSession(session)"
-                    class="px-4 py-2 bg-[#4a2c1d] hover:bg-[#3c2415] text-white font-bold rounded-xl text-xs transition-all flex items-center gap-1.5 cursor-pointer shadow-xs btn-action"
+                    class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs transition-all flex items-center gap-1.5 cursor-pointer shadow-xs btn-action"
                   >
                     <span>Lihat Hasil Penelusuran</span>
                     <span>&rarr;</span>
@@ -1332,7 +1333,7 @@
                     v-else
                     type="button"
                     @click="openSession(session); startTraceabilityAudit();"
-                    class="px-4 py-2 bg-[#4a2c1d] hover:bg-[#3c2415] text-white font-bold rounded-xl text-xs transition-all flex items-center gap-1.5 cursor-pointer shadow-xs btn-action"
+                    class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs transition-all flex items-center gap-1.5 cursor-pointer shadow-xs btn-action"
                   >
                     <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
                     <span>Mulai Traceability</span>
@@ -1394,7 +1395,7 @@
             <button
               type="button"
               @click="backToWorkOrderList"
-              class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#4a2c1d] hover:bg-[#3c2415] text-white font-bold text-xs shadow-sm hover:shadow transition-all cursor-pointer group shrink-0"
+              class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-sm hover:shadow transition-all cursor-pointer group shrink-0"
               title="Kembali ke Direktori Seluruh Sesi Work Order Traceability"
             >
               <svg class="w-4 h-4 text-amber-200 transition-transform group-hover:-translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
@@ -1431,7 +1432,7 @@
             <select
               :value="activeSessionId"
               @change="openSession($event.target.value)"
-              class="bg-white border border-stone-200 rounded-xl text-xs font-semibold px-2.5 py-1.5 text-stone-800 outline-none focus:border-[#4a2c1d] shadow-2xs"
+              class="bg-white border border-stone-200 rounded-xl text-xs font-semibold px-2.5 py-1.5 text-stone-800 outline-none focus:border-blue-500 shadow-2xs"
             >
               <option v-for="s in traceabilitySessions" :key="s.id" :value="s.id">
                 {{ s.code || s.id }} &bull; {{ s.jenis }} ({{ s.noBatch || s.forward?.namaBahan }}) [{{ s.status }}]
@@ -1738,31 +1739,31 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-xs">
               <div>
                 <label class="block font-bold text-stone-700 mb-1">Area Audit</label>
-                <input v-model="auditSession.area" type="text" class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-[#4a2c1d]" />
+                <input v-model="auditSession.area" type="text" class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-blue-500" />
               </div>
               <div>
                 <label class="block font-bold text-stone-700 mb-1">Tanggal Pelaksanaan</label>
-                <input v-model="auditSession.tanggalPelaksanaan" type="text" class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-[#4a2c1d]" />
+                <input v-model="auditSession.tanggalPelaksanaan" type="text" class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-blue-500" />
               </div>
               <div>
                 <label class="block font-bold text-stone-700 mb-1">PIC Pelaksana</label>
-                <input v-model="auditSession.picPelaksana" type="text" class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-[#4a2c1d]" />
+                <input v-model="auditSession.picPelaksana" type="text" class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-blue-500" />
               </div>
               <div>
                 <label class="block font-bold text-stone-700 mb-1">FSTL (Food Safety Team Leader)</label>
-                <input v-model="auditSession.fstl" type="text" class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-[#4a2c1d]" />
+                <input v-model="auditSession.fstl" type="text" class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-blue-500" />
               </div>
               <div>
                 <label class="block font-bold text-stone-700 mb-1">Auditor (Nama &amp; TTD)</label>
-                <textarea v-model="auditSession.auditor" rows="2" class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-[#4a2c1d] resize-none"></textarea>
+                <textarea v-model="auditSession.auditor" rows="2" class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-blue-500 resize-none"></textarea>
               </div>
               <div>
                 <label class="block font-bold text-stone-700 mb-1">Auditee (Nama &amp; TTD)</label>
-                <textarea v-model="auditSession.auditee" rows="2" class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-[#4a2c1d] resize-none"></textarea>
+                <textarea v-model="auditSession.auditee" rows="2" class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-blue-500 resize-none"></textarea>
               </div>
               <div class="sm:col-span-2">
                 <label class="block font-bold text-stone-700 mb-1">Scenario / Case Traceability</label>
-                <input v-model="auditSession.scenario" type="text" class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-[#4a2c1d]" />
+                <input v-model="auditSession.scenario" type="text" class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-blue-500" />
               </div>
             </div>
 
@@ -1778,7 +1779,7 @@
               <button
                 type="button"
                 @click="showAuditDetails = false"
-                class="px-5 py-2 bg-[#4a2c1d] hover:bg-[#3c2415] text-white font-bold rounded-xl text-xs cursor-pointer shadow-xs"
+                class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs cursor-pointer shadow-xs"
               >
                 Simpan &amp; Tutup
               </button>
@@ -2515,7 +2516,7 @@
                   v-model="draftSession.area"
                   type="text"
                   placeholder="Contoh: SJA Sukodono"
-                  class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-[#4a2c1d]"
+                  class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-blue-500"
                 />
               </div>
 
@@ -2527,7 +2528,7 @@
                   v-model="draftSession.tanggalPelaksanaan"
                   type="text"
                   placeholder="Contoh: 13 Oktober 2026"
-                  class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-[#4a2c1d]"
+                  class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-blue-500"
                 />
               </div>
 
@@ -2539,7 +2540,7 @@
                   v-model="draftSession.picPelaksana"
                   type="text"
                   placeholder="Contoh: Frengky Wahyudi"
-                  class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-[#4a2c1d]"
+                  class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-blue-500"
                 />
               </div>
 
@@ -2551,7 +2552,7 @@
                   v-model="draftSession.fstl"
                   type="text"
                   placeholder="Contoh: Suhendar Adikusuma"
-                  class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-[#4a2c1d]"
+                  class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-blue-500"
                 />
               </div>
 
@@ -2563,7 +2564,7 @@
                   v-model="draftSession.auditor"
                   rows="2"
                   placeholder="Contoh: Pak Armando&#10;Ibu Asih"
-                  class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-[#4a2c1d] resize-none"
+                  class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-blue-500 resize-none"
                 ></textarea>
               </div>
 
@@ -2575,7 +2576,7 @@
                   v-model="draftSession.auditee"
                   rows="2"
                   placeholder="Contoh: Meisy, Dini, Udin, Yolanda"
-                  class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-[#4a2c1d] resize-none"
+                  class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-blue-500 resize-none"
                 ></textarea>
               </div>
 
@@ -2587,7 +2588,7 @@
                   v-model="draftSession.scenario"
                   type="text"
                   placeholder="Contoh: Simulasi traceability untuk audit eksternal FSSC"
-                  class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-[#4a2c1d]"
+                  class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-blue-500"
                 />
               </div>
             </div>
@@ -2613,7 +2614,7 @@
                   type="button"
                   @click="newSessionStep = 2"
                   :disabled="!draftSession.area || !draftSession.tanggalPelaksanaan || !draftSession.picPelaksana"
-                  class="px-5 py-2 bg-[#4a2c1d] hover:bg-[#3c2415] text-white font-bold rounded-xl text-xs cursor-pointer shadow-xs disabled:opacity-50 disabled:cursor-not-allowed"
+                  class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs cursor-pointer shadow-xs disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Lanjut ke Step 2: Konfigurasi Penelusuran &rarr;
                 </button>
@@ -2665,7 +2666,7 @@
                     v-model="draftSession.noBatch"
                     type="text"
                     placeholder="Contoh: A370/26 atau 370"
-                    class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-mono font-bold uppercase focus:outline-none focus:border-[#4a2c1d] bg-white"
+                    class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-mono font-bold uppercase focus:outline-none focus:border-blue-500 bg-white"
                   />
                 </div>
                 <div>
@@ -2676,7 +2677,7 @@
                     <button
                       type="button"
                       @click="draftSession.tower = '1'"
-                      :class="draftSession.tower === '1' ? 'bg-[#4a2c1d] text-white font-bold shadow-2xs' : 'bg-white text-stone-700 border border-stone-200'"
+                      :class="draftSession.tower === '1' ? 'bg-blue-600 text-white font-bold shadow-2xs' : 'bg-white text-stone-700 border border-stone-200'"
                       class="flex-1 py-2 rounded-xl text-xs transition-all cursor-pointer font-semibold"
                     >
                       Tower 1
@@ -2684,7 +2685,7 @@
                     <button
                       type="button"
                       @click="draftSession.tower = '2'"
-                      :class="draftSession.tower === '2' ? 'bg-[#4a2c1d] text-white font-bold shadow-2xs' : 'bg-white text-stone-700 border border-stone-200'"
+                      :class="draftSession.tower === '2' ? 'bg-blue-600 text-white font-bold shadow-2xs' : 'bg-white text-stone-700 border border-stone-200'"
                       class="flex-1 py-2 rounded-xl text-xs transition-all cursor-pointer font-semibold"
                     >
                       Tower 2
@@ -2708,7 +2709,7 @@
                     v-model="draftSession.forward.namaBahan"
                     type="text"
                     placeholder="Contoh: Biji Kopi Robusta Mentah"
-                    class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-bold focus:outline-none focus:border-[#4a2c1d] bg-white"
+                    class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-bold focus:outline-none focus:border-blue-500 bg-white"
                   />
                 </div>
                 <div>
@@ -2719,7 +2720,7 @@
                     v-model="draftSession.forward.supplierBahan"
                     type="text"
                     placeholder="Contoh: PT. Santos Jaya Abadi Rekanan"
-                    class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-[#4a2c1d] bg-white"
+                    class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-blue-500 bg-white"
                   />
                 </div>
                 <div>
@@ -2730,7 +2731,7 @@
                     v-model="draftSession.forward.tglKedatangan"
                     type="text"
                     placeholder="Contoh: 25 Agustus 2026"
-                    class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-[#4a2c1d] bg-white"
+                    class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-blue-500 bg-white"
                   />
                 </div>
                 <div>
@@ -2741,7 +2742,7 @@
                     v-model="draftSession.forward.lokasiBahan"
                     type="text"
                     placeholder="Contoh: Gudang GBJ / Silo UPBM"
-                    class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-[#4a2c1d] bg-white"
+                    class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-blue-500 bg-white"
                   />
                 </div>
               </div>
@@ -2769,7 +2770,7 @@
                   type="button"
                   @click="saveDraftSession(true)"
                   :disabled="draftSession.jenis === 'Backward' ? !draftSession.noBatch : !draftSession.forward.namaBahan"
-                  class="px-5 py-2.5 bg-[#4a2c1d] hover:bg-[#3c2415] text-white font-bold rounded-xl text-xs cursor-pointer shadow-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed btn-action"
+                  class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs cursor-pointer shadow-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed btn-action"
                 >
                   <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
                   <span>Simpan &amp; Mulai Traceability</span>
@@ -2788,7 +2789,7 @@
     <div v-if="activeTab==='report'" class="space-y-5 slow-smooth-entrance">
 
       <!-- ── TOP CONTROL BAR: OPERATION LOG & WORK ORDER SWITCHER (SUSUN PERSIS MOCKUP) ── -->
-      <div class="no-print bg-white rounded-2xl sm:rounded-3xl border border-stone-200/90 shadow-sm border-l-[6px] border-l-[#4a2c1d] overflow-hidden">
+      <div class="no-print bg-white rounded-2xl sm:rounded-3xl border border-stone-200/90 shadow-sm border-l-[6px] border-l-blue-600 overflow-hidden">
         
         <!-- SECTION 1: HEADER PUTIH (Judul, Badges, Deskripsi & Tombol Aksi) -->
         <div class="p-5 sm:p-6 sm:px-7 flex flex-col lg:flex-row lg:items-start justify-between gap-4 sm:gap-6 bg-white">
@@ -2830,7 +2831,7 @@
             <button
               type="button"
               @click="printForm"
-              class="flex-1 sm:flex-initial px-5 py-2 bg-[#4a2c1d] hover:bg-[#382116] text-white text-xs sm:text-sm font-bold rounded-xl transition-all shadow-xs hover:shadow-md active:scale-[0.98] cursor-pointer whitespace-nowrap text-center"
+              class="flex-1 sm:flex-initial px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-bold rounded-xl transition-all shadow-xs hover:shadow-md active:scale-[0.98] cursor-pointer whitespace-nowrap text-center"
               title="Cetak Formulir Audit F/QC/01.030"
             >
               Cetak / PDF
@@ -2850,7 +2851,7 @@
                 id="wo-select-header"
                 :value="activeSessionId || ''"
                 @change="openSession($event.target.value)"
-                class="bg-white hover:bg-stone-50/90 border border-stone-200/90 rounded-2xl text-xs sm:text-sm font-semibold text-stone-900 pl-4 pr-9 py-2 cursor-pointer shadow-2xs focus:border-[#4a2c1d] focus:ring-1 focus:ring-[#4a2c1d] outline-none transition-all appearance-none min-w-[160px]"
+                class="bg-white hover:bg-stone-50/90 border border-stone-200/90 rounded-2xl text-xs sm:text-sm font-semibold text-stone-900 pl-4 pr-9 py-2 cursor-pointer shadow-2xs focus:border-blue-500 focus:ring-1 focus:ring-[#4a2c1d] outline-none transition-all appearance-none min-w-[160px]"
               >
                 <option value="" disabled :selected="!activeSessionId">Pilih Work Order…</option>
                 <option v-for="s in traceabilitySessions" :key="s.id" :value="s.id">
@@ -2903,7 +2904,7 @@
             <div class="relative inline-flex bg-white p-1 rounded-2xl border border-stone-200/90 shadow-2xs select-none">
               <!-- Sliding Brown Pill Indicator -->
               <div
-                class="absolute top-1 bottom-1 left-1 rounded-xl bg-[#4a2c1d] shadow-xs pointer-events-none transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]"
+                class="absolute top-1 bottom-1 left-1 rounded-xl bg-blue-600 shadow-xs pointer-events-none transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]"
                 :style="{
                   width: 'calc(50% - 4px)',
                   transform: reportViewMode === 'log' ? 'translateX(0)' : 'translateX(100%)'
@@ -2971,7 +2972,7 @@
             <button
               type="button"
               @click="openCreateSessionModal"
-              class="px-3.5 py-1.5 bg-[#4a2c1d] hover:bg-[#3c2415] text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer btn-action flex items-center gap-1.5"
+              class="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer btn-action flex items-center gap-1.5"
             >
               <span>+ Buat Sesi Baru</span>
             </button>
@@ -3005,10 +3006,10 @@
                   <div class="text-[10px] text-stone-400 font-mono">{{ s.manualWaktuStart ? (s.manualWaktuStart + ' - ' + s.manualWaktuEnd) : '' }}</div>
                 </td>
                 <td class="p-3">
-                  <div v-if="s.jenis === 'Backward'" class="font-mono font-bold text-[#4a2c1d]">
+                  <div v-if="s.jenis === 'Backward'" class="font-mono font-bold text-blue-600">
                     {{ s.noBatch }} <span class="text-[11px] font-normal text-stone-500">(Tower {{ s.tower || '1' }})</span>
                   </div>
-                  <div v-else class="font-bold text-[#4a2c1d]">
+                  <div v-else class="font-bold text-blue-600">
                     {{ s.forward?.namaBahan || '-' }}
                     <span v-if="s.forward?.supplierBahan" class="text-[11px] font-normal text-stone-500 block">&bull; {{ s.forward.supplierBahan }}</span>
                   </div>
@@ -3054,7 +3055,7 @@
                     <button
                       type="button"
                       @click="openSessionReport(s)"
-                      class="px-2.5 py-1 bg-[#4a2c1d] hover:bg-[#3c2415] text-white rounded-lg text-xs font-semibold cursor-pointer shadow-2xs"
+                      class="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold cursor-pointer shadow-2xs"
                       title="Buka Dokumen Form F/QC/01.030 untuk sesi ini"
                     >
                       Buka Dokumen
@@ -3105,7 +3106,7 @@
             type="button"
             @click="doTrace"
             :disabled="tracing"
-            class="px-3.5 py-1.5 bg-[#4a2c1d] text-white font-bold rounded-lg hover:bg-[#3c2415] cursor-pointer shadow-2xs flex items-center gap-1.5"
+            class="px-3.5 py-1.5 bg-blue-600 text-white font-bold rounded-lg hover:bg-[#3c2415] cursor-pointer shadow-2xs flex items-center gap-1.5"
           >
             <span>{{ tracing ? 'Menarik...' : 'Tarik Data Traceability Sekarang' }}</span>
           </button>
@@ -3490,7 +3491,7 @@
               <button
                 type="button"
                 @click="openLoginModal"
-                class="px-3 py-1.5 bg-[#4a2c1d] hover:bg-[#3c2415] text-white font-bold text-xs rounded-lg transition-colors cursor-pointer shrink-0"
+                class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-lg transition-colors cursor-pointer shrink-0"
               >
                 Ganti Akun Admin
               </button>
@@ -3856,7 +3857,7 @@
             type="button"
             @click="refreshAndSyncActiveTable(false)"
             :disabled="isSyncingActiveTable"
-            class="inline-flex items-center gap-2 px-3.5 py-1.5 bg-[#4a2c1d] hover:bg-[#3d2417] text-white rounded-xl text-xs font-semibold transition-all cursor-pointer shadow-2xs disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+            class="inline-flex items-center gap-2 px-3.5 py-1.5 bg-blue-600 hover:bg-[#3d2417] text-white rounded-xl text-xs font-semibold transition-all cursor-pointer shadow-2xs disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
             :title="authRole === 'admin' ? 'Tarik seluruh data terbaru dari semua PIC dan tabel Google Sheets secara real-time' : 'Segarkan tampilan tabel dari database lokal'"
           >
             <svg :class="{ 'spin': isSyncingActiveTable }" class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -3894,7 +3895,7 @@
                 id="select-pic"
                 v-model="selectedPic"
                 @change="changePic(selectedPic); autoSelectFirstPicTable();"
-                class="w-full appearance-none bg-white hover:bg-stone-50/80 border border-stone-200/90 focus:border-[#4a2c1d] focus:ring-2 focus:ring-[#4a2c1d]/15 rounded-xl px-3.5 py-2 text-xs font-semibold text-stone-800 pr-9 transition-all cursor-pointer shadow-2xs"
+                class="w-full appearance-none bg-white hover:bg-stone-50/80 border border-stone-200/90 focus:border-blue-500 focus:ring-2 focus:ring-[#4a2c1d]/15 rounded-xl px-3.5 py-2 text-xs font-semibold text-stone-800 pr-9 transition-all cursor-pointer shadow-2xs"
               >
                 <option v-for="pic in picList" :key="pic" :value="pic">
                   {{ pic }} ({{ getPicTablesCount(pic) }})
@@ -3922,7 +3923,7 @@
                 id="select-tower"
                 v-model="selectedTower"
                 @change="changeTower(selectedTower); autoSelectFirstPicTable();"
-                class="w-full appearance-none bg-white hover:bg-stone-50/80 border border-stone-200/90 focus:border-[#4a2c1d] focus:ring-2 focus:ring-[#4a2c1d]/15 rounded-xl px-3.5 py-2 text-xs font-semibold text-stone-800 pr-9 transition-all cursor-pointer shadow-2xs"
+                class="w-full appearance-none bg-white hover:bg-stone-50/80 border border-stone-200/90 focus:border-blue-500 focus:ring-2 focus:ring-[#4a2c1d]/15 rounded-xl px-3.5 py-2 text-xs font-semibold text-stone-800 pr-9 transition-all cursor-pointer shadow-2xs"
               >
                 <option v-for="tw in towerOptions" :key="tw" :value="tw">
                   {{ tw }}
@@ -4099,7 +4100,7 @@
                 type="date"
                 v-model="picFilterDate"
                 @change="searchPicTable"
-                class="appearance-none bg-white hover:bg-stone-50 border border-stone-200 focus:border-[#4a2c1d] focus:ring-1 focus:ring-[#4a2c1d] rounded-xl px-2.5 py-1.5 text-xs font-semibold text-stone-800 transition-all cursor-pointer shadow-2xs outline-none"
+                class="appearance-none bg-white hover:bg-stone-50 border border-stone-200 focus:border-blue-500 focus:ring-1 focus:ring-[#4a2c1d] rounded-xl px-2.5 py-1.5 text-xs font-semibold text-stone-800 transition-all cursor-pointer shadow-2xs outline-none"
                 title="Pilih Tanggal Presisi (Tanggal, Bulan, Tahun). Kosongkan untuk filter umum."
               />
             </div>
@@ -4109,7 +4110,7 @@
               <select
                 v-model="picFilterYear"
                 @change="searchPicTable"
-                class="appearance-none bg-white hover:bg-stone-50 border border-stone-200 focus:border-[#4a2c1d] focus:ring-1 focus:ring-[#4a2c1d] rounded-xl pl-3 pr-7 py-1.5 text-xs font-bold text-stone-800 transition-all cursor-pointer shadow-2xs"
+                class="appearance-none bg-white hover:bg-stone-50 border border-stone-200 focus:border-blue-500 focus:ring-1 focus:ring-[#4a2c1d] rounded-xl pl-3 pr-7 py-1.5 text-xs font-bold text-stone-800 transition-all cursor-pointer shadow-2xs"
                 title="Pilih Tahun Rekaman"
               >
                 <option value="2026">Thn 2026</option>
@@ -4129,7 +4130,7 @@
               <select
                 v-model="picFilterBean"
                 @change="searchPicTable"
-                class="appearance-none bg-amber-50 hover:bg-amber-100/70 border border-amber-300 text-amber-950 focus:border-[#4a2c1d] focus:ring-1 focus:ring-[#4a2c1d] rounded-xl pl-3 pr-8 py-1.5 text-xs font-bold transition-all cursor-pointer shadow-2xs outline-none"
+                class="appearance-none bg-amber-50 hover:bg-amber-100/70 border border-amber-300 text-amber-950 focus:border-blue-500 focus:ring-1 focus:ring-[#4a2c1d] rounded-xl pl-3 pr-8 py-1.5 text-xs font-bold transition-all cursor-pointer shadow-2xs outline-none"
                 title="Khusus Roasting: Filter Jenis Biji Kopi Mentah (Opsional)"
               >
                 <option value="">Semua Biji Mentah</option>
@@ -4159,7 +4160,7 @@
 
             <button
               @click="searchPicTable"
-              class="px-3 py-1.5 bg-[#4a2c1d] hover:bg-[#3c2415] text-white text-xs font-bold rounded-xl transition-all cursor-pointer btn-action shadow-2xs flex items-center gap-1.5"
+              class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition-all cursor-pointer btn-action shadow-2xs flex items-center gap-1.5"
             >
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
               <span>Cari</span>
@@ -4297,7 +4298,7 @@
                     v-model.number="pageJumpInput"
                     @keydown.enter.prevent="jumpToPicPage"
                     @keyup.enter.prevent="jumpToPicPage"
-                    class="w-12 text-center font-bold text-xs bg-white border border-stone-300 rounded px-1 py-0.5 text-stone-900 focus:outline-none focus:border-[#4a2c1d] shadow-2xs"
+                    class="w-12 text-center font-bold text-xs bg-white border border-stone-300 rounded px-1 py-0.5 text-stone-900 focus:outline-none focus:border-blue-500 shadow-2xs"
                     placeholder="1"
                     title="Ketik nomor halaman lalu tekan Enter"
                   />
@@ -4305,7 +4306,7 @@
                   <button
                     type="button"
                     @click="jumpToPicPage"
-                    class="px-1.5 py-0.5 bg-[#4a2c1d] hover:bg-[#3c2415] text-white rounded text-[10px] font-bold transition-all cursor-pointer shadow-2xs"
+                    class="px-1.5 py-0.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-[10px] font-bold transition-all cursor-pointer shadow-2xs"
                     title="Lompat ke halaman yang diketik"
                   >
                     Go
@@ -4336,17 +4337,17 @@
     </div>
     </div> <!-- /TAB 3: activeTab === 'pic' -->
 
-    <!-- ── UNIFIED INSPECTOR POP-UP MODAL (KAYAK DEVTOOLS / INSPECT) ── -->
+    <!-- ── UNIFIED INSPECTOR POP-UP MODAL (TERANG BERWARNA BIRU CLEAN) ── -->
     <div
       v-if="activeInspectModal"
-      class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/80 backdrop-blur-xs no-print transition-all"
+      class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-900/40 backdrop-blur-xs no-print transition-all"
       @click.self="closeInspectModal"
     >
-      <div class="bg-slate-900 border border-slate-700/80 rounded-2xl shadow-2xl max-w-[96vw] w-full max-h-[92vh] flex flex-col overflow-hidden text-slate-100">
-        <!-- Header Inspector (DevTools Style) -->
-        <div class="px-5 py-3.5 bg-slate-950 border-b border-slate-800 flex flex-wrap items-center justify-between gap-3 shrink-0">
+      <div class="bg-white border border-slate-200/90 rounded-2xl shadow-2xl max-w-[96vw] w-full max-h-[92vh] flex flex-col overflow-hidden text-slate-800">
+        <!-- Header Inspector (Clean Blue Theme) -->
+        <div class="px-5 py-3.5 bg-gradient-to-r from-blue-50/80 via-white to-blue-50/40 border-b border-blue-100 flex flex-wrap items-center justify-between gap-3 shrink-0">
           <div class="flex items-center gap-3 min-w-0">
-            <div class="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 shrink-0">
+            <div class="w-9 h-9 rounded-xl bg-blue-100/90 border border-blue-200 text-blue-700 flex items-center justify-center shrink-0 shadow-2xs">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                 <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
@@ -4354,20 +4355,20 @@
             </div>
             <div class="min-w-0">
               <div class="flex items-center gap-2 flex-wrap">
-                <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 uppercase tracking-wider">
+                <span class="px-2.5 py-0.5 rounded-md text-[10px] font-mono font-bold bg-blue-600 text-white shadow-2xs uppercase tracking-wider">
                   INSPECT {{ activeInspectModal.type?.toUpperCase() }}
                 </span>
-                <h3 class="text-sm sm:text-base font-bold text-white tracking-wide truncate">
+                <h3 class="text-sm sm:text-base font-extrabold text-slate-900 tracking-tight truncate">
                   {{ activeInspectModal.title }}
                 </h3>
-                <span v-if="activeInspectModal.refForm" class="px-2 py-0.5 text-[10.5px] font-mono font-bold bg-amber-500/20 text-amber-300 rounded border border-amber-500/30">
+                <span v-if="activeInspectModal.refForm" class="px-2 py-0.5 text-[10.5px] font-mono font-bold bg-blue-50 text-blue-800 rounded border border-blue-200/80">
                   {{ activeInspectModal.refForm }}
                 </span>
-                <span v-if="activeInspectModal.tableName" class="px-2 py-0.5 text-[10.5px] font-mono bg-slate-800 text-slate-300 rounded border border-slate-700">
+                <span v-if="activeInspectModal.tableName" class="px-2 py-0.5 text-[10.5px] font-mono bg-slate-100 text-slate-700 rounded border border-slate-200">
                   MySQL: {{ activeInspectModal.tableName }}
                 </span>
               </div>
-              <p class="text-[11.5px] text-slate-400 mt-0.5 truncate">
+              <p class="text-[11.5px] text-slate-500 mt-0.5 truncate">
                 {{ activeInspectModal.subtitle }}
               </p>
             </div>
@@ -4380,19 +4381,19 @@
                 type="text"
                 v-model="inspectSearchQuery"
                 placeholder="Cari data..."
-                class="w-36 sm:w-56 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-all"
+                class="w-36 sm:w-56 bg-white border border-slate-300 rounded-xl px-3 py-1.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all shadow-2xs"
               />
-              <span v-if="inspectSearchQuery" @click="inspectSearchQuery = ''" class="absolute right-2 top-1 text-xs text-slate-400 hover:text-white cursor-pointer">&times;</span>
+              <span v-if="inspectSearchQuery" @click="inspectSearchQuery = ''" class="absolute right-2.5 top-1.5 text-xs text-slate-400 hover:text-slate-700 cursor-pointer">&times;</span>
             </div>
             <!-- Close Button -->
             <button
               type="button"
               @click="closeInspectModal"
-              class="px-3 py-1 rounded-lg text-xs font-bold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-colors flex items-center gap-1.5 cursor-pointer"
+              class="px-3.5 py-1.5 rounded-xl text-xs font-bold text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200/80 border border-slate-300 transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
               title="Tutup (Esc)"
             >
               <span>✕ Tutup</span>
-              <kbd class="hidden sm:inline-block text-[10px] bg-slate-900 px-1.5 py-0.2 rounded border border-slate-700 font-mono text-slate-400">Esc</kbd>
+              <kbd class="hidden sm:inline-block text-[10px] bg-white px-1.5 py-0.2 rounded border border-slate-300 font-mono text-slate-500">Esc</kbd>
             </button>
           </div>
         </div>
@@ -4400,51 +4401,51 @@
         <!-- Contextual Toolbar for CIP Checklist -->
         <div
           v-if="activeInspectModal.type === 'cip'"
-          class="px-5 py-2.5 bg-slate-900/90 border-b border-slate-800 flex flex-wrap items-center justify-between gap-2.5 shrink-0"
+          class="px-5 py-2.5 bg-slate-50/90 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2.5 shrink-0"
         >
           <div class="flex items-center gap-2 flex-wrap">
-            <span class="text-xs font-bold text-emerald-400 flex items-center gap-1.5">
-              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span class="text-xs font-bold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200 flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-emerald-600 animate-pulse"></span>
               Terverifikasi DB: <strong>{{ activeInspectModal.recordedItems }} / {{ activeInspectModal.totalItems }} Titik</strong>
             </span>
-            <span class="text-xs text-amber-400 px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/20 font-medium">
+            <span class="text-xs text-amber-800 px-2.5 py-1 rounded-lg bg-amber-50 border border-amber-200 font-medium">
               Belum Tercatat: {{ activeInspectModal.totalItems - activeInspectModal.recordedItems }} Titik (-)
             </span>
-            <span class="text-xs text-slate-400 font-mono px-2 py-0.5 rounded bg-slate-800 border border-slate-700">
+            <span class="text-xs text-slate-600 font-mono px-2.5 py-1 rounded-lg bg-white border border-slate-200">
               Sesi Terakhir: <strong>{{ activeInspectModal.latestCipDate }}</strong>
             </span>
           </div>
 
           <!-- Quick Floor Filter Chips -->
-          <div class="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs">
+          <div class="flex items-center gap-1 bg-white p-1 rounded-xl border border-slate-200 text-xs shadow-2xs">
             <button
               type="button"
               @click="inspectCipFilter = 'all'"
-              :class="inspectCipFilter === 'all' ? 'bg-emerald-600 text-white font-bold shadow-xs' : 'text-slate-400 hover:text-slate-200'"
+              :class="inspectCipFilter === 'all' ? 'bg-blue-600 text-white font-bold shadow-xs' : 'text-slate-600 hover:text-blue-700 hover:bg-blue-50/60'"
               class="px-2.5 py-1 rounded-lg transition-colors cursor-pointer whitespace-nowrap"
             >Semua ({{ activeInspectModal.totalItems }})</button>
             <button
               type="button"
               @click="inspectCipFilter = 'lt1'"
-              :class="inspectCipFilter === 'lt1' ? 'bg-emerald-600 text-white font-bold shadow-xs' : 'text-slate-400 hover:text-slate-200'"
+              :class="inspectCipFilter === 'lt1' ? 'bg-blue-600 text-white font-bold shadow-xs' : 'text-slate-600 hover:text-blue-700 hover:bg-blue-50/60'"
               class="px-2.5 py-1 rounded-lg transition-colors cursor-pointer whitespace-nowrap"
             >Lt. 1</button>
             <button
               type="button"
               @click="inspectCipFilter = 'lt2'"
-              :class="inspectCipFilter === 'lt2' ? 'bg-emerald-600 text-white font-bold shadow-xs' : 'text-slate-400 hover:text-slate-200'"
+              :class="inspectCipFilter === 'lt2' ? 'bg-blue-600 text-white font-bold shadow-xs' : 'text-slate-600 hover:text-blue-700 hover:bg-blue-50/60'"
               class="px-2.5 py-1 rounded-lg transition-colors cursor-pointer whitespace-nowrap"
             >Lt. 2</button>
             <button
               type="button"
               @click="inspectCipFilter = 'lt3'"
-              :class="inspectCipFilter === 'lt3' ? 'bg-emerald-600 text-white font-bold shadow-xs' : 'text-slate-400 hover:text-slate-200'"
+              :class="inspectCipFilter === 'lt3' ? 'bg-blue-600 text-white font-bold shadow-xs' : 'text-slate-600 hover:text-blue-700 hover:bg-blue-50/60'"
               class="px-2.5 py-1 rounded-lg transition-colors cursor-pointer whitespace-nowrap"
             >Lt. 3+</button>
             <button
               type="button"
               @click="inspectCipFilter = 'swab'"
-              :class="inspectCipFilter === 'swab' ? 'bg-emerald-600 text-white font-bold shadow-xs' : 'text-slate-400 hover:text-slate-200'"
+              :class="inspectCipFilter === 'swab' ? 'bg-blue-600 text-white font-bold shadow-xs' : 'text-slate-600 hover:text-blue-700 hover:bg-blue-50/60'"
               class="px-2.5 py-1 rounded-lg transition-colors cursor-pointer whitespace-nowrap"
             >Khusus Swab</button>
           </div>
@@ -4453,33 +4454,33 @@
         <!-- Contextual Toolbar for SCADA / Prod / QC / PA -->
         <div
           v-else-if="activeInspectModal.columns"
-          class="px-5 py-2 bg-slate-900/90 border-b border-slate-800 flex items-center justify-between text-xs text-slate-400 shrink-0"
+          class="px-5 py-2 bg-blue-50/40 border-b border-blue-100 flex items-center justify-between text-xs text-slate-600 shrink-0"
         >
           <div class="flex items-center gap-2">
-            <span class="text-emerald-400 font-bold">&bull; {{ activeInspectModal.columns.length }} Kolom Database</span>
+            <span class="text-blue-700 font-bold">&bull; {{ activeInspectModal.columns.length }} Kolom Database</span>
             <span>&bull;</span>
-            <span class="text-slate-300 font-medium">{{ (activeInspectModal.rows || []).length }} Baris Terverifikasi</span>
-            <span v-if="inspectSearchQuery" class="text-amber-400 ml-2">
+            <span class="text-slate-700 font-medium">{{ (activeInspectModal.rows || []).length }} Baris Terverifikasi</span>
+            <span v-if="inspectSearchQuery" class="text-blue-800 font-semibold ml-2">
               (Ditemukan: {{ filteredInspectTableRows.length }} baris)
             </span>
           </div>
         </div>
 
         <!-- Inspector Body -->
-        <div class="flex-1 overflow-auto bg-slate-950/80 p-3 sm:p-4">
+        <div class="flex-1 overflow-auto bg-slate-100/70 p-3 sm:p-4">
           <!-- 1. CHECKLIST CIP TABLE -->
-          <div v-if="activeInspectModal.type === 'cip'" class="overflow-x-auto rounded-xl border border-slate-700 bg-white shadow-md">
+          <div v-if="activeInspectModal.type === 'cip'" class="overflow-x-auto rounded-xl border border-slate-300 bg-white shadow-xs">
             <table class="w-full min-w-[980px] text-left text-xs border-collapse">
-              <thead class="sticky top-0 bg-slate-100 z-10 text-[11px] font-bold text-slate-700 uppercase tracking-wider shadow-2xs">
-                <tr class="border-b border-slate-200">
-                  <th class="py-2.5 px-3 w-12 text-center whitespace-nowrap">No.</th>
-                  <th class="py-2.5 px-3 min-w-[240px]">Instrument / Area</th>
-                  <th class="py-2.5 px-3 w-20 text-center whitespace-nowrap">Lokasi</th>
-                  <th class="py-2.5 px-3 w-24 text-center whitespace-nowrap">Swab Test</th>
-                  <th class="py-2.5 px-3 min-w-[150px] text-center whitespace-nowrap">Waktu CIP Terakhir</th>
-                  <th class="py-2.5 px-3 w-20 text-right whitespace-nowrap">pH Lab</th>
-                  <th class="py-2.5 px-3 w-24 text-right whitespace-nowrap">Conductivity</th>
-                  <th class="py-2.5 px-3 w-28 text-center whitespace-nowrap">Hasil Swab</th>
+              <thead class="sticky top-0 bg-blue-700 text-white z-10 text-[11px] font-bold uppercase tracking-wider shadow-2xs">
+                <tr>
+                  <th class="py-2.5 px-3 w-12 text-center whitespace-nowrap border-r border-blue-600">No.</th>
+                  <th class="py-2.5 px-3 min-w-[240px] border-r border-blue-600">Instrument / Area</th>
+                  <th class="py-2.5 px-3 w-20 text-center whitespace-nowrap border-r border-blue-600">Lokasi</th>
+                  <th class="py-2.5 px-3 w-24 text-center whitespace-nowrap border-r border-blue-600">Swab Test</th>
+                  <th class="py-2.5 px-3 min-w-[150px] text-center whitespace-nowrap border-r border-blue-600">Waktu CIP Terakhir</th>
+                  <th class="py-2.5 px-3 w-20 text-right whitespace-nowrap border-r border-blue-600">pH Lab</th>
+                  <th class="py-2.5 px-3 w-24 text-right whitespace-nowrap border-r border-blue-600">Conductivity</th>
+                  <th class="py-2.5 px-3 w-28 text-center whitespace-nowrap border-r border-blue-600">Hasil Swab</th>
                   <th class="py-2.5 px-3 w-28 text-center whitespace-nowrap">Status</th>
                 </tr>
               </thead>
@@ -4487,7 +4488,7 @@
                 <tr
                   v-for="item in filteredInspectCipItems"
                   :key="item.no"
-                  class="hover:bg-emerald-50/50 transition-colors"
+                  class="hover:bg-blue-50/40 transition-colors"
                   :class="item.status === 'OK' ? 'bg-white' : 'bg-slate-50/70'"
                 >
                   <td class="py-2.5 px-3 text-center text-slate-500 font-sans whitespace-nowrap">{{ item.no }}</td>
@@ -4534,8 +4535,8 @@
             </table>
           </div>
 
-          <!-- 2. SCADA / PROD / QC / PA STACKED TABLE -->
-          <div v-else-if="activeInspectModal.columns" class="overflow-x-auto rounded-xl border border-slate-700 bg-white shadow-md">
+          <!-- 2. SCADA / PROD / QC / PA STACKED TABLE (Clean Bright Blue Table Header) -->
+          <div v-else-if="activeInspectModal.columns" class="overflow-x-auto rounded-xl border border-slate-300 bg-white shadow-xs">
             <table class="param-stacked-table mb-0 w-full text-xs">
               <thead class="sticky top-0 z-10">
                 <tr>
@@ -4560,11 +4561,11 @@
               </tbody>
               <!-- Average row for PA tables if present -->
               <tfoot v-if="activeInspectModal.averages && Object.keys(activeInspectModal.averages).length > 0">
-                <tr class="bg-emerald-100/90 font-bold border-t-2 border-emerald-900 text-emerald-950">
-                  <td class="param-td-no text-center font-extrabold uppercase text-[10px] tracking-wider py-2 bg-emerald-200/80">Avg</td>
+                <tr class="bg-blue-50/90 font-bold border-t-2 border-blue-300 text-blue-950">
+                  <td class="param-td-no text-center font-extrabold uppercase text-[10px] tracking-wider py-2 bg-blue-100/80">Avg</td>
                   <td v-for="col in activeInspectModal.columns" :key="col" class="param-td font-semibold text-[11px]">
-                    <span v-if="activeInspectModal.averages[col] !== undefined" class="inline-flex items-center gap-1 font-mono font-bold text-emerald-950 bg-emerald-200/90 px-1.5 py-0.5 rounded shadow-2xs" title="Rata-rata Hasil Analisa">
-                      <span class="text-[9px] font-normal text-emerald-800">x̄ =</span>
+                    <span v-if="activeInspectModal.averages[col] !== undefined" class="inline-flex items-center gap-1 font-mono font-bold text-blue-950 bg-blue-100 px-1.5 py-0.5 rounded shadow-2xs" title="Rata-rata Hasil Analisa">
+                      <span class="text-[9px] font-normal text-blue-700">x̄ =</span>
                       <span>{{ activeInspectModal.averages[col] }}</span>
                     </span>
                     <span v-else class="text-slate-400 font-normal text-[10px]">-</span>
@@ -4576,17 +4577,17 @@
         </div>
 
         <!-- Inspector Footer -->
-        <div class="px-5 py-2.5 bg-slate-950 border-t border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-400 shrink-0">
+        <div class="px-5 py-2.5 bg-slate-50 border-t border-slate-200 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500 shrink-0">
           <div class="flex items-center gap-2">
-            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-            <span class="font-mono text-[11px]">Single Source of Truth: MySQL db_traceability_sja</span>
+            <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+            <span class="font-mono text-[11px] text-slate-600">Single Source of Truth: MySQL db_traceability_sja</span>
           </div>
           <div class="flex items-center gap-3">
-            <span class="text-[11px] text-slate-400">Tekan <kbd class="font-mono bg-slate-800 text-slate-300 px-1.5 py-0.5 rounded border border-slate-700">Esc</kbd> atau klik di luar untuk menutup</span>
+            <span class="text-[11px] text-slate-400">Tekan <kbd class="font-mono bg-white text-slate-500 px-1.5 py-0.5 rounded border border-slate-300">Esc</kbd> atau klik di luar untuk menutup</span>
             <button
               type="button"
               @click="closeInspectModal"
-              class="px-3 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition-colors cursor-pointer"
+              class="px-3.5 py-1 rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-800 text-xs font-bold transition-colors cursor-pointer"
             >Tutup</button>
           </div>
         </div>
@@ -4676,7 +4677,7 @@
           <span>Menampilkan 5 baris cuplikan pertama</span>
           <button
             @click="closeTablePreview"
-            class="px-4 py-1.5 rounded-xl bg-[#4a2c1d] hover:bg-[#3c2415] text-white transition-all font-semibold cursor-pointer btn-action shadow-2xs"
+            class="px-4 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white transition-all font-semibold cursor-pointer btn-action shadow-2xs"
           >
             Tutup Pratinjau
           </button>
@@ -4768,7 +4769,7 @@
         <!-- Modal Header -->
         <div class="p-5 bg-stone-50 border-b border-stone-200/80 flex items-center justify-between">
           <div class="flex items-center gap-2.5">
-            <div class="w-8 h-8 rounded-xl bg-[#4a2c1d] flex items-center justify-center font-bold text-white text-xs">
+            <div class="w-8 h-8 rounded-xl bg-blue-600 flex items-center justify-center font-bold text-white text-xs">
               SJA
             </div>
             <div>
@@ -4798,7 +4799,7 @@
                 required
                 autocomplete="username"
                 placeholder="Masukkan username Anda"
-                class="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#4a2c1d]/30 focus:border-[#4a2c1d] focus:bg-white transition-all shadow-2xs"
+                class="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all shadow-2xs"
               />
             </div>
             <div>
@@ -4809,7 +4810,7 @@
                 required
                 autocomplete="current-password"
                 placeholder="Masukkan kata sandi Anda"
-                class="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#4a2c1d]/30 focus:border-[#4a2c1d] focus:bg-white transition-all shadow-2xs"
+                class="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all shadow-2xs"
               />
             </div>
           </div>
@@ -4829,7 +4830,7 @@
             <button
               type="submit"
               :disabled="loginLoading"
-              class="px-5 py-2 bg-[#4a2c1d] hover:bg-[#3c2415] text-white rounded-xl text-xs font-bold shadow-xs cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
+              class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-xs cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
             >
               <svg v-if="loginLoading" class="w-3.5 h-3.5 spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <circle cx="12" cy="12" r="10" stroke-width="4" stroke="currentColor" class="opacity-25"></circle>
