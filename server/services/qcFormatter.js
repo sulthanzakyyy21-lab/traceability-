@@ -163,12 +163,12 @@ function formatQcTrace(qcFlow, packingFlow, roastingFlow) {
   }
 
   // ── 5. ROASTING: Analisa Kualitas Kopi Goreng ──
-  // Catatan: Tabel qc_roasting belum ada di database MySQL. Seluruh metrik ditandai '(-)'.
+  // Catatan: Tabel qc_roasting belum ada di database MySQL. Seluruh metrik dikosongkan.
   [
     'qc_roast_visual_fm', 'qc_roast_warna', 'qc_roast_kadar_air', 'qc_roast_ph',
     'qc_roast_brix', 'qc_roast_wangi', 'qc_roast_asam', 'qc_roast_pahit',
     'qc_roast_sepat', 'qc_roast_body', 'qc_roast_bau_asing', 'qc_roast_pic',
-  ].forEach((k) => { qcMap[k] = '(-)'; });
+  ].forEach((k) => { qcMap[k] = ''; });
 
   return qcMap;
 }
