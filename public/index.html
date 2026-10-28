@@ -632,27 +632,46 @@
       animation: scaleIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
 
-    /* ── Option 3: Kinetic Smooth Slide & Solidify from Side (Lawan Kata Pudar) ── */
-    @keyframes kineticSlideIn {
+    /* ── Option 1: Staggered Dual-Dock & Crystallize (Dua Sisi Saling Mengunci Bertahap) ── */
+    @keyframes dockLeft {
       0% {
         opacity: 0;
-        transform: translate3d(-70px, 0, 0) scale(0.97);
+        transform: translate3d(-60px, 0, 0);
         filter: blur(8px);
       }
-      35% {
-        opacity: 0.6;
-        filter: blur(3px);
+      40% {
+        opacity: 0.7;
+        filter: blur(2px);
       }
       100% {
         opacity: 1;
-        transform: translate3d(0, 0, 0) scale(1);
+        transform: translate3d(0, 0, 0);
         filter: blur(0px);
       }
     }
-    .animate-kinetic-slide {
-      animation: kineticSlideIn 0.75s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    @keyframes dockRight {
+      0% {
+        opacity: 0;
+        transform: translate3d(60px, 0, 0);
+        filter: blur(8px);
+      }
+      40% {
+        opacity: 0.7;
+        filter: blur(2px);
+      }
+      100% {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+        filter: blur(0px);
+      }
+    }
+    .animate-dock-left {
+      animation: dockLeft 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
       will-change: transform, opacity, filter;
-      backface-visibility: hidden;
+    }
+    .animate-dock-right {
+      animation: dockRight 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.12s both;
+      will-change: transform, opacity, filter;
     }
   </style>
 </head>
@@ -672,13 +691,13 @@
     <div class="absolute bottom-10 right-10 w-96 h-96 bg-[#3d251a]/40 rounded-full blur-3xl pointer-events-none"></div>
 
     <!-- MAIN CONTAINER CARD: SPLIT TWO-COLUMNS (Referensi OriginTrack / Coffee Portal) -->
-    <main class="w-full max-w-5xl rounded-[32px] sm:rounded-[40px] overflow-hidden glass-card-portal p-2 sm:p-3.5 border border-white/40 shadow-2xl animate-kinetic-slide relative z-10">
+    <main class="w-full max-w-5xl rounded-[32px] sm:rounded-[40px] overflow-hidden glass-card-portal p-2 sm:p-3.5 border border-white/40 shadow-2xl relative z-10">
       <div class="grid grid-cols-1 lg:grid-cols-12 min-h-[580px] sm:min-h-[620px] rounded-[26px] sm:rounded-[34px] overflow-hidden">
 
         <!-- =================================================================
              KOLOM KIRI: VISUAL HERO & TRACEABILITY BADGE (Panel Kopi Nusantara)
              ================================================================= -->
-        <section class="lg:col-span-6 glass-left-panel relative p-8 sm:p-12 flex flex-col justify-between text-white overflow-hidden select-none">
+        <section class="lg:col-span-6 glass-left-panel relative p-8 sm:p-12 flex flex-col justify-between text-white overflow-hidden select-none animate-dock-left">
           <!-- Elemen Geometris Abstrak & Dekorasi Latar -->
           <div class="absolute -top-16 -left-16 w-56 h-56 rounded-full bg-white/5 blur-xl pointer-events-none"></div>
           <div class="absolute top-1/2 -right-16 w-64 h-64 rounded-full bg-amber-500/10 blur-2xl pointer-events-none"></div>
@@ -755,7 +774,7 @@
         <!-- =================================================================
              KOLOM KANAN: FORM LOGIN COFFEE TRACEABILITY (Clean Industrial White)
              ================================================================= -->
-        <section class="lg:col-span-6 bg-white p-6 sm:p-10 lg:p-12 flex flex-col justify-between">
+        <section class="lg:col-span-6 bg-white p-6 sm:p-10 lg:p-12 flex flex-col justify-between animate-dock-right">
           <div class="max-w-md mx-auto w-full my-auto">
             
             <!-- Brand Logo Icon Box -->
