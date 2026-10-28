@@ -1588,13 +1588,15 @@
                   <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                 </svg>
                 <input
+                  id="batch-search-input"
                   v-model="traceForm.noBatch"
                   type="text"
                   placeholder="Masukkan Nomor Batch Finished Good (contoh: A370/26)"
-                  class="w-full pl-10 pr-4 py-2.5 bg-white border border-stone-200 focus:border-amber-400 focus:ring-2 focus:ring-amber-500/20 rounded-xl text-stone-900 placeholder-stone-400 text-sm font-semibold transition-all uppercase outline-none shadow-xs"
+                  class="w-full pl-10 pr-20 py-2.5 bg-white border border-stone-200 focus:border-amber-400 focus:ring-2 focus:ring-amber-500/20 rounded-xl text-stone-900 placeholder-stone-400 text-sm font-semibold transition-all uppercase outline-none shadow-xs"
                   @keydown.enter.prevent="startTraceabilityAudit"
                   @keyup.enter.prevent="startTraceabilityAudit"
                 />
+                <kbd class="hidden sm:inline-flex items-center gap-0.5 px-2 py-0.5 text-[10px] font-mono font-bold text-stone-400 bg-stone-100 border border-stone-200 rounded-md pointer-events-none absolute right-3 shadow-2xs">Ctrl K</kbd>
               </div>
 
               <!-- Tower Selector: Chip Rapi Mandiri -->
@@ -4858,6 +4860,23 @@
         </form>
       </div>
     </div>
+    <!-- ── TACTILE TOAST NOTIFICATION (COPY TO CLIPBOARD FEEDBACK) ── -->
+    <transition
+      enter-active-class="transition duration-150 ease-out"
+      enter-from-class="transform translate-y-2 opacity-0"
+      enter-to-class="transform translate-y-0 opacity-100"
+      leave-active-class="transition duration-150 ease-in"
+      leave-from-class="transform translate-y-0 opacity-100"
+      leave-to-class="transform translate-y-2 opacity-0"
+    >
+      <div
+        v-if="copiedToast"
+        class="fixed bottom-5 right-5 z-50 flex items-center gap-2 bg-[#1c1917] text-white px-3.5 py-2.5 rounded-xl shadow-2xl border border-white/20 text-xs font-semibold backdrop-blur-md"
+      >
+        <svg class="w-4 h-4 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        <span>Tersalin: <strong class="font-mono text-amber-300">{{ copiedToast }}</strong></span>
+      </div>
+    </transition>
   </main>
 </div>
 </div>
@@ -4876,6 +4895,17 @@ createApp({
     const isProduksi = computed(() => authRole.value === 'produksi');
     const isQc = computed(() => authRole.value === 'qc');
     const isViewer = computed(() => authRole.value === 'viewer');
+
+    // ── High-Performance Interactive Tactile Tools ──
+    const copiedToast = ref('');
+    function copyToClipboard(text, label) {
+      if (!text) return;
+      navigator.clipboard.writeText(String(text)).then(() => {
+        copiedToast.value = label ? `${label}: ${text}` : String(text);
+        setTimeout(() => { copiedToast.value = ''; }, 1800);
+      }).catch(() => {});
+    }
+    const paramFilter = ref('all'); // 'all' | 'filled' | 'empty'
 
     const loginModalOpen = ref(false);
     const loginForm = reactive({
@@ -7713,6 +7743,14 @@ createApp({
         if (e.key === 'Escape' && activeInspectModal.value) {
           closeInspectModal();
         }
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+          e.preventDefault();
+          const searchInput = document.getElementById('batch-search-input');
+          if (searchInput) {
+            searchInput.focus();
+            searchInput.select();
+          }
+        }
       });
       if (window.sjaAuth) {
         try { await window.sjaAuth.initAuth(); } catch (e) { console.warn(e); }
@@ -8048,6 +8086,9 @@ createApp({
       submitLogin,
       enterAsGuest,
       logoutAuth,
+      copiedToast,
+      copyToClipboard,
+      paramFilter,
     };
   },
 }).mount('#app');
