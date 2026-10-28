@@ -197,15 +197,14 @@
       color: #000000;
     }
     .proc-value {
-      color: #000000;
+      color: #000000 !important;
       flex: 1;
     }
     .proc-value-active {
-      font-weight: bold;
-      color: #047857;
-      background: #ecfdf5;
-      padding: 0 4px;
-      border-radius: 2px;
+      font-weight: 600;
+      color: #000000 !important; /* Murni hitam resmi laporan, bukan hijau */
+      background: transparent !important; /* Bersih tanpa latar hijau */
+      padding: 0;
     }
 
     /* Document & PIC cells */
@@ -439,6 +438,7 @@
 
     /* ── ZERO-DELAY INSTANT GEMINI TOOLTIP (TAMPIL LANGSUNG TANPA DELAY) ── */
     .sidebar-gemini-tooltip {
+      display: none;
       position: absolute;
       left: calc(100% + 12px);
       top: 50%;
@@ -454,9 +454,10 @@
       visibility: hidden;
       box-shadow: 0 10px 25px -4px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.08);
       z-index: 999999;
-      /* Zero delay: renders immediately on pointer-enter without lag */
-      transition: opacity 0.04s ease-out, transform 0.04s ease-out;
       will-change: opacity, transform;
+    }
+    .app-sidebar.is-collapsed .sidebar-gemini-tooltip {
+      display: block;
     }
     .sidebar-gemini-tooltip::before {
       content: '';
@@ -467,7 +468,7 @@
       border: 5px solid transparent;
       border-right-color: #1c1917;
     }
-    .group:hover .sidebar-gemini-tooltip {
+    .app-sidebar.is-collapsed .group:hover .sidebar-gemini-tooltip {
       opacity: 1 !important;
       visibility: visible !important;
       transform: translateY(-50%) translateX(2px) translateZ(0) !important;
@@ -3326,22 +3327,18 @@
                             <!-- Khusus Checklist Sanitasi CIP Extraction di Quality Audit Report -->
                             <template v-else-if="item.key === 'pa_ext_cip_checklist'">
                               <div class="flex flex-wrap items-center gap-2">
-                                <span class="proc-value proc-value-active font-semibold">
+                                <span class="proc-value font-semibold text-black">
                                   {{ getItemValue(item.key) }}
                                 </span>
                                 <button
                                   v-if="traceResult?.pa?.extraction_cip_checklist"
                                   type="button"
                                   @click="openInspectCip(traceResult.pa.extraction_cip_checklist)"
-                                  class="no-print inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-bold text-emerald-950 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 rounded-lg cursor-pointer transition-all shadow-2xs hover:shadow-xs"
-                                  title="Inspect checklist sanitasi CIP di pop-up modal"
+                                  class="no-print inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[11px] font-semibold text-blue-900 bg-blue-50/80 hover:bg-blue-100 border border-blue-200 rounded-lg cursor-pointer transition-all shadow-2xs active:scale-97"
+                                  title="Inspect checklist sanitasi CIP"
                                 >
-                                  <svg class="w-3.5 h-3.5 text-emerald-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                  </svg>
-                                  <span>Inspect Checklist (Pop-up)</span>
-                                  <span class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-white text-emerald-950 border border-emerald-200 font-bold">
+                                  <span class="font-bold">Inspect Checklist</span>
+                                  <span class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-white text-blue-950 border border-blue-200 font-bold">
                                     {{ traceResult.pa.extraction_cip_checklist.totalItems }} Titik
                                   </span>
                                 </button>
@@ -3353,15 +3350,11 @@
                                 v-if="getProcessRows(item.key).length > 0"
                                 type="button"
                                 @click="openInspectScada(getProcessKey(item.key))"
-                                class="no-print inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-bold text-emerald-950 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 rounded-lg cursor-pointer transition-all shadow-2xs hover:shadow-xs"
+                                class="no-print inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[11px] font-semibold text-blue-900 bg-blue-50/80 hover:bg-blue-100 border border-blue-200 rounded-lg cursor-pointer transition-all shadow-2xs active:scale-97"
                                 :title="'Inspect parameter kritis ' + getProcessTitle(item.key)"
                               >
-                                <svg class="w-3.5 h-3.5 text-emerald-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                </svg>
-                                <span>Inspect Parameter (Pop-up)</span>
-                                <span class="text-[10px] font-normal text-slate-500">({{ getProcessColumns(item.key).length }} kol &bull; {{ getProcessRows(item.key).length }} baris)</span>
+                                <span class="font-bold">Inspect Parameter</span>
+                                <span class="text-[10.5px] font-mono text-blue-800">({{ getProcessColumns(item.key).length }} kol &bull; {{ getProcessRows(item.key).length }} baris)</span>
                               </button>
                               <span v-else class="text-slate-400 text-xs">-</span>
                             </template>
@@ -4355,20 +4348,21 @@
     </div>
     </div> <!-- /TAB 3: activeTab === 'pic' -->
 
-    <!-- ── UNIFIED INSPECTOR POP-UP MODAL (TERANG BERWARNA BIRU CLEAN) ── -->
+    <!-- ── UNIFIED INSPECTOR POP-UP MODAL (TERANG BERWARNA BIRU CLEAN, UKURAN PAS & DITENGAH LAYAR) ── -->
     <div
       v-if="activeInspectModal"
-      class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-900/40 backdrop-blur-xs no-print transition-all"
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 md:p-8 bg-slate-900/45 backdrop-blur-xs no-print transition-all overflow-y-auto"
       @click.self="closeInspectModal"
     >
-      <div class="bg-white border border-slate-200/90 rounded-2xl shadow-2xl max-w-[96vw] w-full max-h-[92vh] flex flex-col overflow-hidden text-slate-800">
+      <div class="bg-white border border-slate-200/90 rounded-2xl shadow-2xl max-w-5xl xl:max-w-6xl w-full max-h-[82vh] flex flex-col overflow-hidden text-slate-800 my-auto">
         <!-- Header Inspector (Clean Blue Theme) -->
         <div class="px-5 py-3.5 bg-gradient-to-r from-blue-50/80 via-white to-blue-50/40 border-b border-blue-100 flex flex-wrap items-center justify-between gap-3 shrink-0">
           <div class="flex items-center gap-3 min-w-0">
             <div class="w-9 h-9 rounded-xl bg-blue-100/90 border border-blue-200 text-blue-700 flex items-center justify-center shrink-0 shadow-2xs">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="3" y1="9" x2="21" y2="9"></line>
+                <line x1="9" y1="21" x2="9" y2="9"></line>
               </svg>
             </div>
             <div class="min-w-0">

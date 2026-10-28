@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Eye, X } from 'lucide-react';
+import { Table2, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -40,13 +40,13 @@ export const UnifiedInspectDialog: React.FC<Props> = ({ data, onClose }) => {
   }, [data.rows, search]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-900/40 backdrop-blur-xs">
-      <div className="bg-white border border-slate-200/90 rounded-2xl shadow-2xl max-w-[96vw] w-full max-h-[92vh] flex flex-col overflow-hidden text-slate-800">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 md:p-8 bg-slate-900/45 backdrop-blur-xs overflow-y-auto">
+      <div className="bg-white border border-slate-200/90 rounded-2xl shadow-2xl max-w-5xl xl:max-w-6xl w-full max-h-[82vh] flex flex-col overflow-hidden text-slate-800 my-auto">
         {/* Header */}
         <div className="px-5 py-3.5 bg-gradient-to-r from-blue-50/80 via-white to-blue-50/40 border-b border-blue-100 flex flex-wrap items-center justify-between gap-3 shrink-0">
           <div className="flex items-center gap-3 min-w-0">
             <div className="w-9 h-9 rounded-xl bg-blue-100/90 border border-blue-200 text-blue-700 flex items-center justify-center shrink-0 shadow-2xs">
-              <Eye className="w-4 h-4" />
+              <Table2 className="w-4 h-4" />
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
