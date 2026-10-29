@@ -512,31 +512,30 @@
       animation: shimmer 1.5s infinite;
     }
 
-    /* ── 1. Latar Belakang Gambar Karung Biji Kopi dengan Warm Overlay (Local Zero-Latency) ── */
+    /* ── 1. Latar Belakang Halaman Login: Putih Bersih Industrial Tanpa Foto ── */
     .coffee-bg-backdrop {
-      background-image: 
-        radial-gradient(circle at 75% 20%, rgba(92, 58, 41, 0.45) 0%, rgba(35, 20, 14, 0.88) 75%),
-        linear-gradient(135deg, rgba(26, 15, 10, 0.85) 0%, rgba(45, 26, 17, 0.78) 100%),
-        url('/images/coffee-beans-bg.jpg');
-      background-size: cover;
-      background-position: center center;
-      background-repeat: no-repeat;
-      background-color: #23140e;
+      background-color: #ffffff;
+      background-image: none;
     }
 
-    /* ── 2. High-Performance Card Container (No Heavy Blur Bottleneck) ── */
+    /* ── 2. High-Performance Card Container di atas Latar Putih ── */
     .glass-card-portal {
       background: #ffffff;
+      border: 1px solid #e7e5e4;
       box-shadow: 
-        0 25px 60px -15px rgba(25, 14, 8, 0.65),
-        0 0 0 1px rgba(255, 255, 255, 0.5);
+        0 25px 50px -12px rgba(35, 18, 11, 0.14),
+        0 0 0 1px rgba(0, 0, 0, 0.04),
+        0 4px 12px -2px rgba(0, 0, 0, 0.03);
       contain: layout paint style;
     }
 
-    /* Left Hero Panel Glass */
+    /* ── Left Hero Panel: Gradasi Biji Kopi Alami (Roasted Coffee Beans Gradient) ── */
     .glass-left-panel {
-      background: linear-gradient(145deg, #7f5038 0%, #5c3a29 55%, #3d251a 100%);
-      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.2);
+      background: 
+        radial-gradient(circle at 80% 20%, rgba(202, 138, 74, 0.32) 0%, transparent 55%),
+        radial-gradient(circle at 20% 80%, rgba(35, 18, 11, 0.75) 0%, transparent 65%),
+        linear-gradient(145deg, #24130b 0%, #3e2215 30%, #58311e 62%, #754228 85%, #8f5332 100%);
+      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.15);
     }
 
     /* Orbit & Glow Keyframes */
@@ -734,16 +733,12 @@
   <!-- ══════════════════════════════════════════════════════════════ -->
   <div
     v-if="!authIsLoggedIn"
-    class="coffee-bg-backdrop min-h-screen flex items-center justify-center p-3 sm:p-6 lg:p-8 font-sans selection:bg-[#7f5038] selection:text-white antialiased relative overflow-x-hidden"
+    class="coffee-bg-backdrop min-h-screen flex items-center justify-center p-3 sm:p-6 lg:p-8 font-sans selection:bg-[#754228] selection:text-white antialiased relative overflow-x-hidden"
   >
-    <!-- Subtle Ambient Glow Orbs di Balik Layar -->
-    <div class="ambient-glow-orb top-1/4 left-10 w-96 h-96 bg-amber-700/20 blur-3xl animate-pulse-glow"></div>
-    <div class="ambient-glow-orb bottom-10 right-10 w-96 h-96 bg-[#3d251a]/40 blur-3xl"></div>
-
     <!-- MAIN CONTAINER CARD: SPLIT TWO-COLUMNS (Compact Size & 3.5s Smooth Reveal) -->
     <main
       id="coffee-portal-main"
-      class="coffee-portal-card rounded-3xl overflow-hidden glass-card-portal p-2 sm:p-2.5 border border-white/50 shadow-2xl relative z-10"
+      class="coffee-portal-card rounded-3xl overflow-hidden glass-card-portal p-2 sm:p-2.5 relative z-10"
       :class="{ 'portal-revealed': portalRevealed }"
     >
       <div class="grid grid-cols-1 lg:grid-cols-12 min-h-[460px] sm:min-h-[490px] rounded-[20px] sm:rounded-[22px] overflow-hidden">
@@ -833,7 +828,7 @@
             
             <!-- Brand Logo Icon Box -->
             <div class="text-center mb-4">
-              <div class="w-11 h-11 rounded-xl bg-gradient-to-tr from-[#5c3a29] to-[#8c532b] text-amber-200 flex items-center justify-center mx-auto shadow-md shadow-stone-900/15 mb-2 transform hover:scale-105 transition-transform duration-300">
+              <div class="w-11 h-11 rounded-xl bg-gradient-to-tr from-[#3e2215] to-[#754228] text-amber-200 flex items-center justify-center mx-auto shadow-md shadow-stone-900/15 mb-2 transform hover:scale-105 transition-transform duration-300">
                 <!-- Inline SVG Monogram Logo Kopi & Jejak Rantai -->
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
@@ -872,7 +867,7 @@
                     required
                     autocomplete="username"
                     placeholder="Masukkan username Anda"
-                    class="w-full bg-[#fbfaf8] border border-stone-200 hover:border-stone-400 focus:border-[#5c3a29] focus:bg-white rounded-xl pl-10 pr-3.5 py-2.5 text-xs sm:text-sm text-stone-950 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-[#5c3a29]/20 transition-all shadow-2xs font-medium"
+                    class="w-full bg-[#fbfaf8] border border-stone-200 hover:border-stone-400 focus:border-[#754228] focus:bg-white rounded-xl pl-10 pr-3.5 py-2.5 text-xs sm:text-sm text-stone-950 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-[#754228]/20 transition-all shadow-2xs font-medium"
                   />
                 </div>
               </div>
@@ -894,7 +889,7 @@
                     required
                     autocomplete="current-password"
                     placeholder="••••••••••••"
-                    class="w-full bg-[#fbfaf8] border border-stone-200 hover:border-stone-400 focus:border-[#5c3a29] focus:bg-white rounded-xl pl-10 pr-10 py-2.5 text-xs sm:text-sm text-stone-950 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-[#5c3a29]/20 transition-all shadow-2xs font-mono"
+                    class="w-full bg-[#fbfaf8] border border-stone-200 hover:border-stone-400 focus:border-[#754228] focus:bg-white rounded-xl pl-10 pr-10 py-2.5 text-xs sm:text-sm text-stone-950 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-[#754228]/20 transition-all shadow-2xs font-mono"
                   />
                   <!-- Tombol Intip Sandi Responsif -->
                   <button
@@ -908,7 +903,7 @@
                       <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                       <circle cx="12" cy="12" r="3"></circle>
                     </svg>
-                    <svg v-else width="16" height="16" class="text-[#5c3a29]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <svg v-else width="16" height="16" class="text-[#754228]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
                       <line x1="1" y1="1" x2="23" y2="23"></line>
                     </svg>
@@ -922,14 +917,14 @@
                   <input
                     type="checkbox"
                     v-model="rememberMe"
-                    class="w-3.5 h-3.5 rounded text-[#5c3a29] border-stone-300 focus:ring-[#5c3a29] focus:ring-offset-0 transition cursor-pointer"
+                    class="w-3.5 h-3.5 rounded text-[#754228] border-stone-300 focus:ring-[#754228] focus:ring-offset-0 transition cursor-pointer"
                   />
                   <span>Remember me</span>
                 </label>
                 <button
                   type="button"
                   @click="handleForgotPassword"
-                  class="text-[#7f5038] hover:text-[#3d251a] font-semibold transition hover:underline cursor-pointer"
+                  class="text-[#754228] hover:text-[#24130b] font-semibold transition hover:underline cursor-pointer"
                 >
                   Reset Password?
                 </button>
@@ -949,10 +944,10 @@
               <button
                 type="submit"
                 :disabled="loginState !== 'idle'"
-                class="w-full mt-1.5 py-2.5 sm:py-3 px-5 rounded-xl text-white font-bold text-xs sm:text-sm tracking-wide shadow-md shadow-[#3d251a]/20 active:scale-[0.98] transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-75"
+                class="w-full mt-1.5 py-2.5 sm:py-3 px-5 rounded-xl text-white font-bold text-xs sm:text-sm tracking-wide shadow-md shadow-[#24130b]/20 active:scale-[0.98] transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-75"
                 :class="{
-                  'bg-gradient-to-r from-[#7f5038] via-[#5c3a29] to-[#3d251a] hover:from-[#5c3a29] hover:to-[#23140e]': loginState === 'idle',
-                  'bg-[#3d251a] cursor-wait': loginState === 'loading',
+                  'bg-gradient-to-r from-[#754228] via-[#58311e] to-[#24130b] hover:from-[#58311e] hover:to-[#180c07]': loginState === 'idle',
+                  'bg-[#24130b] cursor-wait': loginState === 'loading',
                   'bg-emerald-700 hover:bg-emerald-700 cursor-default scale-[1.01]': loginState === 'success'
                 }"
               >
