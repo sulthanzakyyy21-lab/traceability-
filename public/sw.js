@@ -1,8 +1,9 @@
-// Service Worker: PT. Santos Jaya Abadi Traceability Platform (SJA-PWA v2.0)
-const CACHE_NAME = 'sja-traceability-v2';
+// Service Worker: PT. Santos Jaya Abadi Traceability Platform (SJA-PWA v3.0)
+const CACHE_NAME = 'sja-traceability-v3';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
+  '/images/coffee-beans-bg.jpg',
   '/flowSections.js?v=4',
   '/js/authStore.js?v=4',
   '/js/pipelineData.js?v=4',

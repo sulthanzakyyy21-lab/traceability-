@@ -6,9 +6,16 @@
   };
   const { reactive, computed } = Vue;
 
+  let _initTok = null, _initUsr = null;
+  try {
+    const t = typeof localStorage !== 'undefined' && localStorage.getItem('sja_auth_token');
+    const u = typeof localStorage !== 'undefined' && localStorage.getItem('sja_auth_user');
+    if (t && u) { _initTok = t; _initUsr = JSON.parse(u); }
+  } catch (_) {}
+
   const authState = reactive({
-    user: null,
-    token: null,
+    user: _initUsr,
+    token: _initTok,
     loginModalOpen: false,
     loading: false,
     error: '',

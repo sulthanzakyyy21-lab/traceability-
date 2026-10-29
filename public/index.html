@@ -512,26 +512,25 @@
       animation: shimmer 1.5s infinite;
     }
 
-    /* ── 1. Latar Belakang Gambar Karung Biji Kopi dengan Warm Overlay ── */
+    /* ── 1. Latar Belakang Gambar Karung Biji Kopi dengan Warm Overlay (Local Zero-Latency) ── */
     .coffee-bg-backdrop {
       background-image: 
         radial-gradient(circle at 75% 20%, rgba(92, 58, 41, 0.45) 0%, rgba(35, 20, 14, 0.88) 75%),
         linear-gradient(135deg, rgba(26, 15, 10, 0.85) 0%, rgba(45, 26, 17, 0.78) 100%),
-        url('https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=1920&q=85');
+        url('/images/coffee-beans-bg.jpg');
       background-size: cover;
       background-position: center center;
       background-repeat: no-repeat;
       background-color: #23140e;
     }
 
-    /* ── 2. Glassmorphism Warm Tinted Card ── */
+    /* ── 2. High-Performance Card Container (No Heavy Blur Bottleneck) ── */
     .glass-card-portal {
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
+      background: #ffffff;
       box-shadow: 
-        0 25px 60px -15px rgba(25, 14, 8, 0.6),
-        0 0 0 1px rgba(255, 255, 255, 0.4);
+        0 25px 60px -15px rgba(25, 14, 8, 0.65),
+        0 0 0 1px rgba(255, 255, 255, 0.5);
+      contain: layout paint style;
     }
 
     /* Left Hero Panel Glass */
@@ -571,6 +570,57 @@
       top: 14px;
       pointer-events: none;
       transition: color 0.2s ease;
+    }
+
+    /* ── Fail-Safe Decorative Orbit Sizing (Zero FOUC & Zero Jitter) ── */
+    .orbit-box {
+      width: 56px !important;
+      height: 56px !important;
+      position: relative !important;
+      pointer-events: none !important;
+      overflow: hidden !important;
+    }
+    .orbit-ring-outer {
+      width: 56px !important;
+      height: 56px !important;
+      border-radius: 50% !important;
+      border: 2px solid rgba(255, 255, 255, 0.25) !important;
+      position: absolute !important;
+      bottom: 0 !important;
+      right: 0 !important;
+      transform: translateZ(0);
+      animation: spinSlow 22s linear infinite;
+    }
+    .orbit-ring-inner {
+      width: 32px !important;
+      height: 32px !important;
+      border-radius: 50% !important;
+      border: 2px solid rgba(251, 191, 36, 0.45) !important;
+      position: absolute !important;
+      bottom: 6px !important;
+      right: 6px !important;
+      transform: translateZ(0);
+    }
+    .orbit-dot {
+      width: 12px !important;
+      height: 12px !important;
+      border-radius: 50% !important;
+      background-color: #fbbf24 !important;
+      box-shadow: 0 0 10px rgba(251, 191, 36, 0.6) !important;
+      position: absolute !important;
+      bottom: 16px !important;
+      right: 16px !important;
+      transform: translateZ(0);
+      animation: pulseGlow 3s ease-in-out infinite;
+    }
+
+    /* ── Ambient Glow GPU Layer Isolation ── */
+    .ambient-glow-orb {
+      position: absolute;
+      border-radius: 9999px;
+      pointer-events: none;
+      transform: translate3d(0, 0, 0);
+      will-change: transform;
     }
 
     /* ── Floating Label Micro-Interactions ── */
@@ -637,25 +687,41 @@
       0% {
         opacity: 0;
         clip-path: circle(0% at 0% 0%);
-        transform: scale(0.985);
+        transform: scale(0.985) translateZ(0);
       }
       15% {
-        opacity: 0.45;
+        opacity: 0.5;
       }
       60% {
-        opacity: 0.9;
+        opacity: 0.92;
       }
       100% {
         opacity: 1;
         clip-path: circle(160% at 0% 0%);
-        transform: scale(1);
+        transform: scale(1) translateZ(0);
       }
     }
-    .animate-corner-reveal {
-      animation: cornerRevealIn 3.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    .coffee-portal-card {
+      width: 100%;
+      max-width: 840px;
+      margin: 0 auto;
+      border-radius: 24px;
+      opacity: 0;
+      clip-path: circle(0% at 0% 0%);
+      transform: scale(0.985) translateZ(0);
       will-change: clip-path, opacity, transform;
-      transform-origin: center center;
       backface-visibility: hidden;
+    }
+    .coffee-portal-card.portal-revealed {
+      animation: cornerRevealIn 3.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .coffee-portal-card {
+        opacity: 1 !important;
+        clip-path: none !important;
+        transform: none !important;
+        animation: none !important;
+      }
     }
   </style>
 </head>
@@ -671,11 +737,15 @@
     class="coffee-bg-backdrop min-h-screen flex items-center justify-center p-3 sm:p-6 lg:p-8 font-sans selection:bg-[#7f5038] selection:text-white antialiased relative overflow-x-hidden"
   >
     <!-- Subtle Ambient Glow Orbs di Balik Layar -->
-    <div class="absolute top-1/4 left-10 w-96 h-96 bg-amber-700/20 rounded-full blur-3xl pointer-events-none animate-pulse-glow"></div>
-    <div class="absolute bottom-10 right-10 w-96 h-96 bg-[#3d251a]/40 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="ambient-glow-orb top-1/4 left-10 w-96 h-96 bg-amber-700/20 blur-3xl animate-pulse-glow"></div>
+    <div class="ambient-glow-orb bottom-10 right-10 w-96 h-96 bg-[#3d251a]/40 blur-3xl"></div>
 
     <!-- MAIN CONTAINER CARD: SPLIT TWO-COLUMNS (Compact Size & 3.5s Smooth Reveal) -->
-    <main class="w-full max-w-[840px] rounded-3xl overflow-hidden glass-card-portal p-2 sm:p-2.5 border border-white/50 shadow-2xl animate-corner-reveal relative z-10">
+    <main
+      id="coffee-portal-main"
+      class="coffee-portal-card rounded-3xl overflow-hidden glass-card-portal p-2 sm:p-2.5 border border-white/50 shadow-2xl relative z-10"
+      :class="{ 'portal-revealed': portalRevealed }"
+    >
       <div class="grid grid-cols-1 lg:grid-cols-12 min-h-[460px] sm:min-h-[490px] rounded-[20px] sm:rounded-[22px] overflow-hidden">
 
         <!-- =================================================================
@@ -747,10 +817,10 @@
 
           <!-- Ornamen Lingkaran Planet / Orbit Kopi -->
           <div class="relative z-10 flex items-end justify-end pt-3 border-t border-white/10">
-            <div class="relative w-14 h-14 -mb-3 -mr-3 pointer-events-none hidden sm:block">
-              <div class="w-14 h-14 rounded-full border-2 border-white/20 absolute bottom-0 right-0 animate-spin-slow"></div>
-              <div class="w-8 h-8 rounded-full border-2 border-amber-400/40 absolute bottom-1.5 right-1.5"></div>
-              <div class="w-3 h-3 rounded-full bg-amber-400 shadow-md shadow-amber-400/50 absolute bottom-4 right-4 animate-pulse"></div>
+            <div class="orbit-box -mb-3 -mr-3 hidden sm:block">
+              <div class="orbit-ring-outer"></div>
+              <div class="orbit-ring-inner"></div>
+              <div class="orbit-dot"></div>
             </div>
           </div>
         </section>
@@ -5374,6 +5444,7 @@ createApp({
     }
     const paramFilter = ref('all'); // 'all' | 'filled' | 'empty'
 
+    const portalRevealed = ref(false);
     const loginModalOpen = ref(false);
     const loginForm = reactive({
       username: '',
@@ -8257,6 +8328,12 @@ createApp({
 
     // Auto-init on mount and scroll reveal
     onMounted(async () => {
+      // Zero-lag smooth portal animation trigger after DOM paint settles
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          portalRevealed.value = true;
+        });
+      });
       window.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && activeInspectModal.value) {
           closeInspectModal();
@@ -8633,6 +8710,7 @@ createApp({
       isProduksi,
       isQc,
       isViewer,
+      portalRevealed,
       loginModalOpen,
       loginForm,
       loginLoading,
