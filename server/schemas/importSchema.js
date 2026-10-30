@@ -15,6 +15,7 @@ const PicRowsQuerySchema = z.object({
   month: z.string().optional().default(''),
   date: z.string().optional().default(''),
   bean: z.string().optional().default(''),
+  equipment: z.string().optional().default(''),
 });
 
 const InspectBodySchema = z.object({

@@ -28,11 +28,13 @@ async function getExtractionCipChecklist(tower, extractionDate) {
 
   try {
     const [rows] = await pool.query(
-      `SELECT * FROM \`${tbl}\` WHERE \`${dateCol}\` <= ? ORDER BY \`${dateCol}\` DESC, id DESC`,
-      [cutoff]
+      `SELECT * FROM \`${tbl}\` WHERE (COALESCE(\`Stamp\`, \`${dateCol}\`) <= ? OR \`${dateCol}\` <= ?) ORDER BY COALESCE(\`Stamp\`, \`${dateCol}\`) DESC, id DESC`,
+      [cutoff, cutoff]
     );
 
     let recordedCount = 0;
+    const getRowDate = (r) => (!isT2 && r && r.Stamp) ? r.Stamp : (r[dateCol] || r.Stamp);
+
     const items = defs.map(def => {
       const matched = rows.filter(r => {
         const p = cleanStr(r.Peralatan);
@@ -59,10 +61,10 @@ async function getExtractionCipChecklist(tower, extractionDate) {
 
       recordedCount++;
       const latestRow = matched[0];
-      const latestDateTime = new Date(latestRow[dateCol] || latestRow.Stamp).getTime();
+      const latestDateTime = new Date(getRowDate(latestRow)).getTime();
 
       const sessionRows = matched.filter(r => {
-        const dt = new Date(r[dateCol] || r.Stamp).getTime();
+        const dt = new Date(getRowDate(r)).getTime();
         return Math.abs(latestDateTime - dt) <= 48 * 3600 * 1000;
       });
 
@@ -72,7 +74,7 @@ async function getExtractionCipChecklist(tower, extractionDate) {
       const inlineRow = sessionRows.find(r => parseFloat(r['pH in line']) > 0);
 
       const timeVal = latestRow.Waktu ? String(latestRow.Waktu).slice(0, 5) : '';
-      const datePart = formatDmy(latestRow[dateCol] || latestRow.Stamp).slice(0, 10);
+      const datePart = formatDmy(getRowDate(latestRow)).slice(0, 10);
       const cipTime = timeVal ? `${datePart} ${timeVal}` : datePart;
 
       const phLabVal = parseFloat(labRow['pH Lab']) > 0 

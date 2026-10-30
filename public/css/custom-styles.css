@@ -1,0 +1,1056 @@
+    :root {
+      --app-zoom: 1;
+    }
+
+    html {
+      min-height: 100%;
+      background-color: #efe9e1;
+    }
+    html.logged-in {
+      background-color: #fbfaf8;
+    }
+
+    /* ── PREVENT FLASH OF UNCOMPILED TEMPLATE / MODALS BEFORE VUE MOUNTS ── */
+    [v-cloak] {
+      display: none !important;
+    }
+
+    /* ── SCOPE TIMES NEW ROMAN EXCLUSIVELY TO OFFICIAL AUDIT PRINTABLE FORM ── */
+    #form-document,
+    #form-document *,
+    .doc-printable,
+    .doc-printable * {
+      font-family: 'Times New Roman', Times, serif !important;
+    }
+
+    body {
+      min-height: 100%;
+      margin: 0;
+      background-color: #efe9e1;
+      color: #1c1917;
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      line-height: 1.4;
+    }
+    body.logged-in {
+      background-color: #fbfaf8;
+    }
+
+    /* Kompensasi tinggi layar penuh untuk elemen saat zoom aktif agar tidak kepotong di bawah */
+    .min-h-screen {
+      min-height: calc(100vh / var(--app-zoom, 1)) !important;
+    }
+    .h-screen {
+      height: calc(100vh / var(--app-zoom, 1)) !important;
+    }
+
+    /* ── SYSTEM TOP BAR (NAVBAR) ───────────── */
+    .app-header {
+      background: #0f172a;
+      border-bottom: 2px solid #1e293b;
+    }
+    .tab-btn {
+      padding: 9px 18px;
+      font-size: 13.5px;
+      border-bottom: 3px solid transparent;
+      color: #94a3b8;
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .tab-btn:hover { color: #ffffff; }
+    .tab-btn.active {
+      color: #ffffff;
+      border-bottom-color: #38bdf8;
+      font-weight: bold;
+    }
+
+    /* ── OFFICIAL WHITE DOCUMENT CANVAS ────── */
+    #form-document {
+      background: #ffffff;
+      border: 1.5px solid #000000;
+      box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.1);
+      color: #000000;
+      font-size: 11px;
+      width: 100%;
+    }
+
+    /* ── HEADER TABLE FORM RESMI ───────────── */
+    .doc-top-table {
+      width: 100%;
+      border-collapse: collapse;
+      border-bottom: 2px solid #000000;
+    }
+    .doc-top-table td {
+      border: 1px solid #000000;
+      padding: 6px 10px;
+      vertical-align: middle;
+    }
+
+    /* ── SUB-TABLES (INFORMASI & APPROVAL) ─── */
+    .doc-subtable {
+      width: 100%;
+      border-collapse: collapse;
+      border-bottom: 1.5px solid #000000;
+    }
+    .doc-subtable td, .doc-subtable th {
+      border: 1px solid #000000;
+      padding: 4px 8px;
+      font-size: 11px;
+      vertical-align: top;
+    }
+    .bg-cell-header {
+      background: #e2e8f0;
+      font-weight: bold;
+      color: #000000;
+      text-transform: uppercase;
+      font-size: 11px;
+      letter-spacing: 0.03em;
+    }
+
+    /* ── TABEL UTAMA 12 FLOW PROCESS ───────── */
+    .flow-table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 1.5px solid #000000;
+      table-layout: fixed;
+    }
+    .flow-table th {
+      background: #0f172a;
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: bold;
+      padding: 6px 8px;
+      text-align: center;
+      border: 1px solid #000000;
+    }
+    .flow-item-tr td {
+      border: 1px solid #000000 !important;
+      padding: 3px 6px;
+      font-size: 11px;
+      line-height: 1.35;
+    }
+
+    /* Flow name cell */
+    .flow-name-cell {
+      vertical-align: top !important;
+      font-weight: bold;
+      background: #f8fafc;
+      color: #000000;
+      padding: 8px 6px !important;
+      font-size: 11.5px;
+    }
+
+    /* Penjelasan proses line & border */
+    .proc-cell {
+      padding: 2.5px 6px !important;
+      vertical-align: middle !important;
+    }
+    .proc-header-cell {
+      background: #f1f5f9;
+      border-top: 1.5px solid #000000 !important;
+      border-bottom: 1px solid #000000 !important;
+    }
+    .proc-header-title {
+      font-weight: bold;
+      text-decoration: underline;
+      color: #000000;
+      font-size: 11px;
+    }
+    .proc-row-line {
+      display: flex;
+      align-items: baseline;
+      width: 100%;
+    }
+    .proc-label {
+      width: 260px;
+      flex-shrink: 0;
+      color: #000000;
+    }
+    .proc-colon {
+      width: 16px;
+      text-align: center;
+      font-weight: bold;
+      color: #000000;
+    }
+    .proc-value {
+      color: #000000 !important;
+      flex: 1;
+    }
+    .proc-value-active {
+      font-weight: 600;
+      color: #000000 !important; /* Murni hitam resmi laporan, bukan hijau */
+      background: transparent !important; /* Bersih tanpa latar hijau */
+      padding: 0;
+    }
+
+    /* Document & PIC cells */
+    .doc-cell {
+      vertical-align: middle !important;
+      background: #ffffff;
+      font-size: 10.5px;
+      line-height: 1.35;
+      padding: 6px 8px !important;
+    }
+    .doc-badge-item {
+      margin-bottom: 3px;
+      color: #000000;
+      line-height: 1.3;
+    }
+    .doc-badge-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .pic-cell {
+      vertical-align: middle !important;
+      font-weight: bold;
+      padding: 6px !important;
+      color: #000000;
+    }
+
+    .pic-tag {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: bold;
+      text-transform: uppercase;
+      color: #000000 !important;
+      background: transparent !important;
+      border: none !important;
+    }
+    .pic-produksi, .pic-qc, .pic-pa, .pic-fgw, .pic-rmw {
+      background: transparent !important;
+      color: #000000 !important;
+      border: none !important;
+    }
+
+    .temuan-cell, .saran-cell {
+      vertical-align: middle !important;
+      padding: 6px !important;
+    }
+
+    /* Signature footer */
+    .sig-table {
+      width: 100%;
+      border-collapse: collapse;
+      border-top: 2px solid #000000;
+    }
+    .sig-table td {
+      border: 1px solid #000000;
+      padding: 8px;
+      text-align: center;
+      vertical-align: top;
+      width: 25%;
+    }
+
+    /* ── PARAMETER KRITIS GREEN STACKED SUB-TABLES (EXCEL SCADA STYLE) ── */
+    .param-stacked-container {
+      width: 100%;
+      max-width: 100%;
+      margin-top: 6px;
+      margin-bottom: 4px;
+      overflow: hidden;
+    }
+    .param-scroll-box {
+      width: 100%;
+      max-width: 100%;
+      overflow-x: auto;
+      border: 1px solid #000000;
+      background: #ffffff;
+      margin-bottom: 8px;
+      scrollbar-width: thin;
+      scrollbar-color: #64748b #f1f5f9;
+    }
+    .param-scroll-box::-webkit-scrollbar {
+      height: 8px;
+    }
+    .param-scroll-box::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    .param-scroll-box::-webkit-scrollbar-thumb {
+      background: #64748b;
+      border-radius: 4px;
+    }
+    .param-scroll-box::-webkit-scrollbar-thumb:hover {
+      background: #334155;
+    }
+    .param-stacked-table {
+      width: max-content;
+      min-width: 100%;
+      border-collapse: collapse;
+      font-size: 9.5px;
+      line-height: 1.25;
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+    }
+    .param-green-th {
+      background: #1d4ed8 !important; /* Professional Industrial Blue (Tailwind blue-700) */
+      color: #ffffff !important;
+      padding: 5px 8px;
+      font-weight: bold;
+      font-size: 9.5px;
+      border: 1px solid #1e40af;
+      text-align: center;
+      vertical-align: middle;
+      white-space: nowrap !important;
+      letter-spacing: 0.02em;
+    }
+    .param-th-no {
+      width: 28px;
+      min-width: 28px;
+      background: #1e3a8a !important; /* Deep Navy Blue */
+      color: #ffffff !important;
+      font-size: 9.5px;
+      text-align: center;
+      border: 1px solid #1e40af;
+      white-space: nowrap !important;
+    }
+    .param-td-no {
+      text-align: center;
+      font-weight: bold;
+      background: #f8fafc;
+      border: 1px solid #cbd5e1 !important;
+      padding: 3px 6px;
+      font-size: 9.5px;
+      white-space: nowrap !important;
+      color: #1e3a8a;
+    }
+    .param-tr:nth-child(even) {
+      background: #f8fafc;
+    }
+    .param-tr:hover {
+      background: #eff6ff !important;
+    }
+    .param-td {
+      border: 1px solid #cbd5e1 !important;
+      padding: 3.5px 8px;
+      color: #0f172a;
+      text-align: center;
+      font-size: 9.5px;
+      white-space: nowrap !important;
+    }
+
+    /* ── 120 FPS ULTRA-SMOOTH HARDWARE-ACCELERATED SIDEBAR & INSTANT TOOLTIP ── */
+    .app-sidebar {
+      width: 256px;
+      will-change: width;
+      transform: translateZ(0);
+      backface-visibility: hidden;
+      perspective: 1000px;
+      background: linear-gradient(180deg, #22130c 0%, #27160e 50%, #1c0f09 100%);
+      border-right: 1px solid #3d2419;
+      box-shadow: 4px 0 25px -4px rgba(0, 0, 0, 0.35);
+      transition:
+        width 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+        background-color 0.38s cubic-bezier(0.16, 1, 0.3, 1),
+        border-color 0.38s cubic-bezier(0.16, 1, 0.3, 1),
+        box-shadow 0.38s cubic-bezier(0.16, 1, 0.3, 1);
+      overflow: hidden;
+    }
+    .app-sidebar.is-collapsed {
+      width: 64px;
+      background: transparent !important;
+      border-right: none !important;
+      box-shadow: none !important;
+      overflow: visible !important;
+    }
+    .app-sidebar.is-collapsed nav {
+      overflow: visible !important;
+    }
+
+    /* ── Sidebar inner content: fade-slide saat expand/collapse ── */
+    .sidebar-label-text {
+      display: inline-flex;
+      flex-direction: column;
+      overflow: hidden;
+      max-width: 160px;
+      opacity: 1;
+      transition:
+        max-width 0.38s cubic-bezier(0.16, 1, 0.3, 1),
+        opacity 0.25s ease,
+        margin 0.38s cubic-bezier(0.16, 1, 0.3, 1);
+      white-space: nowrap;
+    }
+    .app-sidebar.is-collapsed .sidebar-label-text {
+      max-width: 0 !important;
+      opacity: 0 !important;
+      margin: 0 !important;
+    }
+
+    /* Section headers (Main Menu / Data Management) */
+    .sidebar-section-label {
+      overflow: hidden;
+      max-height: 32px;
+      opacity: 1;
+      transition:
+        max-height 0.38s cubic-bezier(0.16, 1, 0.3, 1),
+        opacity 0.2s ease,
+        padding 0.38s cubic-bezier(0.16, 1, 0.3, 1),
+        margin 0.38s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .app-sidebar.is-collapsed .sidebar-section-label {
+      max-height: 0 !important;
+      opacity: 0 !important;
+      padding-top: 0 !important;
+      padding-bottom: 0 !important;
+      margin: 0 !important;
+    }
+
+    /* Brand logo area: smooth expand/collapse */
+    .sidebar-brand-text {
+      overflow: hidden;
+      max-width: 180px;
+      opacity: 1;
+      transition:
+        max-width 0.38s cubic-bezier(0.16, 1, 0.3, 1),
+        opacity 0.22s ease,
+        margin 0.38s cubic-bezier(0.16, 1, 0.3, 1);
+      white-space: nowrap;
+    }
+    .app-sidebar.is-collapsed .sidebar-brand-text {
+      max-width: 0 !important;
+      opacity: 0 !important;
+      margin: 0 !important;
+    }
+    /* Collapse toggle arrow */
+    .sidebar-collapse-btn {
+      overflow: hidden;
+      max-width: 36px;
+      opacity: 1;
+      flex-shrink: 0;
+      transition:
+        max-width 0.38s cubic-bezier(0.16, 1, 0.3, 1),
+        opacity 0.22s ease;
+    }
+    .app-sidebar.is-collapsed .sidebar-collapse-btn {
+      max-width: 0 !important;
+      opacity: 0 !important;
+    }
+    /* Hamburger open button in collapsed mode */
+    .sidebar-expand-btn {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.28s ease 0.08s;
+    }
+    .app-sidebar.is-collapsed .sidebar-expand-btn {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    /* Bottom bar: logout text smooth */
+    .sidebar-logout-text {
+      overflow: hidden;
+      max-width: 160px;
+      opacity: 1;
+      transition:
+        max-width 0.38s cubic-bezier(0.16, 1, 0.3, 1),
+        opacity 0.22s ease;
+      white-space: nowrap;
+    }
+    .app-sidebar.is-collapsed .sidebar-logout-text {
+      max-width: 0 !important;
+      opacity: 0 !important;
+    }
+    /* DB status full row → icon only */
+    .sidebar-db-full {
+      overflow: hidden;
+      max-height: 40px;
+      opacity: 1;
+      transition:
+        max-height 0.38s cubic-bezier(0.16, 1, 0.3, 1),
+        opacity 0.22s ease;
+    }
+    .app-sidebar.is-collapsed .sidebar-db-full {
+      max-height: 0 !important;
+      opacity: 0 !important;
+    }
+    .sidebar-db-icon {
+      overflow: hidden;
+      max-height: 0;
+      opacity: 0;
+      transition:
+        max-height 0.38s cubic-bezier(0.16, 1, 0.3, 1) 0.04s,
+        opacity 0.28s ease 0.04s;
+    }
+    .app-sidebar.is-collapsed .sidebar-db-icon {
+      max-height: 40px !important;
+      opacity: 1 !important;
+    }
+    .app-sidebar nav {
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      transition: padding 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .app-sidebar.is-collapsed nav {
+      overflow: visible !important; /* Critical: unclips tooltips */
+    }
+    .app-sidebar nav::-webkit-scrollbar {
+      display: none;
+    }
+
+    /* ── KAPSUL MELUNCUR (SLIDING FLOATING PILL) UNTUK MODE DIBUKA & DITUTUP ── */
+    #sidebar-active-pill {
+      position: absolute;
+      top: 0;
+      border-radius: 12px;
+      background: linear-gradient(135deg, rgba(74, 44, 29, 0.96) 0%, rgba(45, 26, 18, 0.98) 100%);
+      border: 1px solid rgba(245, 158, 11, 0.38);
+      box-shadow: 
+        0 8px 20px -3px rgba(0, 0, 0, 0.45),
+        0 0 16px rgba(245, 158, 11, 0.18),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+      transition: 
+        transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+        width 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+        height 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+        left 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+        margin 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+        opacity 0.2s ease;
+      pointer-events: none;
+      z-index: 1;
+      will-change: transform, width, height;
+      box-sizing: border-box;
+    }
+    .app-sidebar:not(.is-collapsed) #sidebar-active-pill::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 20%;
+      bottom: 20%;
+      width: 3.5px;
+      background: linear-gradient(180deg, #fbbf24 0%, #d97706 100%);
+      border-radius: 0 4px 4px 0;
+      box-shadow: 0 0 10px rgba(251, 191, 36, 0.9);
+    }
+    .app-sidebar.is-collapsed #sidebar-active-pill::before {
+      display: none;
+    }
+
+    /* ── SIDEBAR MENU ITEMS ── */
+    .sidebar-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 12px;
+      min-height: 48px;
+      height: 48px;
+      border-radius: 12px;
+      font-size: 11.5px;
+      font-weight: 600;
+      cursor: pointer;
+      color: #bda89b;
+      text-align: left;
+      width: 100%;
+      border: 1px solid transparent;
+      position: relative;
+      z-index: 2;
+      background: transparent;
+      box-sizing: border-box;
+      transition: color 0.22s ease;
+    }
+    .sidebar-item svg {
+      width: 17px;
+      height: 17px;
+      flex-shrink: 0;
+      transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), color 0.22s ease, filter 0.22s ease, stroke 0.22s ease;
+    }
+    .sidebar-item .sidebar-item-text {
+      transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .sidebar-item .sidebar-subtext {
+      color: #9c8577;
+      transition: color 0.22s ease;
+    }
+
+    /* Hover State (Saat Sidebar Terbuka): Putih Bersih (#ffffff) + Geser Kanan 6px + Amber Glow */
+    .app-sidebar:not(.is-collapsed) .sidebar-item:hover {
+      color: #ffffff !important;
+      text-shadow: 0 0 14px rgba(245, 158, 11, 0.48);
+    }
+    .app-sidebar:not(.is-collapsed) .sidebar-item:hover svg,
+    .app-sidebar:not(.is-collapsed) .sidebar-item:hover .sidebar-item-text {
+      transform: translateX(6px);
+    }
+    .app-sidebar:not(.is-collapsed) .sidebar-item:not(.active):hover {
+      background: radial-gradient(circle at 25% 50%, rgba(245, 158, 11, 0.12) 0%, rgba(245, 158, 11, 0.02) 60%, transparent 100%);
+      border-radius: 12px;
+    }
+    .app-sidebar:not(.is-collapsed) .sidebar-item:hover .sidebar-subtext {
+      color: #f3e8e2 !important;
+    }
+    .app-sidebar:not(.is-collapsed) .sidebar-item:hover svg {
+      color: #ffffff !important;
+      stroke: #ffffff !important;
+      filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.65));
+    }
+
+    /* Active State (Kapsul Aktif Menyediakan Background Mulus) */
+    .sidebar-item.active {
+      background: transparent !important;
+      color: #ffffff !important;
+      box-shadow: none !important;
+    }
+    .app-sidebar:not(.is-collapsed) .sidebar-item.active {
+      text-shadow: 0 0 14px rgba(245, 158, 11, 0.48);
+    }
+    .app-sidebar:not(.is-collapsed) .sidebar-item.active .sidebar-subtext {
+      color: #ebd9ce !important;
+    }
+    .app-sidebar:not(.is-collapsed) .sidebar-item.active svg {
+      color: #ffffff !important;
+      stroke: #ffffff !important;
+      filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.65));
+    }
+
+    /* ── COLLAPSED ITEMS (KETIKA SIDEBAR DITUTUP: TETAP TRANSPARAN & INTERAKTIF) ── */
+    .sidebar-item-collapsed {
+      width: 42px !important;
+      height: 42px !important;
+      min-height: 42px !important;
+      padding: 0 !important;
+      margin: 0 auto !important;
+      justify-content: center !important;
+      border-radius: 12px !important;
+      border: none !important;
+      background: transparent !important;
+      color: #57534e !important;
+      position: relative;
+      z-index: 2;
+      box-sizing: border-box;
+      transition: color 0.2s ease, background-color 0.2s ease;
+    }
+    .sidebar-item-collapsed svg {
+      width: 18px !important;
+      height: 18px !important;
+      transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s ease, filter 0.2s ease;
+    }
+    .app-sidebar.is-collapsed .sidebar-item-collapsed:not(.active):hover {
+      background: rgba(74, 44, 29, 0.12) !important;
+      color: #22130c !important;
+      box-shadow: 0 0 12px rgba(245, 158, 11, 0.2) !important;
+    }
+    .app-sidebar.is-collapsed .sidebar-item-collapsed:not(.active):hover svg {
+      transform: scale(1.15) !important;
+      color: #22130c !important;
+      stroke: #22130c !important;
+      filter: drop-shadow(0 0 6px rgba(245, 158, 11, 0.4)) !important;
+    }
+    .app-sidebar.is-collapsed .sidebar-item-collapsed.active {
+      background: transparent !important;
+      color: #ffffff !important;
+      box-shadow: none !important;
+    }
+    .app-sidebar.is-collapsed .sidebar-item-collapsed.active:hover svg {
+      transform: scale(1.15) !important;
+    }
+    .app-sidebar.is-collapsed .sidebar-item-collapsed.active svg {
+      stroke: #ffffff !important;
+      color: #ffffff !important;
+      filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.75)) !important;
+    }
+
+    /* ── ZERO-DELAY INSTANT GEMINI TOOLTIP (TAMPIL LANGSUNG TANPA DELAY) ── */
+    .sidebar-gemini-tooltip {
+      display: none;
+      position: absolute;
+      left: calc(100% + 12px);
+      top: 50%;
+      transform: translateY(-50%) translateZ(0);
+      background: #1c1917;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      color: #ffffff;
+      padding: 6px 12px;
+      border-radius: 9px;
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      visibility: hidden;
+      box-shadow: 0 10px 25px -4px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.08);
+      z-index: 999999;
+      will-change: opacity, transform;
+    }
+    .app-sidebar.is-collapsed .sidebar-gemini-tooltip {
+      display: block;
+    }
+    .sidebar-gemini-tooltip::before {
+      content: '';
+      position: absolute;
+      right: 100%;
+      top: 50%;
+      transform: translateY(-50%);
+      border: 5px solid transparent;
+      border-right-color: #1c1917;
+    }
+    .app-sidebar.is-collapsed .group:hover .sidebar-gemini-tooltip {
+      opacity: 1 !important;
+      visibility: visible !important;
+      transform: translateY(-50%) translateX(2px) translateZ(0) !important;
+    }
+
+    /* ── ULTRA-SMOOTH DATA EXPLORER & TABLE TRANSITIONS ── */
+    .table-fade-entrance {
+      animation: tableFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+      will-change: opacity, transform;
+    }
+    @keyframes tableFadeIn {
+      0% {
+        opacity: 0;
+        transform: translateY(6px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Table Name Crossfade Transitions */
+    .table-title-crossfade-enter-active,
+    .table-title-crossfade-leave-active {
+      transition: opacity 0.32s cubic-bezier(0.16, 1, 0.3, 1), transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .table-title-crossfade-enter-from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    .table-title-crossfade-leave-to {
+      opacity: 0;
+      transform: translateY(-6px);
+    }
+
+    /* Table Progress Loading Bar */
+    @keyframes tableProgressBar {
+      0% { transform: translateX(-100%); }
+      50% { transform: translateX(25%); }
+      100% { transform: translateX(100%); }
+    }
+    .animate-table-progress {
+      animation: tableProgressBar 1.15s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+      width: 60%;
+      will-change: transform;
+    }
+
+    /* ── MINI-RAIL HARDWARE-ACCELERATED SLIDING PILL (120 FPS) ── */
+    #mini-rail-chips-container {
+      position: relative;
+    }
+    #mini-rail-active-pill {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      width: 38px;
+      height: 26px;
+      margin-left: -19px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #22130c 0%, #361b0f 100%);
+      border: 1px solid #f59e0b;
+      box-shadow: 
+        0 4px 12px rgba(34, 19, 12, 0.5),
+        0 0 10px rgba(245, 158, 11, 0.4);
+      transition: 
+        transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+        opacity 0.2s ease;
+      pointer-events: none;
+      z-index: 1;
+      will-change: transform;
+    }
+
+    /* ── SUB-MENU SLIDING PILL (SAAT SIDEBAR TERBUKA) ── */
+    #sidebar-submenu-container {
+      position: relative;
+    }
+    #submenu-active-pill {
+      position: absolute;
+      top: 0;
+      left: 6px;
+      right: 6px;
+      height: 32px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, rgba(74, 44, 29, 0.92) 0%, rgba(45, 26, 18, 0.98) 100%);
+      border: 1px solid rgba(245, 158, 11, 0.45);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35), 0 0 12px rgba(245, 158, 11, 0.2);
+      transition: 
+        transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+        height 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+        opacity 0.2s ease;
+      pointer-events: none;
+      z-index: 1;
+      will-change: transform;
+    }
+    #submenu-active-pill::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 20%;
+      bottom: 20%;
+      width: 3px;
+      background: linear-gradient(180deg, #fbbf24 0%, #d97706 100%);
+      border-radius: 0 3px 3px 0;
+      box-shadow: 0 0 8px rgba(251, 191, 36, 0.8);
+    }
+
+    /* ── SUB-MENU ACCORDION (SAAT SIDEBAR TERBUKA) ── */
+    .sidebar-submenu-wrap {
+      max-height: 0;
+      opacity: 0;
+      overflow: hidden;
+      transition: max-height 0.32s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.22s ease;
+    }
+    .sidebar-submenu-wrap.is-open {
+      max-height: 280px;
+      opacity: 1;
+    }
+    .app-sidebar.is-collapsed .sidebar-submenu-wrap {
+      display: none !important;
+    }
+
+    .main-content-wrap {
+      will-change: width;
+    }
+
+    /* Print styles */
+    @media print {
+      html, body { zoom: 1 !important; }
+      .no-print, .app-sidebar, header { display: none !important; }
+      body { background: #ffffff !important; padding: 0 !important; }
+      #app { display: block !important; }
+      .main-content-wrap { margin: 0 !important; padding: 0 !important; width: 100% !important; }
+      #form-document {
+        box-shadow: none !important;
+        border: 1px solid #000000 !important;
+        margin: 0 !important;
+        width: 100% !important;
+      }
+      .doc-top-table td, .doc-subtable td, .flow-table td, .sig-table td {
+        border-color: #000000 !important;
+      }
+    }
+
+    /* Spinner */
+    .spin { animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* High-Performance Industrial Skeleton Shimmer */
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+    .skeleton-shimmer {
+      background: linear-gradient(90deg, #f5f5f4 25%, #e7e5e4 50%, #f5f5f4 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+    }
+
+
+
+    /* Orbit & Glow Keyframes */
+    @keyframes spinSlow {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    .animate-spin-slow {
+      animation: spinSlow 22s linear infinite;
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% { opacity: 0.4; transform: scale(1); }
+      50% { opacity: 0.75; transform: scale(1.04); }
+    }
+    .animate-pulse-glow {
+      animation: pulseGlow 4s ease-in-out infinite;
+    }
+
+    /* ── Defensive SVG Sizing & Constraints ── */
+    svg {
+      max-width: 100%;
+    }
+    .floating-icon {
+      width: 16px !important;
+      height: 16px !important;
+      max-width: 16px !important;
+      max-height: 16px !important;
+      position: absolute;
+      left: 14px;
+      top: 14px;
+      pointer-events: none;
+      transition: color 0.2s ease;
+    }
+
+    /* ── Fail-Safe Decorative Orbit Sizing (Zero FOUC & Zero Jitter) ── */
+    .orbit-box {
+      width: 56px !important;
+      height: 56px !important;
+      position: relative !important;
+      pointer-events: none !important;
+      overflow: hidden !important;
+    }
+    .orbit-ring-outer {
+      width: 56px !important;
+      height: 56px !important;
+      border-radius: 50% !important;
+      border: 2px solid rgba(255, 255, 255, 0.25) !important;
+      position: absolute !important;
+      bottom: 0 !important;
+      right: 0 !important;
+      transform: translateZ(0);
+      animation: spinSlow 22s linear infinite;
+    }
+    .orbit-ring-inner {
+      width: 32px !important;
+      height: 32px !important;
+      border-radius: 50% !important;
+      border: 2px solid rgba(251, 191, 36, 0.45) !important;
+      position: absolute !important;
+      bottom: 6px !important;
+      right: 6px !important;
+      transform: translateZ(0);
+    }
+    .orbit-dot {
+      width: 12px !important;
+      height: 12px !important;
+      border-radius: 50% !important;
+      background-color: #fbbf24 !important;
+      box-shadow: 0 0 10px rgba(251, 191, 36, 0.6) !important;
+      position: absolute !important;
+      bottom: 16px !important;
+      right: 16px !important;
+      transform: translateZ(0);
+      animation: pulseGlow 3s ease-in-out infinite;
+    }
+
+    /* ── Ambient Glow GPU Layer Isolation ── */
+    .ambient-glow-orb {
+      position: absolute;
+      border-radius: 9999px;
+      pointer-events: none;
+      transform: translate3d(0, 0, 0);
+      will-change: transform;
+    }
+
+    /* ── Floating Label Micro-Interactions ── */
+    .floating-group {
+      position: relative;
+      width: 100%;
+    }
+    .floating-input {
+      width: 100%;
+      padding: 16px 14px 8px 40px;
+      background-color: rgba(245, 245, 244, 0.85);
+      border: 1px solid #d6d3d1;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #1c1917;
+      transition: all 0.2s ease;
+      outline: none;
+    }
+    .floating-input:focus {
+      background-color: #ffffff;
+      border-color: #4a2c1d;
+      box-shadow: 0 0 0 3px rgba(74, 44, 29, 0.15);
+    }
+    .floating-input:focus ~ .floating-label,
+    .floating-input:not(:placeholder-shown) ~ .floating-label {
+      top: -8px;
+      left: 12px;
+      font-size: 10px;
+      font-weight: 700;
+      background: #ffffff;
+      padding: 0 6px;
+      border-radius: 4px;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+    .floating-input:focus ~ .floating-label {
+      color: #4a2c1d;
+    }
+    .floating-input:focus ~ .floating-icon {
+      color: #4a2c1d;
+    }
+    .floating-label {
+      position: absolute;
+      left: 40px;
+      top: 13px;
+      font-size: 12px;
+      color: #78716c;
+      pointer-events: none;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      transform-origin: left top;
+    }
+
+    /* ── Scale In Animation for Success State ── */
+    @keyframes scaleIn {
+      0% { transform: scale(0.92); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .animate-scale-in {
+      animation: scaleIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    /* ── Corner Radial Reveal (3.5s Ultra-Smooth Cinematic Curve, Zero-Lag) ── */
+    @keyframes cornerRevealIn {
+      0% {
+        opacity: 0;
+        clip-path: circle(0% at 0% 0%);
+        transform: scale(0.985) translateZ(0);
+      }
+      15% {
+        opacity: 0.5;
+      }
+      60% {
+        opacity: 0.92;
+      }
+      100% {
+        opacity: 1;
+        clip-path: circle(160% at 0% 0%);
+        transform: scale(1) translateZ(0);
+      }
+    }
+    /* ── Login Portal Styles & Animations ── */
+    .login-portal-backdrop {
+      background-color: #efe9e1;
+    }
+    .card-shadow {
+      animation: fadeIn .6s ease-out both;
+    }
+    .veil {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      width: 130%;
+      pointer-events: none;
+      background: linear-gradient(90deg, rgba(239, 233, 225, 0) 0%, #efe9e1 23%, #efe9e1 100%);
+      animation: veil 2.8s cubic-bezier(.22, .61, .36, 1) both;
+      will-change: transform;
+      z-index: 20;
+    }
+    .shine {
+      position: absolute;
+      left: -50%;
+      top: -50%;
+      width: 200%;
+      height: 200%;
+      pointer-events: none;
+      background: linear-gradient(135deg, transparent 42%, rgba(255, 244, 214, .45) 50%, transparent 58%);
+      animation: shine 2.2s ease-in-out 2.8s both;
+      will-change: transform;
+      z-index: 21;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes veil {
+      from { transform: translateX(-23%); }
+      to { transform: translateX(77%); visibility: hidden; }
+    }
+    @keyframes shine {
+      from { transform: translate(-50%, -50%); }
+      to { transform: translate(50%, 50%); visibility: hidden; }
+    }
+    #login-username:focus, #login-password:focus {
+      outline: 2px solid #7b4a2a !important;
+      outline-offset: 1px !important;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .card-shadow { animation: none; }
+      .veil, .shine { display: none; }
+    }

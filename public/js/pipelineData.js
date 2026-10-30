@@ -138,20 +138,37 @@ function extractStageMetrics(stageKey, traceResult) {
 }
 
 function initScrollReveal() {
-  if (typeof IntersectionObserver === 'undefined') return;
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('is-revealed');
+  const elements = document.querySelectorAll('.reveal-on-scroll');
+  if (!elements.length) return;
+
+  elements.forEach((el) => {
+    const rect = el.getBoundingClientRect();
+    // Elemen hidden (v-show=false) punya rect semua 0 — tetap reveal agar
+    // langsung terlihat saat v-show berubah jadi true
+    const isHidden = rect.width === 0 && rect.height === 0;
+    if (isHidden || rect.top < window.innerHeight + 150) {
+      el.classList.add('is-revealed');
+    }
+  });
+
+  if (typeof IntersectionObserver !== 'undefined') {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-revealed');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.05 });
+
+    elements.forEach((el) => {
+      if (!el.classList.contains('is-revealed')) {
+        observer.observe(el);
       }
     });
-  }, { threshold: 0.08 });
-
-  setTimeout(() => {
-    document.querySelectorAll('.reveal-on-scroll').forEach((el) => {
-      observer.observe(el);
-    });
-  }, 100);
+  } else {
+    elements.forEach(el => el.classList.add('is-revealed'));
+  }
 }
 
 if (typeof window !== 'undefined') {
