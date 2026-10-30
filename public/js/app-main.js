@@ -725,13 +725,8 @@ createApp({
 
     function selectCluster(key) {
       selectedClusterKey.value = key;
-      setTimeout(() => {
-        const el = document.getElementById('flow-detail-panel');
-        if (el) {
-          const top = el.getBoundingClientRect().top + window.pageYOffset - 110;
-          window.scrollTo({ top, behavior: 'smooth' });
-        }
-      }, 40);
+      updateFlowStagePill();
+      setTimeout(updateFlowStagePill, 40);
     }
 
     function selectPipelineStage(key) {
@@ -811,6 +806,23 @@ createApp({
         recordedItems: checklistData.recordedItems || (checklistData.items ? checklistData.items.filter(i => i.status === 'OK').length : 0),
         latestCipDate: checklistData.latestCipDate || '-',
         averages: checklistData.averages || null,
+        items: checklistData.items || []
+      };
+    }
+
+    function openInspectEmp(checklistData, customTitle, subtype) {
+      if (!checklistData) return;
+      inspectSearchInput.value = ''; inspectSearchQuery.value = '';
+      const isExt = subtype === 'external';
+      activeInspectModal.value = {
+        type: isExt ? 'emp_external' : 'emp_internal',
+        title: customTitle || (isExt ? 'Checklist Environmental Swab Eksternal (Pathogen)' : 'Checklist Environmental Swab Internal (Non Pathogen)'),
+        subtitle: isExt ? 'Hasil pengujian mikroba patogen eksternal (Salmonella & S.Aureus) dari database MySQL.' : 'Hasil monitoring mikrobiologi internal (Non-Pathogen) dari database MySQL.',
+        tableName: checklistData.tableName || 'pa_emp_t1',
+        refForm: checklistData.refForm || (isExt ? 'Form Patogen Eksternal' : 'Form F/QC.2.35'),
+        plantName: checklistData.plantName || 'Plant 1',
+        totalItems: checklistData.items?.length || 0,
+        sessionDate: checklistData.sessionDate || '-',
         items: checklistData.items || []
       };
     }
@@ -1082,6 +1094,21 @@ createApp({
         );
       }
       return res;
+    });
+
+    const filteredInspectEmpItems = computed(() => {
+      if (!activeInspectModal.value || (activeInspectModal.value.type !== 'emp_internal' && activeInspectModal.value.type !== 'emp_external')) return [];
+      const items = activeInspectModal.value.items || [];
+      const q = String(inspectSearchQuery.value || '').trim().toLowerCase();
+      if (!q) return items;
+      return items.filter(i =>
+        String(i.titikUji || '').toLowerCase().includes(q) ||
+        String(i.tanggal || '').toLowerCase().includes(q) ||
+        String(i.team || '').toLowerCase().includes(q) ||
+        String(i.jam || '').toLowerCase().includes(q) ||
+        String(i.area || '').toLowerCase().includes(q) ||
+        String(i.zona || '').toLowerCase().includes(q)
+      );
     });
 
     const filteredInspectTableRows = computed(() => {
@@ -2074,13 +2101,36 @@ createApp({
       });
     }
 
+    // ── Simpul Alur Proses (8 Flow Nodes) Sliding Pill Indicator ──
+    function updateFlowStagePill() {
+      nextTick(() => {
+        const container = document.getElementById('flow-stage-chips-container');
+        const pill = document.getElementById('flow-stage-active-pill');
+        if (!container || !pill) return;
+        const targetBtn = container.querySelector(`[data-flow-cluster="${selectedClusterKey.value}"]`);
+        if (!targetBtn) {
+          pill.style.opacity = '0';
+          return;
+        }
+        const cRect = container.getBoundingClientRect();
+        const bRect = targetBtn.getBoundingClientRect();
+        const offsetX = Math.round(bRect.left - cRect.left);
+        const offsetY = Math.round(bRect.top - cRect.top);
+        pill.style.width = `${bRect.width}px`;
+        pill.style.height = `${bRect.height}px`;
+        pill.style.transform = `translate3d(${offsetX}px, ${offsetY}px, 0)`;
+        pill.style.opacity = '1';
+      });
+    }
+
     function updateAllPills() {
       updateSlidingPill();
       updateMiniRailPill();
       updateSubmenuPill();
+      updateFlowStagePill();
     }
 
-    watch([activeTab, sidebarOpen, selectedPic, dataExplorerMenuOpen], () => {
+    watch([activeTab, sidebarOpen, selectedPic, dataExplorerMenuOpen, selectedClusterKey, activeSessionId], () => {
       updateAllPills();
       setTimeout(updateAllPills, 60);
       setTimeout(updateAllPills, 160);
@@ -3514,12 +3564,14 @@ createApp({
       inspectSearchQuery,
       inspectCipFilter,
       openInspectCip,
+      openInspectEmp,
       openInspectScada,
       openInspectProd,
       openInspectQc,
       openInspectPa,
       closeInspectModal,
       filteredInspectCipItems,
+      filteredInspectEmpItems,
       filteredInspectTableRows,
       inspectTableAverages,
       shouldShowInspectAverages,
@@ -3552,6 +3604,7 @@ createApp({
       updateSlidingPill,
       updateMiniRailPill,
       updateSubmenuPill,
+      updateFlowStagePill,
       updateAllPills,
       picSelectedTable,
       picTableColumns,

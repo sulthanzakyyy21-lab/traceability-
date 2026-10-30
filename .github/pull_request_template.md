@@ -35,3 +35,4 @@
 - [ ] Kode bersih dari log debug console / komentar AI yang tidak relevan.
 - [ ] Dokumentasi teknis atau migrasi skema diperbarui jika ada perubahan struktur tabel.
 - [ ] Reviewer manusia minimal 1 orang telah memverifikasi logika perubahan sebelum merge.
+

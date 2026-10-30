@@ -161,19 +161,24 @@
       width: 100%;
     }
     .proc-label {
-      width: 260px;
+      width: 175px;
+      max-width: 50%;
       flex-shrink: 0;
       color: #000000;
+      word-break: break-word;
     }
     .proc-colon {
-      width: 16px;
+      width: 12px;
       text-align: center;
       font-weight: bold;
       color: #000000;
+      flex-shrink: 0;
     }
     .proc-value {
       color: #000000 !important;
       flex: 1;
+      min-width: 0;
+      word-break: break-word;
     }
     .proc-value-active {
       font-weight: 600;
@@ -802,25 +807,141 @@
       display: none !important;
     }
 
+    /* ── SIMPUL ALUR PROSES (8 FLOW STAGES) HARDWARE-ACCELERATED SLIDING PILL ── */
+    #flow-stage-chips-container {
+      position: relative;
+    }
+    #flow-stage-active-pill {
+      position: absolute;
+      top: 0;
+      left: 0;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #22130c 0%, #3a1e12 55%, #25140d 100%);
+      border: 1px solid rgba(245, 158, 11, 0.55);
+      box-shadow: 
+        0 8px 24px -2px rgba(34, 19, 12, 0.5),
+        0 0 16px rgba(245, 158, 11, 0.22),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+      transition: 
+        transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+        width 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+        height 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+        opacity 0.2s ease;
+      pointer-events: none;
+      z-index: 1;
+      will-change: transform, width, height;
+      box-sizing: border-box;
+      opacity: 0;
+    }
+    #flow-stage-active-pill::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 20%;
+      right: 20%;
+      height: 3px;
+      background: linear-gradient(90deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
+      border-radius: 0 0 3px 3px;
+      box-shadow: 0 0 8px rgba(251, 191, 36, 0.85);
+    }
+
+    .flow-stage-card {
+      position: relative;
+      z-index: 2;
+      transition: 
+        transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+        box-shadow 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+        border-color 0.22s ease,
+        background-color 0.22s ease;
+    }
+    .flow-stage-card:not(.is-active) {
+      background: rgba(255, 255, 255, 0.85);
+      border: 1px solid rgba(229, 231, 235, 0.95);
+    }
+    .flow-stage-card:not(.is-active):hover {
+      transform: translateY(-3px) scale(1.02);
+      border-color: rgba(245, 158, 11, 0.6);
+      background: #ffffff;
+      box-shadow: 
+        0 8px 18px -2px rgba(34, 19, 12, 0.1),
+        0 0 12px rgba(245, 158, 11, 0.2);
+    }
+    .flow-stage-card:not(.is-active):hover .cluster-stage-icon {
+      transform: scale(1.15);
+      color: #d97706;
+      filter: drop-shadow(0 0 6px rgba(245, 158, 11, 0.55));
+    }
+    .flow-stage-card.is-active {
+      background: transparent !important;
+      border-color: transparent !important;
+    }
+    .flow-stage-card.is-active .cluster-stage-icon {
+      transform: scale(1.06);
+      filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.65));
+    }
+
     .main-content-wrap {
       will-change: width;
     }
 
+    /* Print helper class */
+    .print-only {
+      display: none !important;
+    }
+
     /* Print styles */
     @media print {
-      html, body { zoom: 1 !important; }
-      .no-print, .app-sidebar, header { display: none !important; }
-      body { background: #ffffff !important; padding: 0 !important; }
-      #app { display: block !important; }
-      .main-content-wrap { margin: 0 !important; padding: 0 !important; width: 100% !important; }
+      html, body {
+        zoom: 1 !important;
+        background: #ffffff !important;
+        padding: 0 !important;
+        margin: 0 !important;
+      }
+      .no-print, .app-sidebar, header {
+        display: none !important;
+      }
+      .print-only {
+        display: inline !important;
+      }
+      #app {
+        display: block !important;
+      }
+      .main-content-wrap {
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+      }
+      main {
+        padding: 0 !important;
+        margin: 0 !important;
+        max-width: 100% !important;
+      }
       #form-document {
         box-shadow: none !important;
         border: 1px solid #000000 !important;
         margin: 0 !important;
+        padding: 6px !important;
         width: 100% !important;
+        box-sizing: border-box !important;
+        font-size: 10.5px !important;
+      }
+      .doc-top-table, .doc-subtable, .flow-table, .sig-table {
+        width: 100% !important;
+        box-sizing: border-box !important;
       }
       .doc-top-table td, .doc-subtable td, .flow-table td, .sig-table td {
         border-color: #000000 !important;
+      }
+      .flow-table th.th-flow { width: 13% !important; }
+      .flow-table th.th-proc { width: 45% !important; }
+      .flow-table th.th-docs { width: 24% !important; }
+      .flow-table th.th-pic { width: 6% !important; }
+      .flow-table th.th-temuan { width: 6% !important; }
+      .flow-table th.th-saran { width: 6% !important; }
+      .proc-label {
+        width: 155px !important;
+        max-width: 48% !important;
       }
     }
 

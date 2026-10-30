@@ -718,13 +718,27 @@
     <header class="h-16 bg-white/90 backdrop-blur-md border-b border-stone-200 text-stone-900 no-print flex items-center justify-between px-4 sm:px-6 z-20 shadow-xs flex-shrink-0">
       <div class="flex items-center gap-3">
         <div class="flex items-center gap-2">
+          <!-- Tombol Kembali ke Direktori Work Order (Hanya tampil saat sesi aktif dibuka di tab pipeline) -->
+          <button
+            v-if="activeTab === 'pipeline' && activeSessionId"
+            type="button"
+            @click="backToWorkOrderList"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#4a2c1d] hover:bg-[#3c2415] text-white font-bold text-xs shadow-xs hover:shadow transition-all cursor-pointer group shrink-0 mr-1"
+            title="Kembali ke Direktori Work Order"
+          >
+            <svg class="w-3.5 h-3.5 text-amber-300 transition-transform group-hover:-translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            <span>Kembali ke Direktori</span>
+          </button>
+
           <!-- Interactive Breadcrumb: Batch Traceability returns to Directory -->
           <button
             v-if="activeTab === 'pipeline'"
             type="button"
-            @click="navigateToPipeline"
+            @click="navigateToPipeline(true)"
             class="text-xs font-extrabold uppercase tracking-wider text-stone-900 hover:text-[#4a2c1d] transition-colors cursor-pointer flex items-center gap-1.5 group text-left"
-            title="Klik untuk kembali ke Direktori Work Order"
+            title="Klik untuk melihat Direktori Work Order"
           >
             <span class="group-hover:underline">Batch Traceability</span>
             <span v-if="activeSession" class="text-stone-400 font-normal text-[11px] normal-case flex items-center gap-1">
@@ -752,8 +766,37 @@
       </div>
 
       <div class="flex items-center gap-3 text-xs">
+        <!-- Dropdown Ganti Sesi Cepat di Bar Atas -->
+        <div v-if="activeTab === 'pipeline' && activeSessionId && traceabilitySessions.length > 1" class="hidden lg:flex items-center gap-1.5 text-xs">
+          <span class="text-stone-500 font-semibold text-[11px]">Sesi:</span>
+          <select
+            :value="activeSessionId"
+            @change="openSession($event.target.value)"
+            class="bg-white border border-stone-200 hover:border-stone-300 rounded-lg text-xs font-semibold px-2 py-1 text-stone-800 outline-none shadow-2xs cursor-pointer"
+            title="Pilih sesi work order aktif"
+          >
+            <option v-for="s in traceabilitySessions" :key="s.id" :value="s.id">
+              {{ s.code || s.id }} ({{ s.noBatch || s.forward?.namaBahan }})
+            </option>
+          </select>
+        </div>
+
+        <!-- Tombol Dokumen Form F/QC/01.030 di Bar Atas -->
         <button
-          v-if="activeTab === 'pipeline'"
+          v-if="activeTab === 'pipeline' && activeSession"
+          type="button"
+          @click="openSessionReport(activeSession)"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-stone-50 border border-stone-300 text-stone-800 hover:text-stone-950 font-bold rounded-xl shadow-2xs transition-all cursor-pointer text-xs group"
+          title="Buka Dokumen Laporan Form F/QC/01.030 untuk sesi ini"
+        >
+          <svg class="w-3.5 h-3.5 text-stone-600 group-hover:text-amber-800" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+          </svg>
+          <span>Dokumen F/QC/01.030 &rarr;</span>
+        </button>
+        <button
+          v-else-if="activeTab === 'pipeline'"
           @click="navigateToReport"
           class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-stone-100 hover:bg-stone-200 border border-stone-300 text-stone-800 font-bold rounded-lg shadow-2xs transition-all cursor-pointer text-xs btn-action"
         >
@@ -1212,59 +1255,6 @@
 
       <!-- ── SUB-VIEW 2: DETAIL HASIL PENELUSURAN WORK ORDER AKTIF ── -->
       <div v-else class="space-y-4">
-        
-        <!-- Bar Navigasi Sesi Aktif & Switcher -->
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 pt-0.5">
-          <div class="flex items-center gap-2.5 flex-wrap">
-            <!-- Tombol Navigasi Kembali yang Menonjol & Elegan -->
-            <button
-              type="button"
-              @click="backToWorkOrderList"
-              class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#4a2c1d] hover:bg-[#3c2415] text-white font-bold text-xs shadow-sm hover:shadow transition-all cursor-pointer group shrink-0"
-              title="Kembali ke Direktori Seluruh Sesi Work Order Traceability"
-            >
-              <svg class="w-4 h-4 text-amber-200 transition-transform group-hover:-translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-              </svg>
-              <span>Kembali ke Direktori Work Order</span>
-            </button>
-
-            <span class="text-stone-300 hidden sm:inline">&bull;</span>
-
-            <!-- Sesi Aktif Info Badge -->
-            <div class="flex items-center gap-1.5 text-xs text-stone-600 bg-white border border-stone-200/90 rounded-xl px-2.5 py-1.5 shadow-2xs">
-              <span class="text-stone-400 font-semibold">Sesi:</span>
-              <span class="font-extrabold text-stone-900 bg-stone-100 border border-stone-300 px-2 py-0.5 rounded text-[11px] font-mono">
-                {{ activeSession?.code || activeSession?.id }}
-              </span>
-              <span class="text-stone-500 font-medium hidden md:inline">({{ activeSession?.jenis }} &bull; {{ activeSession?.jenis === 'Backward' ? activeSession?.noBatch : activeSession?.forward?.namaBahan }})</span>
-            </div>
-
-            <button
-              v-if="activeSession"
-              type="button"
-              @click="openSessionReport(activeSession)"
-              class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-stone-50 border border-stone-200 text-stone-700 hover:text-stone-900 font-bold text-xs shadow-2xs transition-all cursor-pointer"
-              title="Buka Dokumen Laporan Form F/QC/01.030 untuk sesi ini"
-            >
-              <span>Dokumen F/QC/01.030 &rarr;</span>
-            </button>
-          </div>
-
-          <!-- Dropdown Ganti Sesi Cepat -->
-          <div v-if="traceabilitySessions.length > 1" class="flex items-center gap-2 text-xs shrink-0">
-            <span class="text-stone-500 font-semibold">Ganti Sesi:</span>
-            <select
-              :value="activeSessionId"
-              @change="openSession($event.target.value)"
-              class="bg-white border border-stone-200 rounded-xl text-xs font-semibold px-2.5 py-1.5 text-stone-800 outline-none focus:border-[#4a2c1d] shadow-2xs"
-            >
-              <option v-for="s in traceabilitySessions" :key="s.id" :value="s.id">
-                {{ s.code || s.id }} &bull; {{ s.jenis }} ({{ s.noBatch || s.forward?.namaBahan }}) [{{ s.status }}]
-              </option>
-            </select>
-          </div>
-        </div>
 
       <!-- ── INDUSTRIAL CLEAN BATCH CONTROL & OVERVIEW PANEL (COFFEE GRADIENT THEME) ── -->
       <div
@@ -1668,29 +1658,35 @@
           <span class="text-xs text-[var(--mu)]">{{ clusterConfigList.length }} Tahapan</span>
         </div>
 
-        <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2.5">
-          <button
-            v-for="(cfg, cIdx) in clusterConfigList"
-            :key="cfg.key"
-            @click="selectCluster(cfg.key)"
-            :title="cfg.name"
-            :class="selectedClusterKey === cfg.key
-              ? 'bg-[var(--ac)] text-[var(--acx)] border-[var(--ac)] shadow-sm'
-              : 'bg-[var(--bg)] text-[var(--tx)] border-[var(--bd)] hover:border-[var(--ac)]'"
-            class="flex flex-col items-center text-center p-3 rounded-xl border cursor-pointer select-none transition-all duration-200"
-          >
-            <div
-              :class="[
-                selectedClusterKey === cfg.key ? 'text-[var(--acx)] is-active' : 'text-[var(--mu)]',
-                'cluster-stage-icon',
-                'icon-' + cfg.key
-              ]"
-              class="w-8 h-8 flex items-center justify-center transition-colors"
-              v-html="cfg.iconSvg"
-            ></div>
-            <span class="text-xs mt-1.5 font-semibold line-clamp-1 truncate w-full px-1">{{ cfg.name }}</span>
-            <span class="text-[10px] opacity-75 mt-0.5">{{ cfg.flows.join(' & ') }}</span>
-          </button>
+        <div id="flow-stage-chips-container" class="relative">
+          <div id="flow-stage-active-pill" aria-hidden="true"></div>
+          <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2.5">
+            <button
+              v-for="(cfg, cIdx) in clusterConfigList"
+              :key="cfg.key"
+              :data-flow-cluster="cfg.key"
+              @click="selectCluster(cfg.key)"
+              :title="cfg.name"
+              :class="selectedClusterKey === cfg.key ? 'is-active' : ''"
+              class="flow-stage-card relative z-2 flex flex-col items-center text-center p-3 rounded-xl border cursor-pointer select-none"
+            >
+              <div
+                :class="[
+                  selectedClusterKey === cfg.key ? 'text-amber-300' : 'text-stone-400',
+                  'cluster-stage-icon',
+                  'icon-' + cfg.key
+                ]"
+                class="w-8 h-8 flex items-center justify-center transition-all duration-200"
+                v-html="cfg.iconSvg"
+              ></div>
+              <span class="text-xs mt-1.5 font-semibold line-clamp-1 truncate w-full px-1" :class="selectedClusterKey === cfg.key ? 'text-white font-bold' : 'text-stone-800'">
+                {{ cfg.name }}
+              </span>
+              <span class="text-[10px] mt-0.5" :class="selectedClusterKey === cfg.key ? 'text-amber-200/90 font-mono font-medium' : 'text-stone-500'">
+                {{ cfg.flows.join(' & ') }}
+              </span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -1971,6 +1967,34 @@
                             <span class="font-bold">{{ (sec.title?.includes('COP') || sec.badge === 'COP') ? 'Inspect Checklist COP' : 'Inspect Checklist CIP' }}</span>
                             <span class="text-[9.5px] font-mono px-1.5 py-0.2 rounded bg-white text-blue-950 border border-blue-200 font-bold">
                               {{ sec.cipChecklist.recordedItems }} / {{ sec.cipChecklist.totalItems }} Titik
+                            </span>
+                          </button>
+
+                          <!-- Tombol Checklist EMP Internal (Non-Pathogen) -->
+                          <button
+                            v-if="sec.empInternalChecklist"
+                            type="button"
+                            @click="openInspectEmp(sec.empInternalChecklist, 'Checklist Environmental Swab Internal (Non Pathogen)', 'internal')"
+                            class="btn-secondary-action inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold bg-teal-50/80 hover:bg-teal-100 text-teal-950 border border-teal-200 rounded-lg transition-all cursor-pointer shadow-2xs active:scale-97"
+                            title="Buka checklist Environmental Swab Internal di pop-up inspector"
+                          >
+                            <span class="font-bold">Inspect Checklist Internal</span>
+                            <span class="text-[9.5px] font-mono px-1.5 py-0.2 rounded bg-white text-teal-950 border border-teal-200 font-bold">
+                              {{ sec.empInternalChecklist.totalItems }} Titik
+                            </span>
+                          </button>
+
+                          <!-- Tombol Checklist EMP Eksternal (Pathogen) -->
+                          <button
+                            v-if="sec.empExternalChecklist"
+                            type="button"
+                            @click="openInspectEmp(sec.empExternalChecklist, 'Checklist Environmental Swab Eksternal (Pathogen)', 'external')"
+                            class="btn-secondary-action inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold bg-blue-50/80 hover:bg-blue-100 text-blue-950 border border-blue-200 rounded-lg transition-all cursor-pointer shadow-2xs active:scale-97"
+                            title="Buka checklist Environmental Swab Eksternal di pop-up inspector"
+                          >
+                            <span class="font-bold">Inspect Checklist Eksternal</span>
+                            <span class="text-[9.5px] font-mono px-1.5 py-0.2 rounded bg-white text-blue-950 border border-blue-200 font-bold">
+                              {{ sec.empExternalChecklist.totalItems }} Titik
                             </span>
                           </button>
 
@@ -2980,18 +3004,18 @@
           <!-- 1. HEADER RESMI PT. SANTOS JAYA ABADI -->
           <table class="doc-top-table mb-4">
             <tr>
-              <td style="width: 140px; text-align: center;">
+              <td style="width: 18%; text-align: center;">
                 <div class="font-bold text-xl text-black leading-none">SJA</div>
                 <div class="text-[10.5px] font-bold text-black mt-1 leading-tight">PT. SANTOS<br>JAYA ABADI</div>
               </td>
-              <td style="text-align: center;">
+              <td style="width: 52%; text-align: center;">
                 <div class="text-[11px] font-bold text-slate-600 uppercase tracking-widest">FORM</div>
                 <div class="text-base font-bold text-black tracking-tight mt-0.5">LAPORAN TRACEABILITY</div>
                 <div v-if="activeSession?.code" class="text-[11px] font-mono text-stone-700 font-bold mt-1">
                   Work Order / Operation Log: <span class="bg-stone-100 px-1.5 py-0.5 border border-stone-400 rounded">{{ activeSession.code }}</span>
                 </div>
               </td>
-              <td style="width: 220px; font-size: 11px; line-height: 1.45;">
+              <td style="width: 30%; font-size: 11px; line-height: 1.45;">
                 <div class="flex justify-between"><span>Dokumen No.</span><span class="font-bold">: F/QC/01.030</span></div>
                 <div class="flex justify-between"><span>Rev. No.</span><span class="font-bold">: 01</span></div>
                 <div class="flex justify-between"><span>Halaman</span><span class="font-bold">: 1/2</span></div>
@@ -3007,10 +3031,10 @@
             <th colspan="2" class="bg-cell-header text-left">Approval</th>
           </tr>
           <tr>
-            <td style="width: 180px; color: #000000;">Area</td>
-            <td style="width: 35%; font-weight: bold;">{{ auditSession.area }}</td>
-            <td style="width: 150px; color: #000000;">Auditor <span class="text-[10px]">(Nama &amp; TTD)</span></td>
-            <td style="font-weight: bold; white-space: pre-line;">{{ auditSession.auditor }}</td>
+            <td style="width: 20%; color: #000000;">Area</td>
+            <td style="width: 32%; font-weight: bold;">{{ auditSession.area }}</td>
+            <td style="width: 18%; color: #000000;">Auditor <span class="text-[10px]">(Nama &amp; TTD)</span></td>
+            <td style="width: 30%; font-weight: bold; white-space: pre-line;">{{ auditSession.auditor }}</td>
           </tr>
           <tr>
             <td style="color: #000000;">Tanggal Pelaksanaan</td>
@@ -3058,10 +3082,10 @@
             <th colspan="2" class="bg-cell-header text-left">Identitas Bahan / Proses (Forward)</th>
           </tr>
           <tr>
-            <td style="width: 180px; color: #000000;">Kategori Produk</td>
-            <td style="width: 35%; font-weight: bold;">{{ auditSession.jenis === 'Backward' ? 'Instant Coffee' : '-' }}</td>
-            <td style="width: 180px; color: #000000;">Kategori Produk</td>
-            <td :class="auditSession.jenis === 'Forward' ? 'font-bold' : ''">{{ auditSession.jenis === 'Forward' ? (auditSession.forward.kategoriProduk || '-') : '-' }}</td>
+            <td style="width: 20%; color: #000000;">Kategori Produk</td>
+            <td style="width: 32%; font-weight: bold;">{{ auditSession.jenis === 'Backward' ? 'Instant Coffee' : '-' }}</td>
+            <td style="width: 18%; color: #000000;">Kategori Produk</td>
+            <td style="width: 30%;" :class="auditSession.jenis === 'Forward' ? 'font-bold' : ''">{{ auditSession.jenis === 'Forward' ? (auditSession.forward.kategoriProduk || '-') : '-' }}</td>
           </tr>
           <tr>
             <td style="color: #000000;">Nama Produk</td>
@@ -3119,12 +3143,12 @@
         <table class="flow-table">
           <thead>
             <tr>
-              <th style="width: 140px;">Flow Process</th>
-              <th style="width: 460px;">Penjelasan Proses</th>
-              <th style="width: 230px;">Nomor &amp; Judul Dokumen</th>
-              <th style="width: 80px;">PIC</th>
-              <th style="width: 80px;">Temuan</th>
-              <th style="width: 80px;">Saran Perbaikan</th>
+              <th style="width: 13%;" class="th-flow">Flow Process</th>
+              <th style="width: 45%;" class="th-proc">Penjelasan Proses</th>
+              <th style="width: 24%;" class="th-docs">Nomor &amp; Judul Dokumen</th>
+              <th style="width: 6%;" class="th-pic">PIC</th>
+              <th style="width: 6%;" class="th-temuan">Temuan</th>
+              <th style="width: 6%;" class="th-saran">Saran Perbaikan</th>
             </tr>
           </thead>
           <tbody>
@@ -3279,6 +3303,12 @@
                                 <span class="font-bold">Inspect Parameter</span>
                                 <span class="text-[10.5px] font-mono text-blue-800">({{ getProcessColumns(item.key).length }} kol &bull; {{ getProcessRows(item.key).length }} baris)</span>
                               </button>
+                              <span
+                                v-if="getProcessRows(item.key).length > 0"
+                                class="print-only text-[9.5px] text-black font-semibold"
+                              >
+                                Terverifikasi SCADA ({{ getProcessRows(item.key).length }} baris)
+                              </span>
                               <span v-else class="text-slate-400 text-xs">-</span>
                             </template>
                           </div>
@@ -4446,6 +4476,28 @@
           </div>
         </div>
 
+        <!-- Contextual Toolbar for EMP Checklist (Internal / Eksternal) -->
+        <div
+          v-else-if="activeInspectModal.type === 'emp_internal' || activeInspectModal.type === 'emp_external'"
+          class="px-5 py-2.5 bg-slate-50/90 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2.5 shrink-0"
+        >
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="text-xs font-bold text-teal-800 bg-teal-50 px-2.5 py-1 rounded-lg border border-teal-200 flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-teal-600 animate-pulse"></span>
+              Terverifikasi DB: <strong>{{ activeInspectModal.totalItems }} Titik</strong>
+            </span>
+            <span class="text-xs text-slate-700 font-mono px-2.5 py-1 rounded-lg bg-white border border-slate-200">
+              Sesi Monitoring: <strong>{{ activeInspectModal.sessionDate }}</strong>
+            </span>
+            <span class="text-xs text-blue-800 font-mono px-2.5 py-1 rounded-lg bg-blue-50 border border-blue-200">
+              {{ activeInspectModal.refForm }}
+            </span>
+            <span v-if="inspectSearchQuery" class="text-xs text-teal-800 font-semibold ml-1">
+              (Ditemukan: {{ filteredInspectEmpItems.length }} titik)
+            </span>
+          </div>
+        </div>
+
         <!-- Contextual Toolbar for SCADA / Prod / QC / PA -->
         <div
           v-else-if="activeInspectModal.columns"
@@ -4537,6 +4589,136 @@
                 <tr v-if="filteredInspectCipItems.length === 0">
                   <td colspan="13" class="py-8 text-center text-slate-400 italic">
                     Tidak ada titik instrumen yang sesuai filter / pencarian.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- 2. CHECKLIST EMP INTERNAL (Non-Pathogen Form F/QC.2.35) -->
+          <div v-else-if="activeInspectModal.type === 'emp_internal'" class="overflow-x-auto rounded-xl border border-slate-300 bg-white shadow-xs">
+            <table class="w-full min-w-[1100px] text-left text-xs border-collapse">
+              <thead class="sticky top-0 z-10 shadow-2xs font-bold uppercase tracking-wider text-[11px]">
+                <tr class="bg-blue-700 text-white">
+                  <th rowspan="3" class="py-2.5 px-3 w-12 text-center border-r border-b border-blue-600">No.</th>
+                  <th rowspan="3" class="py-2.5 px-3 w-36 text-center whitespace-nowrap border-r border-b border-blue-600">Tanggal</th>
+                  <th rowspan="3" class="py-2.5 px-2.5 w-16 text-center whitespace-nowrap border-r border-b border-blue-600">Jam</th>
+                  <th rowspan="3" class="py-2.5 px-3 min-w-[200px] border-r border-b border-blue-600">Sampling Point</th>
+                  <th rowspan="3" class="py-2.5 px-2.5 w-16 text-center whitespace-nowrap border-r border-b border-blue-600">Team</th>
+                  <th rowspan="3" class="py-2.5 px-2.5 w-20 text-center whitespace-nowrap border-r border-b border-blue-600">Area</th>
+                  <th rowspan="3" class="py-2.5 px-2.5 w-24 text-center whitespace-nowrap border-r border-b border-blue-600">Zona</th>
+                  <th colspan="4" class="py-1.5 px-2 text-center border-r border-b border-blue-600 bg-blue-800 text-[10px] tracking-widest font-extrabold">Indikator</th>
+                  <th colspan="1" class="py-1.5 px-2 text-center border-r border-b border-blue-600 bg-blue-800 text-[10px] tracking-widest font-extrabold">Spoilage</th>
+                  <th rowspan="3" class="py-2.5 px-3 w-20 text-center whitespace-nowrap border-b border-blue-600">Status</th>
+                </tr>
+                <tr class="bg-blue-800 text-blue-100 text-[10px]">
+                  <th class="py-1 px-2.5 text-center whitespace-nowrap border-r border-blue-600 w-24">E-coli</th>
+                  <th class="py-1 px-2.5 text-center whitespace-nowrap border-r border-blue-600 w-24">Coliform</th>
+                  <th class="py-1 px-2.5 text-center whitespace-nowrap border-r border-blue-600 w-28">Enterobacteria</th>
+                  <th class="py-1 px-2.5 text-center whitespace-nowrap border-r border-blue-600 w-24">TPC</th>
+                  <th class="py-1 px-2.5 text-center whitespace-nowrap border-r border-blue-600 w-28">Yeast &amp; Mold</th>
+                </tr>
+                <tr class="bg-blue-900/90 text-blue-200 text-[9.5px] font-mono">
+                  <th class="py-1 px-2 text-center whitespace-nowrap border-r border-blue-700 font-normal">Standar: Negatif</th>
+                  <th class="py-1 px-2 text-center whitespace-nowrap border-r border-blue-700 font-normal">Standar: &lt;10</th>
+                  <th class="py-1 px-2 text-center whitespace-nowrap border-r border-blue-700 font-normal">Standar: Negatif</th>
+                  <th class="py-1 px-2 text-center whitespace-nowrap border-r border-blue-700 font-normal">Standar: 3000</th>
+                  <th class="py-1 px-2 text-center whitespace-nowrap border-r border-blue-700 font-normal">Standar: 100</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100 font-mono text-slate-900">
+                <tr
+                  v-for="item in filteredInspectEmpItems"
+                  :key="item.no"
+                  class="hover:bg-blue-50/40 transition-colors bg-white"
+                >
+                  <td class="py-2.5 px-3 text-center text-slate-500 font-sans whitespace-nowrap">{{ item.no }}</td>
+                  <td class="py-2.5 px-3 text-center text-slate-700 whitespace-nowrap font-sans">{{ item.tanggalIndo || item.tanggal }}</td>
+                  <td class="py-2.5 px-2.5 text-center font-bold text-slate-800 whitespace-nowrap">{{ item.jam }}</td>
+                  <td class="py-2.5 px-3 font-sans font-medium text-slate-900 whitespace-nowrap">{{ item.titikUji }}</td>
+                  <td class="py-2.5 px-2.5 text-center text-slate-600 whitespace-nowrap font-sans">{{ item.team }}</td>
+                  <td class="py-2.5 px-2.5 text-center text-slate-600 whitespace-nowrap font-sans">{{ item.area }}</td>
+                  <td class="py-2.5 px-2.5 text-center whitespace-nowrap">
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
+                      {{ item.zona }}
+                    </span>
+                  </td>
+                  <td class="py-2.5 px-2.5 text-center whitespace-nowrap font-semibold" :class="item.ecoli === 'Negatif' ? 'text-emerald-700' : 'text-rose-600 font-bold'">
+                    {{ item.ecoli }}
+                  </td>
+                  <td class="py-2.5 px-2.5 text-center whitespace-nowrap font-semibold text-slate-800">
+                    {{ item.coliform }}
+                  </td>
+                  <td class="py-2.5 px-2.5 text-center whitespace-nowrap font-semibold" :class="item.entero === 'Negatif' ? 'text-emerald-700' : 'text-rose-600 font-bold'">
+                    {{ item.entero }}
+                  </td>
+                  <td class="py-2.5 px-2.5 text-center whitespace-nowrap font-semibold text-slate-800">
+                    {{ item.tpc }}
+                  </td>
+                  <td class="py-2.5 px-2.5 text-center whitespace-nowrap font-semibold text-slate-800">
+                    {{ item.ym }}
+                  </td>
+                  <td class="py-2.5 px-3 text-center whitespace-nowrap">
+                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10.5px] font-bold bg-emerald-100 text-emerald-900 whitespace-nowrap">
+                      <span class="w-1.5 h-1.5 rounded-full bg-emerald-600 shrink-0"></span> OK
+                    </span>
+                  </td>
+                </tr>
+                <tr v-if="filteredInspectEmpItems.length === 0">
+                  <td colspan="13" class="py-8 text-center text-slate-400 italic">
+                    Tidak ada data Environmental Swab yang sesuai filter / pencarian.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- 3. CHECKLIST EMP EKSTERNAL (Pathogen External Lab Testing) -->
+          <div v-else-if="activeInspectModal.type === 'emp_external'" class="overflow-x-auto rounded-xl border border-slate-300 bg-white shadow-xs">
+            <table class="w-full min-w-[950px] text-left text-xs border-collapse">
+              <thead class="sticky top-0 z-10 shadow-2xs font-bold uppercase tracking-wider text-[11px]">
+                <tr class="bg-blue-700 text-white">
+                  <th rowspan="2" class="py-2.5 px-3 w-12 text-center border-r border-b border-blue-600">No.</th>
+                  <th rowspan="2" class="py-2.5 px-3 w-36 text-center whitespace-nowrap border-r border-b border-blue-600">Tanggal</th>
+                  <th rowspan="2" class="py-2.5 px-2.5 w-16 text-center whitespace-nowrap border-r border-b border-blue-600">Jam</th>
+                  <th rowspan="2" class="py-2.5 px-3 min-w-[220px] border-r border-b border-blue-600">Sampling Point</th>
+                  <th rowspan="2" class="py-2.5 px-2.5 w-16 text-center whitespace-nowrap border-r border-b border-blue-600">Team</th>
+                  <th rowspan="2" class="py-2.5 px-3 w-28 text-center whitespace-nowrap border-r border-b border-blue-600">Tanggal Uji</th>
+                  <th colspan="2" class="py-1.5 px-2 text-center border-r border-b border-blue-600 bg-blue-800 text-[10px] tracking-widest font-extrabold">Patogen</th>
+                  <th rowspan="2" class="py-2.5 px-3 w-20 text-center whitespace-nowrap border-b border-blue-600">Status</th>
+                </tr>
+                <tr class="bg-blue-800 text-blue-100 text-[10px]">
+                  <th class="py-1.5 px-3 text-center whitespace-nowrap border-r border-blue-600 w-28">Salmonella</th>
+                  <th class="py-1.5 px-3 text-center whitespace-nowrap border-r border-blue-600 w-28">S.Aureus</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100 font-mono text-slate-900">
+                <tr
+                  v-for="item in filteredInspectEmpItems"
+                  :key="item.no"
+                  class="hover:bg-blue-50/40 transition-colors bg-white"
+                >
+                  <td class="py-2.5 px-3 text-center text-slate-500 font-sans whitespace-nowrap">{{ item.no }}</td>
+                  <td class="py-2.5 px-3 text-center text-slate-700 whitespace-nowrap font-sans">{{ item.tanggalIndo || item.tanggal }}</td>
+                  <td class="py-2.5 px-2.5 text-center font-bold text-slate-800 whitespace-nowrap">{{ item.jam }}</td>
+                  <td class="py-2.5 px-3 font-sans font-medium text-slate-900 whitespace-nowrap">{{ item.titikUji }}</td>
+                  <td class="py-2.5 px-2.5 text-center text-slate-600 whitespace-nowrap font-sans">{{ item.team }}</td>
+                  <td class="py-2.5 px-3 text-center text-slate-700 whitespace-nowrap">{{ item.tanggalUji }}</td>
+                  <td class="py-2.5 px-3 text-center whitespace-nowrap font-semibold text-emerald-700">
+                    {{ item.salmonella }}
+                  </td>
+                  <td class="py-2.5 px-3 text-center whitespace-nowrap font-semibold text-emerald-700">
+                    {{ item.sAureus }}
+                  </td>
+                  <td class="py-2.5 px-3 text-center whitespace-nowrap">
+                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10.5px] font-bold bg-emerald-100 text-emerald-900 whitespace-nowrap">
+                      <span class="w-1.5 h-1.5 rounded-full bg-emerald-600 shrink-0"></span> OK
+                    </span>
+                  </td>
+                </tr>
+                <tr v-if="filteredInspectEmpItems.length === 0">
+                  <td colspan="9" class="py-8 text-center text-slate-400 italic">
+                    Tidak ada data Environmental Swab Eksternal yang sesuai filter / pencarian.
                   </td>
                 </tr>
               </tbody>

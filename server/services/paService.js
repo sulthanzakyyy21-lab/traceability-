@@ -78,24 +78,25 @@ async function getPaFlow(batch, tahun, tower, extractionDate, packingDate, dryer
     if (abeRows.length > 0) abeDate = formatDmy(abeRows[0].Tanggal);
   } catch { }
 
-  const { getSessionCipRows, getWaterProcessTable, getPackingEmpTable, getPackingAbeTable } = require('./paTableHelper');
+  const { getSessionCipRows, getWaterProcessTable } = require('./paTableHelper');
   const { getExtractionCipChecklist } = require('./paCipChecklistService');
   const { getDryerCipChecklist, getPackingCopChecklist } = require('./paDryerPackingService');
   const { getEvaporatorCipChecklist } = require('./paEvaporatorCipService');
   const { getFinalTankCipChecklist } = require('./paFinalTankCipService');
+  const { getEmpInternalChecklist, getEmpExternalChecklist } = require('./paEmpChecklistService');
   const extCutoff = getCutoff(extractionDate);
   const waterTable = await getWaterProcessTable(tower, extCutoff);
   const extCipTable = await getSessionCipRows(tower, ['ekstrak', 'c01', 'flash tank', 'kolom c03', 'tank system', 'aroma', 'reboiler', 'hydrolis'], extCutoff, ['selang biru']);
   const dryerCipTable = await getSessionCipRows(tower, ['dryer', 'sfb', 'chamber', 'feed tank dryer', 'feed line'], extCutoff);
   const reworkCipTable = await getSessionCipRows(tower, ['rework'], extCutoff);
-  const packingEmpTable = await getPackingEmpTable(tower, cutoff);
   const copTable = await getSessionCipRows(tower, ['cop hopper', 'sieveter', 'screw', 'weighing hopper'], cutoff);
-  const abeTable = await getPackingAbeTable(tower, cutoff);
   const extCipChecklist = await getExtractionCipChecklist(tower, extractionDate);
   const dryerCipChecklist = await getDryerCipChecklist(tower, dryerDate || extractionDate);
   const packingCopChecklist = await getPackingCopChecklist(tower, packingDate || dryerDate || extractionDate);
   const evapCipChecklist = await getEvaporatorCipChecklist(tower, extractionDate);
   const ftCipChecklist = await getFinalTankCipChecklist(tower, extractionDate);
+  const empInternalChecklist = await getEmpInternalChecklist(tower, packingDate || cutoff);
+  const empExternalChecklist = await getEmpExternalChecklist(tower, packingDate || cutoff);
 
   const evapSummary = {
     tanggal: (evapCipChecklist?.latestCipDate && evapCipChecklist.latestCipDate !== '-') ? evapCipChecklist.latestCipDate : (cipEvap?.tanggal || '-'),
@@ -114,16 +115,16 @@ async function getPaFlow(batch, tahun, tower, extractionDate, packingDate, dryer
   };
 
   const empSummary = {
-    internal_tanggal: empDate || '-',
-    internal_hasil: packingEmpTable?.rows?.length > 0 ? 'OK' : 'Data tidak ditemukan di database',
-    external_tanggal: '08/07/2026',
-    external_hasil: 'OK (Salmonella: Negative, S.Aureus: Negative)',
+    internal_tanggal: empInternalChecklist?.sessionDate || (empDate || '-'),
+    internal_hasil: empInternalChecklist?.items?.length > 0 ? 'OK' : 'Data tidak ditemukan di database',
+    external_tanggal: empExternalChecklist?.sessionDate || '08/07/2026',
+    external_hasil: empExternalChecklist?.items?.length > 0 ? 'OK (Salmonella: Negative, S.Aureus: Negative)' : 'Data tidak ditemukan di database',
     pic: 'Data tidak ditemukan di database'
   };
 
   const abeSummary = {
-    tanggal: abeDate || '-',
-    hasil: abeTable?.rows?.length > 0 ? 'OK' : 'Data tidak ditemukan di database',
+    tanggal: '-',
+    hasil: '-',
     pic: 'Data tidak ditemukan di database'
   };
 
@@ -133,13 +134,15 @@ async function getPaFlow(batch, tahun, tower, extractionDate, packingDate, dryer
     cop: copSummary,
     emp: empSummary,
     abe: abeSummary,
-    tables: { water: waterTable, extraction: extCipTable, dryer: dryerCipTable, rework: reworkCipTable, packing: packingEmpTable, cop: copTable, abe: abeTable },
+    tables: { water: waterTable, extraction: extCipTable, dryer: dryerCipTable, rework: reworkCipTable, cop: copTable },
     extraction_cip_checklist: extCipChecklist,
     evaporator_cip_checklist: evapCipChecklist,
     final_tank_cip_checklist: ftCipChecklist,
     dryer_cip_checklist: dryerCipChecklist,
     packing_cop_checklist: packingCopChecklist,
-    env_swab_date: empDate, air_bacteria_date: abeDate,
+    emp_internal_checklist: empInternalChecklist,
+    emp_external_checklist: empExternalChecklist,
+    env_swab_date: empDate, air_bacteria_date: null,
   };
 }
 
