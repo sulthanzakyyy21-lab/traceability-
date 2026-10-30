@@ -18,7 +18,7 @@ function calculateAverages(rows, numericColumns) {
       const val = r[col];
       if (val === null || val === undefined || val === '' || val === '-') return;
       const num = parseFloat(String(val).replace(',', '.'));
-      if (!isNaN(num)) {
+      if (!isNaN(num) && num > 0) {
         sum += num;
         count++;
       }
@@ -63,15 +63,14 @@ async function getSessionCipRows(tower, equipKeywords, cutoff, excludeKeywords =
     });
 
     const columns = isT2
-      ? ['Tanggal', 'Waktu', 'Peralatan', 'pH Lab', 'Conductivity', 'Swab', 'pH in line']
-      : ['Tanggal & Waktu', 'Waktu', 'Peralatan', 'pH Lab', 'Conductivity', 'Swab', 'pH in line'];
+      ? ['Tanggal', 'Waktu', 'Peralatan', 'pH Lab', 'Conductivity', 'Swab', 'pH in line', 'Start Final Rinse RO', 'Finish Final Rinse RO']
+      : ['Tanggal & Waktu', 'Waktu', 'Peralatan', 'pH Lab', 'Conductivity', 'Swab', 'pH in line', 'Start Final Rinse RO', 'Finish Final Rinse RO', 'Keterangan'];
 
-    const numCols = ['pH Lab', 'Conductivity', 'Swab'];
     return {
       tableName: tbl,
       columns,
       rows: sessionRows,
-      averages: calculateAverages(sessionRows, numCols),
+      averages: null,
       sessionDate: formatDmy(matched[dateCol] || matched.Stamp),
     };
   } catch (err) {
@@ -124,15 +123,41 @@ async function getPackingEmpTable(tower, cutoff) {
       'Indikator TPC (<3000)', 'Spoilage Yeast & Mold (<100)'
     ];
 
-    const numCols = ['Indikator Coliform (<10)', 'Indikator TPC (<3000)', 'Spoilage Yeast & Mold (<100)'];
     return {
       tableName: tbl,
       columns,
       rows,
-      averages: calculateAverages(rows, numCols),
+      averages: null,
     };
   } catch (err) {
     console.error('getPackingEmpTable error:', err.message);
+    return null;
+  }
+}
+
+async function getPackingAbeTable(tower, cutoff) {
+  const isT2 = String(tower).includes('2');
+  const tbl = isT2 ? 'pa_abe_t2' : 'pa_abe_t1';
+
+  try {
+    const [rows] = await pool.query(
+      `SELECT * FROM \`${tbl}\` WHERE Area LIKE '%Packing%' AND Tanggal <= ? ORDER BY Tanggal DESC, id DESC LIMIT 15`,
+      [cutoff]
+    );
+
+    const columns = [
+      'Tanggal', 'Waktu Analisa', 'Titik Uji', 'Team', 'Area', 'Jenis Uji',
+      'TPC', 'Yeast & Mold', 'Noted'
+    ];
+
+    return {
+      tableName: tbl,
+      columns,
+      rows,
+      averages: null,
+    };
+  } catch (err) {
+    console.error('getPackingAbeTable error:', err.message);
     return null;
   }
 }
@@ -142,4 +167,5 @@ module.exports = {
   getSessionCipRows,
   getWaterProcessTable,
   getPackingEmpTable,
+  getPackingAbeTable,
 };

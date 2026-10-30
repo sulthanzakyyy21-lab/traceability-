@@ -7,6 +7,7 @@ const { TableNameParamSchema, PicRowsQuerySchema, InspectBodySchema } = require(
 const { inspectExcelWorkbook, bulkInsertExcelData } = require('../services/excelService');
 const { verifyToken, requireRole } = require('../middleware/auth');
 const { recordAuditLog } = require('../services/auditLogService');
+const { getTableEquipments, getTableRows } = require('../services/importQueryService');
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -131,63 +132,21 @@ router.get('/:tableName/count', async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
+router.get('/:tableName/equipments', async (req, res) => {
+  try {
+    const v = TableNameParamSchema.safeParse(req.params);
+    if (!v.success) return res.status(400).json({ error: v.error.issues?.[0]?.message });
+    res.json(await getTableEquipments(v.data.tableName));
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
 router.get('/:tableName/rows', async (req, res) => {
   try {
     const v = TableNameParamSchema.safeParse(req.params);
     if (!v.success) return res.status(400).json({ error: v.error.issues?.[0]?.message });
     const q = PicRowsQuerySchema.safeParse(req.query);
     if (!q.success) return res.status(400).json({ error: q.error.issues?.[0]?.message });
-    const { tableName } = v.data;
-    const { page, limit, search, year, month, date, bean } = q.data;
-    const offset = (page - 1) * limit;
-
-    const [cols] = await pool.query(`SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME != 'id' ORDER BY ORDINAL_POSITION`, [tableName]);
-    const columns = cols.map(c => c.COLUMN_NAME);
-    const whereClauses = [];
-    const params = [];
-
-    if (search) {
-      const isRoast = tableName.toLowerCase().startsWith('roasting');
-      const clean = search.trim();
-      const textCols = columns.filter(c => {
-        const l = c.toLowerCase();
-        return isRoast ? ['jenis', 'kopi', 'mentah', 'biji', 'mode', 'nama', 'batch'].some(k => l.includes(k))
-                       : ['batch', 'tanggal', 'waktu', 'nama', 'shift', 'team', 'pin', 'mode', 'produk', 'jenis'].some(k => l.includes(k));
-      });
-      if (textCols.length > 0) {
-        whereClauses.push('(' + textCols.map(c => `(\`${c}\` LIKE ? OR REPLACE(\`${c}\`, ' ', '') LIKE ?)`).join(' OR ') + ')');
-        textCols.forEach(() => params.push(`%${clean}%`, `%${clean.replace(/\s+/g, '')}%`));
-      }
-    }
-
-    if (bean && bean.trim()) {
-      const beanCol = columns.find(c => c.toLowerCase() === 'jenis kopi mentah') || columns.find(c => c.toLowerCase().includes('jenis') && c.toLowerCase().includes('kopi'));
-      if (beanCol) { whereClauses.push(`\`${beanCol}\` LIKE ?`); params.push(`%${bean.trim()}%`); }
-    }
-
-    const dateCol = columns.find(c => ['tanggal', 'date', 'stamp'].some(k => c.toLowerCase().includes(k)));
-    if (dateCol) {
-      if (date && date.includes('-')) {
-        const [y, m, d] = date.split('-');
-        whereClauses.push(`(\`${dateCol}\` LIKE ? OR \`${dateCol}\` LIKE ? OR \`${dateCol}\` LIKE ?)`);
-        params.push(`%${y}-${m}-${d}%`, `%${d}/${m}/${y}%`, `%${d}-${m}-${y}%`);
-      } else {
-        const mStr = month ? String(month).padStart(2, '0') : '';
-        if (year && mStr) {
-          whereClauses.push(`(\`${dateCol}\` LIKE ? OR \`${dateCol}\` LIKE ? OR \`${dateCol}\` LIKE ?)`);
-          params.push(`%${year}-${mStr}%`, `%/${mStr}/${year}%`, `%${year}/${mStr}%`);
-        } else if (year || mStr) {
-          whereClauses.push(`(\`${dateCol}\` LIKE ? OR \`${dateCol}\` LIKE ?)`);
-          params.push(year ? `%${year}-%` : `%-${mStr}-%`, year ? `%/${year}%` : `%/${mStr}/%`);
-        }
-      }
-    }
-
-    const where = whereClauses.length > 0 ? 'WHERE ' + whereClauses.join(' AND ') : '';
-    const [countRows] = await pool.execute(`SELECT COUNT(*) as cnt FROM \`${tableName}\` ${where}`, params);
-    const totalRows = countRows[0].cnt;
-    const [rows] = await pool.execute(`SELECT * FROM \`${tableName}\` ${where} ORDER BY id ASC LIMIT ${limit} OFFSET ${offset}`, params);
-    res.json({ table: tableName, columns, totalRows, page, limit, totalPages: Math.ceil(totalRows / limit) || 1, rows });
+    res.json(await getTableRows(v.data.tableName, q.data));
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 

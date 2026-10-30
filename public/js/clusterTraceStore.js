@@ -291,6 +291,10 @@ function getTraceItemValue(key, d) {
   if (key === 'pa_finaltank_cip_pic') return d.pa?.cip?.final_tank?.pic || '';
 
   if (key === 'pa_ext_cip_waktu') return d.pa?.cip?.extraction?.tanggal || '';
+  if (key === 'pa_ext_cip_checklist') {
+    const c = d.pa?.extraction_cip_checklist;
+    return c ? (c.recordedItems + ' / ' + c.totalItems + ' Titik Terverifikasi (' + c.plantName + ')') : '';
+  }
   if (key === 'pa_ext_cip_lye') return d.pa?.cip?.extraction?.konsentrasi_lye || (d.pa?.cip?.extraction?.tanggal ? '3 %' : '');
   if (key === 'pa_ext_cip_rinse') return d.pa?.cip?.extraction?.rinse || '';
   if (key === 'pa_ext_cip_pic') return d.pa?.cip?.extraction?.pic || '';
@@ -712,11 +716,13 @@ function buildClusterData(traceResult, tower = '1') {
               refForm: 'Form QF/PDQC/SS/010',
               badge: 'Evap CIP',
               dotColor: 'bg-emerald-600',
+              cipChecklist: d.pa?.evaporator_cip_checklist || null,
+              paTable: null,
               fields: cleanFields([
                 { label: 'Waktu CIP/flushing terakhir', value: d.pa?.cip?.evaporation?.tanggal || '' },
                 { label: 'Konsentrasi lye', value: d.pa?.cip?.evaporation?.konsentrasi_lye || (d.pa?.cip?.evaporation?.tanggal ? '3%' : '') },
-                { label: 'Verifikasi Final Rinse', value: (d.pa?.cip?.evaporation?.ph_lab && d.pa.cip.evaporation.ph_lab !== '-' && d.pa.cip.evaporation.ph_lab !== '0') ? `pH: ${d.pa.cip.evaporation.ph_lab} (OK)` : '' },
-                { label: 'PIC PA', value: d.pa?.cip?.evaporation?.pic || '' },
+                { label: 'Verifikasi Final Rinse', value: d.pa?.cip?.evaporation?.rinse || (d.pa?.cip?.evaporation?.tanggal ? 'OK' : '') },
+                { label: 'PIC PA', value: d.pa?.cip?.evaporation?.pic || '-' },
               ]),
             },
             {
@@ -724,12 +730,14 @@ function buildClusterData(traceResult, tower = '1') {
               refForm: 'Form QF/PDQC/SS/010',
               badge: 'FT CIP',
               dotColor: 'bg-teal-600',
+              cipChecklist: d.pa?.final_tank_cip_checklist || null,
+              paTable: null,
               fields: cleanFields([
                 { label: 'Waktu CIP terakhir', value: d.pa?.cip?.final_tank?.tanggal || '' },
                 { label: 'Konsentrasi lye', value: d.pa?.cip?.final_tank?.konsentrasi_lye || (d.pa?.cip?.final_tank?.tanggal ? '3%' : '') },
-                { label: 'Verifikasi Final Rinse', value: d.pa?.cip?.final_tank?.rinse || '' },
-                { label: 'Swab ATP', value: d.pa?.cip?.final_tank?.swab || '' },
-                { label: 'PIC PA', value: d.pa?.cip?.final_tank?.pic || '' },
+                { label: 'Verifikasi Final Rinse', value: d.pa?.cip?.final_tank?.rinse || (d.pa?.cip?.final_tank?.tanggal ? 'OK' : '') },
+                { label: 'Swab ATP', value: d.pa?.cip?.final_tank?.swab || (d.pa?.cip?.final_tank?.tanggal ? 'OK' : '') },
+                { label: 'PIC PA', value: d.pa?.cip?.final_tank?.pic || '-' },
               ]),
             },
           ],
@@ -797,14 +805,7 @@ function buildClusterData(traceResult, tower = '1') {
             rows: d.qc_raw?.evaporasi?.raw_rows?.length ? d.qc_raw.evaporasi.raw_rows : (d.qc_raw?.final_tank?.raw_rows || []),
             columns: (d.qc_raw?.evaporasi?.raw_rows?.[0] || d.qc_raw?.final_tank?.raw_rows?.[0]) ? Object.keys(d.qc_raw?.evaporasi?.raw_rows?.[0] || d.qc_raw?.final_tank?.raw_rows?.[0]) : [],
           } : null,
-          paTable: d.pa?.tables?.evaporation?.rows?.length ? {
-            pic: 'PA',
-            title: `Tabel Verifikasi Sanitasi CIP Evaporator & Final Tank (${d.pa.tables.evaporation.tableName})`,
-            tableName: d.pa.tables.evaporation.tableName,
-            rows: d.pa.tables.evaporation.rows,
-            columns: d.pa.tables.evaporation.columns,
-            averages: d.pa.tables.evaporation.averages || {},
-          } : null,
+          paTable: null,
           pic: {
             operasional: d.evaporation?.operator_produksi || '',
             qc: d.qc?.qc_evap_pic || d.qc?.qc_ft_pic || '',
@@ -883,6 +884,7 @@ function buildClusterData(traceResult, tower = '1') {
             columns: d.pa.tables.dryer.columns,
             averages: d.pa.tables.dryer.averages || {},
           } : null,
+          cipChecklist: d.pa?.dryer_cip_checklist || null,
           pic: {
             operasional: d.dryer?.operator_produksi || '',
             qc: d.qc?.qc_dryer_vf2_pic || '',
@@ -984,6 +986,8 @@ function buildClusterData(traceResult, tower = '1') {
               refForm: 'Form QF/PDQC/SS/010',
               badge: 'COP',
               dotColor: 'bg-emerald-600',
+              cipChecklist: d.pa?.packing_cop_checklist || null,
+              paTable: null,
               fields: cleanFields([
                 { label: 'Waktu COP instrument packing terakhir', value: d.pa?.cop?.tanggal || '' },
                 { label: 'Verifikasi swab ATP', value: d.pa?.cop?.swab || '' },
@@ -992,9 +996,12 @@ function buildClusterData(traceResult, tower = '1') {
             },
             {
               title: 'Environmental Swab',
-              refForm: 'Form QF/PDQC/SS/010',
+              refForm: 'Form F/QC.2.35',
               badge: 'EMP',
               dotColor: 'bg-teal-600',
+              empInternalChecklist: d.pa?.emp_internal_checklist || null,
+              empExternalChecklist: d.pa?.emp_external_checklist || null,
+              paTable: null,
               fields: cleanFields([
                 { label: 'Waktu Environmental Swab internal terakhir (non pathogen)', value: d.pa?.emp?.internal_tanggal || '' },
                 { label: 'List intrument dan personal serta hasil swab (Internal)', value: d.pa?.emp?.internal_hasil || '' },
@@ -1005,13 +1012,14 @@ function buildClusterData(traceResult, tower = '1') {
             },
             {
               title: 'Air Bacteria Exposed',
-              refForm: 'Form QF/PDQC/SS/010',
+              refForm: 'Form F/QC.2.5',
               badge: 'ABE',
               dotColor: 'bg-cyan-600',
+              paTable: null,
               fields: cleanFields([
-                { label: 'Waktu Air Bacteria Exposed terakhir', value: d.pa?.abe?.tanggal || '' },
-                { label: 'Hasil pengujian', value: d.pa?.abe?.hasil || '' },
-                { label: 'PIC Prod dan PA', value: d.pa?.abe?.pic || '' },
+                { label: 'Waktu Air Bacteria Exposed terakhir', value: '-' },
+                { label: 'Hasil pengujian', value: '-' },
+                { label: 'PIC Prod dan PA', value: 'Data tidak ditemukan di database' },
               ]),
             },
           ],
@@ -1079,6 +1087,15 @@ function buildClusterData(traceResult, tower = '1') {
               refForm: 'Form F/QC/01.030',
               badge: 'Status Rilis',
               dotColor: 'bg-emerald-600',
+              cipChecklist: d.pa?.evaporator_cip_checklist || null,
+              paTable: d.pa?.tables?.evaporation?.rows?.length ? {
+                pic: 'PA',
+                title: `Tabel Verifikasi Sanitasi CIP Evaporator (${d.pa.tables.evaporation.tableName})`,
+                tableName: d.pa.tables.evaporation.tableName,
+                rows: d.pa.tables.evaporation.rows,
+                columns: d.pa.tables.evaporation.columns,
+                averages: d.pa.tables.evaporation.averages || {},
+              } : null,
               metrics: cleanMetrics([
                 { label: 'Rilis Status OK (Box)', value: d.qc?.qc_packing_status_ok || '', spec: 'Lolos Mutu' },
                 { label: 'Status Blocked (Box)', value: d.qc?.qc_packing_status_bo || '', spec: 'Karantina' },
@@ -1102,6 +1119,7 @@ function buildClusterData(traceResult, tower = '1') {
             rows: d.qc_raw.packing.raw_rows,
             columns: d.qc_raw.packing.raw_rows[0] ? Object.keys(d.qc_raw.packing.raw_rows[0]) : [],
           } : null,
+          cipChecklist: null,
           pic: {
             operasional: d.packing?.operator_packing || '',
             qc: d.qc?.qc_packing_pic || '',

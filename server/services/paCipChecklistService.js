@@ -28,39 +28,74 @@ async function getExtractionCipChecklist(tower, extractionDate) {
 
   try {
     const [rows] = await pool.query(
-      `SELECT * FROM \`${tbl}\` WHERE \`${dateCol}\` <= ? ORDER BY \`${dateCol}\` DESC, id DESC`,
-      [cutoff]
+      `SELECT * FROM \`${tbl}\` WHERE (COALESCE(\`Stamp\`, \`${dateCol}\`) <= ? OR \`${dateCol}\` <= ?) ORDER BY COALESCE(\`Stamp\`, \`${dateCol}\`) DESC, id DESC`,
+      [cutoff, cutoff]
     );
 
     let recordedCount = 0;
+    const getRowDate = (r) => (!isT2 && r && r.Stamp) ? r.Stamp : (r[dateCol] || r.Stamp);
+
     const items = defs.map(def => {
-      const matched = rows.find(r => {
+      const matched = rows.filter(r => {
         const p = cleanStr(r.Peralatan);
         if (p === cleanStr(def.item)) return true;
         if (def.aliases && def.aliases.some(a => cleanStr(a) === p)) return true;
         return false;
       });
 
-      if (!matched) {
+      if (matched.length === 0) {
         return {
           no: def.no,
           item: def.item,
           floor: def.floor,
           swabTarget: def.swab || '-',
           waktuCip: '-',
-          phLab: '',
-          conductivity: '',
-          swabResult: '',
-          phInline: '',
-          rinse: '',
+          phLab: '-',
+          conductivity: '-',
+          swabResult: '-',
+          phInline: '-',
+          rinse: '-',
           status: 'Belum tercatat'
         };
       }
 
       recordedCount++;
-      const timeVal = matched.Waktu ? String(matched.Waktu).slice(0, 5) : '';
-      const datePart = formatDmy(matched[dateCol] || matched.Stamp).slice(0, 10);
+      const latestRow = matched[0];
+      const latestDateTime = new Date(getRowDate(latestRow)).getTime();
+
+      const sessionRows = matched.filter(r => {
+        const dt = new Date(getRowDate(r)).getTime();
+        return Math.abs(latestDateTime - dt) <= 48 * 3600 * 1000;
+      });
+
+      const labRow = sessionRows.find(r => parseFloat(r['pH Lab']) > 0 || parseFloat(r.Conductivity) > 0) || latestRow;
+      const swabRow = sessionRows.find(r => r.Swab !== null && r.Swab !== undefined && r.Swab !== '' && r.Swab !== '0') || latestRow;
+      const rinseRow = sessionRows.find(r => r['Start Final Rinse RO'] && r['Start Final Rinse RO'] !== '0');
+      const inlineRow = sessionRows.find(r => parseFloat(r['pH in line']) > 0);
+
+      const timeVal = latestRow.Waktu ? String(latestRow.Waktu).slice(0, 5) : '';
+      const datePart = formatDmy(getRowDate(latestRow)).slice(0, 10);
       const cipTime = timeVal ? `${datePart} ${timeVal}` : datePart;
+
+      const phLabVal = parseFloat(labRow['pH Lab']) > 0 
+        ? String(labRow['pH Lab']) 
+        : (parseFloat(latestRow['pH Lab']) > 0 ? String(latestRow['pH Lab']) : '-');
+
+      const condVal = parseFloat(labRow.Conductivity) > 0 
+        ? String(labRow.Conductivity) 
+        : (parseFloat(latestRow.Conductivity) > 0 ? String(latestRow.Conductivity) : '-');
+
+      const swabVal = (swabRow.Swab !== null && swabRow.Swab !== undefined && swabRow.Swab !== '') 
+        ? String(swabRow.Swab) 
+        : (latestRow.Swab !== null && latestRow.Swab !== undefined ? String(latestRow.Swab) : '-');
+
+      const rinseSource = rinseRow || latestRow;
+      const rinseVal = (rinseSource['Start Final Rinse RO'] && rinseSource['Finish Final Rinse RO'] && rinseSource['Start Final Rinse RO'] !== '0')
+        ? `${rinseSource['Start Final Rinse RO']} - ${rinseSource['Finish Final Rinse RO']}`
+        : '-';
+
+      const inlineSource = inlineRow || latestRow;
+      const phInlineVal = parseFloat(inlineSource['pH in line']) > 0 ? String(inlineSource['pH in line']) : '-';
 
       return {
         no: def.no,
@@ -68,13 +103,11 @@ async function getExtractionCipChecklist(tower, extractionDate) {
         floor: def.floor,
         swabTarget: def.swab || '-',
         waktuCip: cipTime,
-        phLab: matched['pH Lab'] || '',
-        conductivity: matched.Conductivity || '',
-        swabResult: matched.Swab !== null && matched.Swab !== undefined ? String(matched.Swab) : '',
-        phInline: matched['pH in line'] || '',
-        rinse: (matched['Start Final Rinse RO'] && matched['Finish Final Rinse RO'] && matched['Start Final Rinse RO'] !== '0')
-          ? `${matched['Start Final Rinse RO']} - ${matched['Finish Final Rinse RO']}`
-          : '',
+        phLab: phLabVal,
+        conductivity: condVal,
+        swabResult: swabVal,
+        phInline: phInlineVal,
+        rinse: rinseVal,
         status: 'OK'
       };
     });

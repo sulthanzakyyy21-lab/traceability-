@@ -1091,7 +1091,7 @@ const FLOW_SECTIONS = [
   },
   {
     "name": "EXTRACTION",
-    "totalRows": 53,
+    "totalRows": 54,
     "blocks": [
       {
         "pic": "Produksi",
@@ -1168,6 +1168,11 @@ const FLOW_SECTIONS = [
             "label": "Waktu CIP terakhir",
             "isHeader": false,
             "key": "pa_ext_cip_waktu"
+          },
+          {
+            "label": "Checklist Sanitasi CIP & Flushing",
+            "isHeader": false,
+            "key": "pa_ext_cip_checklist"
           },
           {
             "label": "Konsentrasi lye",

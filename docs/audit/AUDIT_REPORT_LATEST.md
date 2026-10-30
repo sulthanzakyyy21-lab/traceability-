@@ -16,8 +16,8 @@
 Sistem Traceability PT. Santos Jaya Abadi telah diaudit menggunakan standar **SJA-PRAS v1.0** dengan 5 pilar benchmark formal: **OWASP ASVS 5.0.0**, **NIST SP 800-218 SSDF v1.1**, **NIST SP 800-63B-4**, **NIST SP 800-34 Rev.1**, dan **SLSA v1.2**. Seluruh 12 Safety Gates berada pada status **PASS**, menghasilkan keputusan rilis **GO**.
 
 ### Git SHA Audited
-- **Current SHA**: `d1e3a599ea6f2e7c45d905aa99d7f0b2dccd6e69`
-- **Previous SHA**: `d1e3a599ea6f2e7c45d905aa99d7f0b2dccd6e69`
+- **Current SHA**: `32717b2b5304e5aa86391eabf43a996dbd64e520`
+- **Previous SHA**: `7dc0d29c4de028a2f37b461ca929972c84e9be20`
 
 ### Changes Since Previous Audit
 - Penerapan kebijakan password NIST SP 800-63B-4 (>=15 karakter, blocklist) dan brute-force rate limiter.
