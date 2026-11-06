@@ -1,0 +1,124 @@
+    <!-- ══════════════════════════════════════════════════════════════
+         TAB 0: DASHBOARD UTAMA
+    ══════════════════════════════════════════════════════════════ -->
+    <div v-show="activeTab === 'dashboard'" class="space-y-5 no-print">
+
+      <!-- ── HERO OVERVIEW BANNER DASHBOARD (DELAY-2) ── -->
+      <div class="rounded-2xl p-6 relative overflow-hidden border border-slate-200 shadow-xs bg-white text-slate-900 luxury-reveal delay-2">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <div class="flex items-center gap-2 mb-1.5">
+              <span class="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span>
+              <span class="text-[11px] font-bold text-cyan-700 uppercase tracking-wider">Sistem Aktif &bull; PT. Santos Jaya Abadi</span>
+            </div>
+            <h1 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight mb-1">Traceability System Dashboard</h1>
+            <p class="text-xs text-slate-600 max-w-2xl leading-relaxed">Sistem penelusuran alur rantai pasok dan verifikasi mutu produksi kopi instan dari bahan baku mentah, penyangraian, ekstraksi, hingga pengemasan produk jadi.</p>
+          </div>
+          <div class="shrink-0 flex items-center gap-2.5">
+            <button
+              type="button"
+              @click="activeTab = 'pipeline'"
+              class="px-5 py-2.5 bg-cyan-700 hover:bg-cyan-800 text-white font-bold rounded-xl text-xs shadow-xs transition-all flex items-center gap-2 cursor-pointer btn-action border border-cyan-700"
+            >
+              <svg class="w-4 h-4 text-cyan-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              <span>Buka Penelusuran Batch</span>
+              <svg class="w-3.5 h-3.5 text-cyan-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── 4 STAT CARDS (DELAY-3) ── -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 luxury-reveal delay-3">
+        <!-- Card 1: Total Record (Warm Caramel Accent) -->
+        <div class="glass-card cascade-item rounded-xl p-4 flex items-center gap-3.5 border border-cyan-100 border-t-3 border-t-cyan-500 shadow-xs bg-white/95">
+          <div class="w-10 h-10 rounded-xl bg-cyan-50 border border-cyan-200 text-cyan-600 flex items-center justify-center text-cyan-600 shrink-0 shadow-2xs">
+            <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
+          </div>
+          <div>
+            <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Total Record</div>
+            <div class="text-xl font-black text-slate-900 font-mono leading-tight">{{ totalDatabaseRecords }}</div>
+            <div class="text-[9.5px] text-cyan-700 font-bold">Tower 1 &amp; Tower 2</div>
+          </div>
+        </div>
+        <!-- Card 2: Status Mutu (Espresso Accent) -->
+        <div class="glass-card cascade-item rounded-xl p-4 flex items-center gap-3.5 border border-cyan-100 border-t-3 border-t-cyan-500 shadow-xs bg-white/95">
+          <div class="w-10 h-10 rounded-xl bg-cyan-50 border border-cyan-200 flex items-center justify-center text-cyan-600 shrink-0 shadow-2xs">
+            <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+          </div>
+          <div>
+            <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Status Mutu</div>
+            <div class="text-xl font-black text-emerald-800 leading-tight">Valid</div>
+            <div class="text-[9.5px] text-emerald-700 font-bold">22 Parameter QC Aktif</div>
+          </div>
+        </div>
+        <!-- Card 3: Cloud Sync (Slate Taupe Accent) -->
+        <div class="glass-card cascade-item rounded-xl p-4 flex items-center gap-3.5 border border-cyan-100 border-t-3 border-t-cyan-500 shadow-xs bg-white/95">
+          <div class="w-10 h-10 rounded-xl bg-cyan-50 border border-cyan-200 text-cyan-600 flex items-center justify-center text-cyan-600 shrink-0 shadow-2xs">
+            <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M20 16.2A4.5 4.5 0 0 0 17.5 8h-1.8A7 7 0 1 0 4 14.9"></path><polyline points="12 12 12 18 16 14"></polyline></svg>
+          </div>
+          <div>
+            <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Cloud Sync</div>
+            <div class="text-xl font-black text-slate-900 leading-tight">Aktif</div>
+            <div class="text-[9.5px] text-slate-500 font-bold">Google Drive Enterprise</div>
+          </div>
+        </div>
+        <!-- Card 4: Database MySQL (Warm Sand Accent) -->
+        <div class="glass-card cascade-item rounded-xl p-4 flex items-center gap-3.5 border border-cyan-100 border-t-3 border-t-cyan-500 shadow-xs bg-white/95">
+          <div class="w-10 h-10 rounded-xl border flex items-center justify-center shrink-0 shadow-2xs" :class="dbConnected ? 'bg-emerald-50 border-emerald-300 text-emerald-800' : 'bg-rose-50 border-rose-300 text-rose-800'">
+            <div class="w-full h-full flex items-center justify-center">
+              <span class="w-2.5 h-2.5 rounded-full inline-block" :class="dbConnected ? 'bg-emerald-500 shadow-xs' : 'bg-rose-500 animate-pulse'"></span>
+            </div>
+          </div>
+          <div>
+            <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Database MySQL</div>
+            <div class="text-xl font-black leading-tight" :class="dbConnected ? 'text-emerald-800' : 'text-rose-700'">{{ dbConnected ? 'Terhubung' : 'Offline' }}</div>
+            <div class="text-[9.5px] font-bold" :class="dbConnected ? 'text-slate-500' : 'text-rose-600'">{{ dbConnected ? 'Sukodono &bull; Live Pool' : 'Koneksi Terputus' }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SHORTCUT NAVIGASI (DELAY-4) ── -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 luxury-reveal delay-4">
+        <!-- Tile 1: Penelusuran Batch -->
+        <button @click="activeTab = 'pipeline'" class="glass-card cascade-item rounded-xl p-5 flex items-start gap-3.5 border border-cyan-100 shadow-xs hover:border-cyan-400 hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer text-left group btn-action bg-white/95">
+          <div class="w-10 h-10 rounded-xl bg-cyan-50 border border-cyan-200 text-cyan-600 flex items-center justify-center text-cyan-600 shrink-0 group-hover:bg-cyan-500 group-hover:text-white transition-all shadow-2xs">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><circle cx="6" cy="18" r="3"></circle><circle cx="6" cy="6" r="3"></circle><circle cx="18" cy="12" r="3"></circle><path d="M6 9v6"></path><path d="M9 6h4a5 5 0 0 1 5 5v1"></path></svg>
+          </div>
+          <div>
+            <div class="font-bold text-sm text-slate-900 group-hover:text-cyan-600 transition-colors">Penelusuran Batch</div>
+            <div class="text-[11px] text-slate-500 mt-0.5 leading-snug">Lacak alur rantai proses produksi secara visual per stasiun</div>
+          </div>
+        </button>
+        <!-- Tile 2: Laporan Audit Mutu -->
+        <button @click="activeTab = 'report'" class="glass-card cascade-item rounded-xl p-5 flex items-start gap-3.5 border border-cyan-100 shadow-xs hover:border-cyan-400 hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer text-left group btn-action bg-white/95">
+          <div class="w-10 h-10 rounded-xl bg-cyan-50 border border-cyan-200 flex items-center justify-center text-cyan-600 shrink-0 group-hover:bg-cyan-500 group-hover:text-white transition-all shadow-2xs">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+          </div>
+          <div>
+            <div class="font-bold text-sm text-slate-900 group-hover:text-cyan-600 transition-colors">Laporan Audit Mutu</div>
+            <div class="text-[11px] text-slate-500 mt-0.5 leading-snug">Cetak dokumen resmi Form F/QC/01.030 untuk audit</div>
+          </div>
+        </button>
+        <!-- Tile 3: Database Operasional -->
+        <button @click="activeTab = 'pic'" class="glass-card cascade-item rounded-xl p-5 flex items-start gap-3.5 border border-cyan-100 shadow-xs hover:border-cyan-400 hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer text-left group btn-action bg-white/95">
+          <div class="w-10 h-10 rounded-xl bg-cyan-50 border border-cyan-200 text-cyan-600 flex items-center justify-center text-cyan-600 shrink-0 group-hover:bg-cyan-500 group-hover:text-white transition-all shadow-2xs">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
+          </div>
+          <div>
+            <div class="font-bold text-sm text-slate-900 group-hover:text-cyan-600 transition-colors">Database Operasional</div>
+            <div class="text-[11px] text-slate-500 mt-0.5 leading-snug">Jelajahi &amp; input data rekaman seluruh divisi pabrik</div>
+          </div>
+        </button>
+        <!-- Tile 4: Sinkronisasi Cloud -->
+        <button @click="activeTab = 'sync'" class="glass-card cascade-item rounded-xl p-5 flex items-start gap-3.5 border border-cyan-100 shadow-xs hover:border-cyan-400 hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer text-left group btn-action bg-white/95">
+          <div class="w-10 h-10 rounded-xl bg-cyan-50 border border-cyan-200 text-cyan-600 flex items-center justify-center text-cyan-600 shrink-0 group-hover:bg-cyan-500 group-hover:text-white transition-all shadow-2xs">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M20 16.2A4.5 4.5 0 0 0 17.5 8h-1.8A7 7 0 1 0 4 14.9"></path><polyline points="12 12 12 18 16 14"></polyline></svg>
+          </div>
+          <div>
+            <div class="font-bold text-sm text-slate-900 group-hover:text-cyan-600 transition-colors">Sinkronisasi Cloud</div>
+            <div class="text-[11px] text-slate-500 mt-0.5 leading-snug">Sinkronkan data ke Google Spreadsheet &amp; Drive</div>
+          </div>
+        </button>
+      </div>
+    </div>

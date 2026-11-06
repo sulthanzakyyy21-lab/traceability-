@@ -37,7 +37,7 @@ async function executeUnifiedSync({ division = 'all', tower = 'all', customSheet
             const buffer = await fetchGoogleSheetBuffer(config.sheetId);
             const bufHash = crypto.createHash('md5').update(buffer).digest('hex');
             fingerprintCache[config.sheetId] = bufHash;
-            workbookCache[config.sheetId] = xlsx.read(buffer, { type: 'buffer', cellDates: true, cellNF: false, cellText: false });
+            workbookCache[config.sheetId] = xlsx.read(buffer, { type: 'buffer', cellDates: true, cellNF: true, cellText: true });
           }
           const bufHash = fingerprintCache[config.sheetId];
           const timeSinceLastSync = now - (lastSyncByScope[`${division}:${tower}`] || 0);

@@ -1,0 +1,583 @@
+    <!-- ══════════════════════════════════════════════════════════════
+         TAB 2: DOKUMEN AUDIT RESMI F/QC/01.030
+    ══════════════════════════════════════════════════════════════ -->
+    <div v-show="activeTab==='report'" :class="activeTab !== 'report' ? 'no-print' : ''" class="space-y-5 slow-smooth-entrance">
+
+      <!-- ── TOP CONTROL BAR: OPERATION LOG & WORK ORDER SWITCHER (SUSUN PERSIS MOCKUP) ── -->
+      <div class="no-print bg-white rounded-2xl sm:rounded-3xl border border-stone-200/90 shadow-sm border-l-[6px] border-l-cyan-500 overflow-hidden luxury-reveal delay-2">
+        
+        <!-- SECTION 1: HEADER PUTIH (Judul, Badges, Deskripsi & Tombol Aksi) -->
+        <div class="p-5 sm:p-6 sm:px-7 flex flex-col lg:flex-row lg:items-start justify-between gap-4 sm:gap-6 bg-white">
+          <!-- Kiri: Icon + Judul + Badges + Deskripsi -->
+          <div class="flex items-start gap-3.5 sm:gap-4 flex-1 min-w-0">
+            <div class="w-12 h-12 rounded-2xl bg-stone-100/90 border border-stone-200/60 flex items-center justify-center text-stone-700 shrink-0 mt-0.5 shadow-2xs">
+              <svg class="w-6 h-6 text-stone-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+              </svg>
+            </div>
+            <div class="flex-1 min-w-0">
+              <h1 class="text-xl sm:text-2xl font-bold text-stone-900 tracking-tight leading-tight">
+                Laporan Audit &amp; Operation Log Traceability
+              </h1>
+              <div class="flex items-center gap-2 mt-2 flex-wrap">
+                <span class="px-3 py-0.5 rounded-full text-xs font-semibold bg-cyan-50 text-cyan-800 border border-cyan-200">
+                  Form F/QC/01.030
+                </span>
+                <span class="px-3 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200">
+                  {{ reportViewMode === 'log' ? 'Mode Log Riwayat' : 'Mode Dokumen Audit' }}
+                </span>
+              </div>
+              <p class="text-xs sm:text-sm text-stone-600 mt-2.5 leading-relaxed max-w-xl">
+                Menyimpan seluruh catatan perjalanan audit batch produksi berdasarkan Work Order yang dieksekusi.
+              </p>
+            </div>
+          </div>
+
+          <!-- Kanan: Tombol Aksi (+ Sesi Baru & Cetak / PDF) -->
+          <div class="flex items-center gap-2.5 sm:gap-3 shrink-0 self-start sm:self-center w-full sm:w-auto">
+            <button
+              type="button"
+              @click="openCreateSessionModal"
+              class="flex-1 sm:flex-initial px-4 py-2 bg-white hover:bg-stone-50 text-stone-800 text-xs sm:text-sm font-semibold rounded-xl border border-stone-300 transition-all shadow-2xs hover:border-stone-400 active:scale-[0.98] cursor-pointer whitespace-nowrap text-center"
+              title="Buat sesi penelusuran Work Order baru"
+            >
+              + Sesi Baru
+            </button>
+            <button
+              type="button"
+              @click="printForm"
+              class="flex-1 sm:flex-initial px-5 py-2 bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white border border-cyan-600 shadow-xs text-xs sm:text-sm font-bold rounded-xl transition-all shadow-xs hover:shadow-md active:scale-[0.98] cursor-pointer whitespace-nowrap text-center"
+              title="Cetak Formulir Audit F/QC/01.030"
+            >
+              Cetak / PDF
+            </button>
+          </div>
+        </div>
+
+        <!-- SECTION 2: TINTED WARM STRIP (Work Order Selector, Status, Info & Segmented Control) -->
+        <div class="p-5 sm:p-6 sm:px-7 bg-slate-50 border-t border-stone-200/70">
+          <!-- Row 1: Dropdown Work Order, Status Badge, Area & Waktu -->
+          <div class="flex flex-wrap items-center gap-3 sm:gap-4 text-xs sm:text-sm">
+            <span class="font-bold text-stone-800 text-sm whitespace-nowrap">Work Order</span>
+            
+            <!-- Dropdown Select -->
+            <div class="relative">
+              <select
+                id="wo-select-header"
+                :value="activeSessionId || ''"
+                @change="openSession($event.target.value)"
+                class="bg-white hover:bg-stone-50/90 border border-stone-200/90 rounded-2xl text-xs sm:text-sm font-semibold text-stone-900 pl-4 pr-9 py-2 cursor-pointer shadow-2xs focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/20 outline-none transition-all appearance-none min-w-[160px]"
+              >
+                <option value="" disabled :selected="!activeSessionId">Pilih Work Order…</option>
+                <option v-for="s in traceabilitySessions" :key="s.id" :value="s.id">
+                  {{ s.code || s.id }} &bull; {{ s.jenis === 'Backward' ? s.noBatch : s.forward?.namaBahan }} ({{ s.status === 'completed' ? 'Selesai' : (s.status === 'running' ? 'Berjalan' : 'Draft') }})
+                </option>
+              </select>
+              <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-stone-500">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"></path>
+                </svg>
+              </div>
+            </div>
+
+            <!-- Status Badge -->
+            <span
+              v-if="!activeSessionId || !activeSession"
+              class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-stone-100 text-stone-600 border border-stone-200"
+            >
+              Draft &bull; Belum dimulai
+            </span>
+            <span
+              v-else-if="activeSession?.status === 'running'"
+              class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-semibold bg-[#e6f7ec] text-[#1e7e34] border border-[#c3eed1]"
+            >
+              Sedang berjalan
+            </span>
+            <span
+              v-else-if="activeSession?.status === 'completed'"
+              class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-semibold bg-[#e6f7ec] text-[#1e7e34] border border-[#c3eed1]"
+            >
+              Sedang berjalan
+            </span>
+            <span
+              v-else
+              class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-stone-100 text-stone-600 border border-stone-200"
+            >
+              Draft &bull; Belum dimulai
+            </span>
+
+            <!-- Info Area & Waktu -->
+            <div class="flex items-center gap-2 text-xs sm:text-sm text-stone-500 ml-0 sm:ml-2">
+              <span>Area <strong class="text-stone-900 font-bold">{{ activeSession?.area || auditSession.area || 'SJA Sukodono' }}</strong></span>
+              <span class="text-stone-400">&bull;</span>
+              <span>Waktu <strong class="text-stone-900 font-bold">{{ activeSession?.manualTotalWaktu || auditSessionTotalWaktu || '3 detik' }}</strong></span>
+            </div>
+          </div>
+
+          <!-- Row 2: Segmented Control Tabs (Log Riwayat & Dokumen Form) -->
+          <div class="mt-4">
+            <div class="relative inline-flex bg-white p-1 rounded-2xl border border-stone-200/90 shadow-2xs select-none">
+              <!-- Sliding Brown Pill Indicator -->
+              <div
+                class="absolute top-1 bottom-1 left-1 rounded-xl bg-cyan-500 shadow-xs pointer-events-none transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]"
+                :style="{
+                  width: 'calc(50% - 4px)',
+                  transform: reportViewMode === 'log' ? 'translateX(0)' : 'translateX(100%)'
+                }"
+              ></div>
+
+              <!-- Tab 1: Log Riwayat (Tampilan Utama Default) -->
+              <button
+                type="button"
+                @click="reportViewMode = 'log'"
+                class="relative z-10 px-4 py-2 text-xs sm:text-sm rounded-xl transition-colors duration-200 cursor-pointer font-bold min-w-[125px] text-center"
+                :class="reportViewMode === 'log' ? 'text-white' : 'text-stone-600 hover:text-stone-900 font-medium'"
+              >
+                Log Riwayat ({{ traceabilitySessions.length }})
+              </button>
+
+              <!-- Tab 2: Dokumen Form -->
+              <button
+                type="button"
+                @click="reportViewMode = 'document'"
+                class="relative z-10 px-4 py-2 text-xs sm:text-sm rounded-xl transition-colors duration-200 cursor-pointer font-bold min-w-[125px] text-center"
+                :class="reportViewMode === 'document' ? 'text-white' : 'text-stone-600 hover:text-stone-900 font-medium'"
+              >
+                Dokumen Form
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Text Tampilan di Bawah Card -->
+      <div class="text-xs sm:text-sm text-stone-500 font-medium px-1 no-print">
+        Tampilan: {{ reportViewMode === 'log' ? 'Log Riwayat' : 'Dokumen Form' }}
+      </div>
+
+<!-- include: components/tables/table-audit-logs.html -->
+
+      <!-- ── VIEW MODE 1: DOKUMEN AUDIT RESMI F/QC/01.030 ── -->
+      <div v-show="reportViewMode === 'document'" class="space-y-4">
+        
+        <!-- Notifikasi jika data perjalanan batch belum dimuat -->
+        <div v-if="!traceResult" class="p-3.5 rounded-xl bg-cyan-50 border border-cyan-200 flex items-center justify-between gap-3 text-xs text-cyan-900 no-print">
+          <div class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-white animate-pulse"></span>
+            <span>Data perjalanan batch <strong>{{ activeSession?.noBatch || traceForm.noBatch || 'A370/26' }}</strong> belum dimuat ke dokumen ini.</span>
+          </div>
+          <button
+            type="button"
+            @click="doTrace"
+            :disabled="tracing"
+            class="px-3.5 py-1.5 bg-cyan-500 text-white font-bold rounded-lg hover:bg-cyan-700 cursor-pointer shadow-2xs flex items-center gap-1.5"
+          >
+            <span>{{ tracing ? 'Menarik...' : 'Tarik Data Traceability Sekarang' }}</span>
+          </button>
+        </div>
+
+        <div v-if="traceError" class="text-xs text-red-700 bg-red-50 border border-red-200 rounded-xl p-3 font-bold no-print">
+          {{ traceError }}
+        </div>
+
+        <!-- ── FORM DOKUMEN F/QC/01.030 RESMI ── -->
+        <div id="form-document" class="p-6">
+
+          <!-- 1. HEADER RESMI PT. SANTOS JAYA ABADI -->
+          <table class="doc-top-table mb-4">
+            <tr>
+              <td style="width: 18%; text-align: center;">
+                <div class="font-bold text-xl text-black leading-none">SJA</div>
+                <div class="text-[10.5px] font-bold text-black mt-1 leading-tight">PT. SANTOS<br>JAYA ABADI</div>
+              </td>
+              <td style="width: 52%; text-align: center;">
+                <div class="text-[11px] font-bold text-slate-600 uppercase tracking-widest">FORM</div>
+                <div class="text-base font-bold text-black tracking-tight mt-0.5">LAPORAN TRACEABILITY</div>
+                <div v-if="activeSession?.code" class="text-[11px] font-mono text-stone-700 font-bold mt-1">
+                  Work Order / Operation Log: <span class="bg-stone-100 px-1.5 py-0.5 border border-stone-400 rounded">{{ activeSession.code }}</span>
+                </div>
+              </td>
+              <td style="width: 30%; font-size: 11px; line-height: 1.45;">
+                <div class="flex justify-between"><span>Dokumen No.</span><span class="font-bold">: F/QC/01.030</span></div>
+                <div class="flex justify-between"><span>Rev. No.</span><span class="font-bold">: 01</span></div>
+                <div class="flex justify-between"><span>Halaman</span><span class="font-bold">: 1/2</span></div>
+                <div class="flex justify-between"><span>Berlaku Tgl.</span><span class="font-bold">: 15/06/2026</span></div>
+              </td>
+            </tr>
+          </table>
+
+        <!-- 2. INFORMASI PELAKSANAAN & APPROVAL -->
+        <table class="doc-subtable mb-4">
+          <tr>
+            <th colspan="2" class="bg-cell-header text-left">Informasi Pelaksanaan Traceability</th>
+            <th colspan="2" class="bg-cell-header text-left">Approval</th>
+          </tr>
+          <tr>
+            <td style="width: 20%; color: #000000;">Area</td>
+            <td style="width: 32%; font-weight: bold;">{{ auditSession.area }}</td>
+            <td style="width: 18%; color: #000000;">Auditor <span class="text-[10px]">(Nama &amp; TTD)</span></td>
+            <td style="width: 30%; font-weight: bold; white-space: pre-line;">{{ auditSession.auditor }}</td>
+          </tr>
+          <tr>
+            <td style="color: #000000;">Tanggal Pelaksanaan</td>
+            <td>{{ auditSession.tanggalPelaksanaan }}</td>
+            <td style="color: #000000;">Auditee <span class="text-[10px]">(Nama &amp; TTD)</span></td>
+            <td style="font-weight: bold; white-space: pre-line;">{{ auditSession.auditee }}</td>
+          </tr>
+          <tr>
+            <td style="color: #000000;">Waktu Pelaksanaan</td>
+            <td>Start ( {{ auditSessionWaktuStart }} ) &nbsp; End ( {{ auditSessionWaktuEnd }} )</td>
+            <td style="color: #000000;">FSTL <span class="text-[10px]">(Nama &amp; TTD)</span></td>
+            <td style="font-weight: bold;">{{ auditSession.fstl }}</td>
+          </tr>
+          <tr>
+            <td style="color: #000000;">Total Waktu Pelaksanaan</td>
+            <td :class="auditTimer.status === 'running' ? 'text-emerald-800 font-bold' : ''">{{ auditSessionTotalWaktu }}</td>
+            <td style="color: #000000;">Gambar Produk / Bahan</td>
+            <td class="text-slate-500 italic">{{ auditSession.gambarProduk || 'Terlampir pada berkas sistem' }}</td>
+          </tr>
+          <tr>
+            <td style="color: #000000;">Jenis Traceability</td>
+            <td>
+              <strong :class="auditSession.jenis === 'Backward' ? 'text-blue-900 font-bold' : 'text-emerald-900 font-bold'">
+                {{ auditSession.jenis }}
+              </strong>
+            </td>
+            <td colspan="2" rowspan="3" class="bg-slate-50 text-[10.5px] text-slate-700 italic p-2 align-middle border border-black">
+              {{ auditSession.catatan }}
+            </td>
+          </tr>
+          <tr>
+            <td style="color: #000000;">PIC Pelaksana</td>
+            <td style="font-weight: bold;">{{ auditSession.picPelaksana }}</td>
+          </tr>
+          <tr>
+            <td style="color: #000000;">Scenario / Case Traceability</td>
+            <td>{{ auditSession.scenario }}</td>
+          </tr>
+        </table>
+
+        <!-- 3. IDENTITAS PRODUK (BACKWARD & FORWARD) -->
+        <table class="doc-subtable mb-4">
+          <tr>
+            <th colspan="2" class="bg-cell-header text-left">Identitas Produk (Backward)</th>
+            <th colspan="2" class="bg-cell-header text-left">Identitas Bahan / Proses (Forward)</th>
+          </tr>
+          <tr>
+            <td style="width: 20%; color: #000000;">Kategori Produk</td>
+            <td style="width: 32%; font-weight: bold;">{{ auditSession.jenis === 'Backward' ? 'Instant Coffee' : '-' }}</td>
+            <td style="width: 18%; color: #000000;">Kategori Produk</td>
+            <td style="width: 30%;" :class="auditSession.jenis === 'Forward' ? 'font-bold' : ''">{{ auditSession.jenis === 'Forward' ? (auditSession.forward.kategoriProduk || '-') : '-' }}</td>
+          </tr>
+          <tr>
+            <td style="color: #000000;">Nama Produk</td>
+            <td style="font-weight: bold;">{{ auditSession.jenis === 'Backward' ? headerNamaProduk : '-' }}</td>
+            <td style="color: #000000;">Nama Bahan / Proses</td>
+            <td :class="auditSession.jenis === 'Forward' ? 'font-bold' : ''">{{ auditSession.jenis === 'Forward' ? (auditSession.forward.namaBahan || '-') : '-' }}</td>
+          </tr>
+          <tr>
+            <td style="color: #000000;">Nomer Batch</td>
+            <td>
+              <template v-if="auditSession.jenis === 'Backward'">
+                <strong class="border border-green-700 bg-green-50 px-1.5 py-0.5 text-green-900 rounded font-mono">{{ traceResult?.input?.noBatchFull || traceForm.noBatch || 'A370/26' }}</strong>
+              </template>
+              <template v-else>-</template>
+            </td>
+            <td style="color: #000000;">Nama Supplier Bahan</td>
+            <td :class="auditSession.jenis === 'Forward' ? 'font-bold' : ''">{{ auditSession.jenis === 'Forward' ? (auditSession.forward.supplierBahan || '-') : '-' }}</td>
+          </tr>
+          <tr>
+            <td style="color: #000000;">Tanggal Produksi</td>
+            <td>{{ auditSession.jenis === 'Backward' ? headerTanggalProduksi : '-' }}</td>
+            <td style="color: #000000;">Tgl Kedatangan / Tgl Proses</td>
+            <td :class="auditSession.jenis === 'Forward' ? 'font-bold' : ''">{{ auditSession.jenis === 'Forward' ? (auditSession.forward.tglKedatangan || '-') : '-' }}</td>
+          </tr>
+          <tr>
+            <td style="color: #000000;">Best Before</td>
+            <td>{{ auditSession.jenis === 'Backward' ? headerBestBefore : '-' }}</td>
+            <td style="color: #000000;">Lokasi Bahan/Proses</td>
+            <td :class="auditSession.jenis === 'Forward' ? 'font-bold' : ''">{{ auditSession.jenis === 'Forward' ? (auditSession.forward.lokasiBahan || '-') : '-' }}</td>
+          </tr>
+          <tr>
+            <td style="color: #000000;">PIN</td>
+            <td>{{ auditSession.jenis === 'Backward' ? headerPin : '-' }}</td>
+            <td colspan="2" rowspan="4" class="bg-slate-50 text-[10.5px] text-slate-700 p-2 align-top border border-black">
+              <strong>Note:</strong><br>
+              &bull; Semua data diisi sesuai keperluan dan disesuaikan dengan kondisi aktual di lapangan.<br>
+              &bull; Jika ada kolom yang tidak ada datanya di database, diberi tanda &quot;-&quot;.
+            </td>
+          </tr>
+          <tr>
+            <td style="color: #000000;">Nomer Box</td>
+            <td>{{ auditSession.jenis === 'Backward' ? headerNomorBox : '-' }}</td>
+          </tr>
+          <tr>
+            <td style="color: #000000;">Tower 1/2</td>
+            <td><strong>{{ auditSession.jenis === 'Backward' ? ('Tower ' + (traceResult?.input?.tower || traceForm.tower)) : '-' }}</strong></td>
+          </tr>
+          <tr>
+            <td style="color: #000000;">Mesin Packing</td>
+            <td>{{ auditSession.jenis === 'Backward' ? ('Shape (Tower ' + (traceResult?.input?.tower || traceForm.tower) + ')') : '-' }}</td>
+          </tr>
+        </table>
+
+        <!-- 4. TABEL FLOW PROCESS LENGKAP 12 TAHAPAN DENGAN GARIS PEMISAH PER ISI -->
+        <table class="flow-table">
+          <thead>
+            <tr>
+              <th style="width: 13%;" class="th-flow">Flow Process</th>
+              <th style="width: 45%;" class="th-proc">Penjelasan Proses</th>
+              <th style="width: 24%;" class="th-docs">Nomor &amp; Judul Dokumen</th>
+              <th style="width: 6%;" class="th-pic">PIC</th>
+              <th style="width: 6%;" class="th-temuan">Temuan</th>
+              <th style="width: 6%;" class="th-saran">Saran Perbaikan</th>
+            </tr>
+          </thead>
+          <tbody>
+            <template v-for="sec in flowSections" :key="sec.name">
+              <template v-for="(block, bIdx) in sec.blocks" :key="bIdx">
+                <tr v-for="(item, iIdx) in block.items" :key="iIdx" class="flow-item-tr">
+                  <!-- Kolom Flow Process (Hanya dirender pada baris pertama di setiap section) -->
+                  <td
+                    v-if="bIdx === 0 && iIdx === 0"
+                    :rowspan="sec.totalRows"
+                    class="flow-name-cell"
+                  >
+                    {{ sec.name }}
+                  </td>
+
+                  <!-- Kolom Penjelasan Proses: Masing-masing isi memiliki baris & garis pemisah sendiri -->
+                  <td
+                    class="proc-cell"
+                    :class="item.isHeader ? 'proc-header-cell' : ''"
+                  >
+                    <div v-if="item.isHeader" class="proc-header-title">
+                      {{ item.label }}
+                    </div>
+                    <div v-else>
+                      <div class="proc-row-line">
+                        <span class="proc-label">{{ item.label }}</span>
+                        <span class="proc-colon">:</span>
+                        <div class="flex-1 flex flex-wrap items-center justify-between gap-2">
+                          <div class="flex items-center gap-2">
+                            <!-- Nilai biasa untuk selain parameter kritis & selain checklist CIP / COP -->
+                            <span
+                              v-if="!isParamKritis(item.key) && item.key !== 'pa_ext_cip_checklist' && item.key !== 'pa_dryer_cip_waktu' && item.key !== 'pa_packing_cop_waktu' && item.key !== 'pa_evap_cip_waktu' && item.key !== 'pa_finaltank_cip_waktu'"
+                              class="proc-value"
+                              :class="getItemValue(item.key) !== '-' ? 'proc-value-active' : ''"
+                            >
+                              {{ getItemValue(item.key) }}
+                            </span>
+
+                            <!-- Khusus Checklist Sanitasi CIP Evaporator di Quality Audit Report -->
+                            <template v-else-if="item.key === 'pa_evap_cip_waktu'">
+                              <div class="flex flex-wrap items-center gap-2">
+                                <span class="proc-value font-semibold text-black">
+                                  {{ getItemValue(item.key) }}
+                                </span>
+                                <button
+                                  v-if="traceResult?.pa?.evaporator_cip_checklist"
+                                  type="button"
+                                  @click="openInspectCip(traceResult.pa.evaporator_cip_checklist, 'Checklist CIP & Flushing Area Evaporator')"
+                                  class="no-print inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[11px] font-semibold text-blue-900 bg-blue-50/80 hover:bg-blue-100 border border-blue-200 rounded-lg cursor-pointer transition-all shadow-2xs active:scale-97"
+                                  title="Inspect checklist sanitasi CIP Evaporator"
+                                >
+                                  <span class="font-bold">Inspect Checklist CIP</span>
+                                  <span class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-white text-blue-950 border border-blue-200 font-bold">
+                                    {{ traceResult.pa.evaporator_cip_checklist.totalItems }} Titik
+                                  </span>
+                                </button>
+                              </div>
+                            </template>
+
+                            <!-- Khusus Checklist Sanitasi CIP Final Tank di Quality Audit Report -->
+                            <template v-else-if="item.key === 'pa_finaltank_cip_waktu'">
+                              <div class="flex flex-wrap items-center gap-2">
+                                <span class="proc-value font-semibold text-black">
+                                  {{ getItemValue(item.key) }}
+                                </span>
+                                <button
+                                  v-if="traceResult?.pa?.final_tank_cip_checklist"
+                                  type="button"
+                                  @click="openInspectCip(traceResult.pa.final_tank_cip_checklist, 'Checklist CIP & Sanitasi Final Tank')"
+                                  class="no-print inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[11px] font-semibold text-blue-900 bg-blue-50/80 hover:bg-blue-100 border border-blue-200 rounded-lg cursor-pointer transition-all shadow-2xs active:scale-97"
+                                  title="Inspect checklist sanitasi CIP Final Tank"
+                                >
+                                  <span class="font-bold">Inspect Checklist CIP</span>
+                                  <span class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-white text-blue-950 border border-blue-200 font-bold">
+                                    {{ traceResult.pa.final_tank_cip_checklist.totalItems }} Titik
+                                  </span>
+                                </button>
+                              </div>
+                            </template>
+
+                            <!-- Khusus Checklist Sanitasi CIP Extraction di Quality Audit Report -->
+                            <template v-else-if="item.key === 'pa_ext_cip_checklist'">
+                              <div class="flex flex-wrap items-center gap-2">
+                                <span class="proc-value font-semibold text-black">
+                                  {{ getItemValue(item.key) }}
+                                </span>
+                                <button
+                                  v-if="traceResult?.pa?.extraction_cip_checklist"
+                                  type="button"
+                                  @click="openInspectCip(traceResult.pa.extraction_cip_checklist, 'Checklist CIP & Flushing Area Extraction')"
+                                  class="no-print inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[11px] font-semibold text-blue-900 bg-blue-50/80 hover:bg-blue-100 border border-blue-200 rounded-lg cursor-pointer transition-all shadow-2xs active:scale-97"
+                                  title="Inspect checklist sanitasi CIP Extraction"
+                                >
+                                  <span class="font-bold">Inspect Checklist</span>
+                                  <span class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-white text-blue-950 border border-blue-200 font-bold">
+                                    {{ traceResult.pa.extraction_cip_checklist.totalItems }} Titik
+                                  </span>
+                                </button>
+                              </div>
+                            </template>
+
+                            <!-- Khusus Checklist Sanitasi CIP Dryer di Quality Audit Report -->
+                            <template v-else-if="item.key === 'pa_dryer_cip_waktu'">
+                              <div class="flex flex-wrap items-center gap-2">
+                                <span class="proc-value font-semibold text-black">
+                                  {{ getItemValue(item.key) }}
+                                </span>
+                                <button
+                                  v-if="traceResult?.pa?.dryer_cip_checklist"
+                                  type="button"
+                                  @click="openInspectCip(traceResult.pa.dryer_cip_checklist, 'Checklist CIP & Flushing Area Dryer')"
+                                  class="no-print inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[11px] font-semibold text-blue-900 bg-blue-50/80 hover:bg-blue-100 border border-blue-200 rounded-lg cursor-pointer transition-all shadow-2xs active:scale-97"
+                                  title="Inspect checklist sanitasi CIP Dryer"
+                                >
+                                  <span class="font-bold">Inspect Checklist CIP</span>
+                                  <span class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-white text-blue-950 border border-blue-200 font-bold">
+                                    {{ traceResult.pa.dryer_cip_checklist.totalItems }} Titik
+                                  </span>
+                                </button>
+                              </div>
+                            </template>
+
+                            <!-- Khusus Checklist Sanitasi COP Packing di Quality Audit Report -->
+                            <template v-else-if="item.key === 'pa_packing_cop_waktu'">
+                              <div class="flex flex-wrap items-center gap-2">
+                                <span class="proc-value font-semibold text-black">
+                                  {{ getItemValue(item.key) }}
+                                </span>
+                                <button
+                                  v-if="traceResult?.pa?.packing_cop_checklist"
+                                  type="button"
+                                  @click="openInspectCip(traceResult.pa.packing_cop_checklist, 'Checklist COP & Sanitasi Area Packing')"
+                                  class="no-print inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[11px] font-semibold text-blue-900 bg-blue-50/80 hover:bg-blue-100 border border-blue-200 rounded-lg cursor-pointer transition-all shadow-2xs active:scale-97"
+                                  title="Inspect checklist COP sanitasi Packing"
+                                >
+                                  <span class="font-bold">Inspect Checklist COP</span>
+                                  <span class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-white text-blue-950 border border-blue-200 font-bold">
+                                    {{ traceResult.pa.packing_cop_checklist.totalItems }} Titik
+                                  </span>
+                                </button>
+                              </div>
+                            </template>
+                            <!-- Parameter Kritis: langsung tombol inspect pop-up modal -->
+                            <template v-else>
+                              <button
+                                v-if="getProcessRows(item.key).length > 0"
+                                type="button"
+                                @click="openInspectScada(getProcessKey(item.key))"
+                                class="no-print inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[11px] font-semibold text-blue-900 bg-blue-50/80 hover:bg-blue-100 border border-blue-200 rounded-lg cursor-pointer transition-all shadow-2xs active:scale-97"
+                                :title="'Inspect parameter kritis ' + getProcessTitle(item.key)"
+                              >
+                                <span class="font-bold">Inspect Parameter</span>
+                                <span class="text-[10.5px] font-mono text-blue-800">({{ getProcessColumns(item.key).length }} kol &bull; {{ getProcessRows(item.key).length }} baris)</span>
+                              </button>
+                              <span
+                                v-if="getProcessRows(item.key).length > 0"
+                                class="print-only text-[9.5px] text-black font-semibold"
+                              >
+                                Terverifikasi SCADA ({{ getProcessRows(item.key).length }} baris)
+                              </span>
+                              <span v-else class="text-slate-400 text-xs">-</span>
+                            </template>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                  <!-- Kolom Nomor & Judul Dokumen (Dirender sesuai blok PIC terkait) -->
+                  <td
+                    v-if="iIdx === 0"
+                    :rowspan="block.items.length"
+                    class="doc-cell"
+                  >
+                    <div v-for="docLine in block.docs" :key="docLine" class="doc-badge-item">
+                      {{ docLine }}
+                    </div>
+                  </td>
+
+                  <!-- Kolom PIC (Dirender tersendiri berdampingan dengan baris prosesnya) -->
+                  <td
+                    v-if="iIdx === 0"
+                    :rowspan="block.items.length"
+                    class="pic-cell text-center"
+                  >
+                    <span v-if="block.pic" class="pic-tag">
+                      {{ block.pic }}
+                    </span>
+                    <span v-else class="text-slate-400">-</span>
+                  </td>
+
+                  <!-- Kolom Temuan -->
+                  <td
+                    v-if="iIdx === 0"
+                    :rowspan="block.items.length"
+                    class="temuan-cell text-center text-slate-400"
+                  >
+                    -
+                  </td>
+
+                  <!-- Kolom Saran Perbaikan -->
+                  <td
+                    v-if="iIdx === 0"
+                    :rowspan="block.items.length"
+                    class="saran-cell text-center text-slate-400"
+                  >
+                    -
+                  </td>
+                </tr>
+              </template>
+            </template>
+          </tbody>
+        </table>
+
+        <!-- 5. SIGNATURE FOOTER RESMI (4 PIHAK) -->
+        <table class="sig-table mt-4">
+          <tr>
+            <td>
+              <div class="text-[11px] text-black font-bold uppercase">Dibuat Oleh:</div>
+              <div class="h-14 border-b border-black my-2"></div>
+              <div class="text-xs font-bold text-black">{{ activeSession?.picPelaksana || auditSession.picPelaksana || '-' }}</div>
+              <div class="text-[10px] text-slate-700">PIC Pelaksana Produksi</div>
+            </td>
+            <td>
+              <div class="text-[11px] text-black font-bold uppercase">Diperiksa Oleh:</div>
+              <div class="h-14 border-b border-black my-2"></div>
+              <div class="text-xs font-bold text-black whitespace-pre-line">{{ activeSession?.auditee || auditSession.auditee || '-' }}</div>
+              <div class="text-[10px] text-slate-700">Auditee / Supervisor Produksi</div>
+            </td>
+            <td>
+              <div class="text-[11px] text-black font-bold uppercase">Disetujui Oleh:</div>
+              <div class="h-14 border-b border-black my-2"></div>
+              <div class="text-xs font-bold text-black whitespace-pre-line">{{ activeSession?.auditor || auditSession.auditor || '-' }}</div>
+              <div class="text-[10px] text-slate-700">Auditor Quality Assurance</div>
+            </td>
+            <td>
+              <div class="text-[11px] text-black font-bold uppercase">Diketahui Oleh:</div>
+              <div class="h-14 border-b border-black my-2"></div>
+              <div class="text-xs font-bold text-black">{{ activeSession?.fstl || auditSession.fstl || '-' }}</div>
+              <div class="text-[10px] text-slate-700">FSTL / Plant Operations</div>
+            </td>
+          </tr>
+        </table>
+
+        <!-- Footer watermark -->
+        <div class="mt-3 text-center text-[10px] text-slate-600">
+          PT. Santos Jaya Abadi &bull; Form F/QC/01.030 Rev.01 &bull; Dokumen digital otomatis tersinkronisasi dari SCADA &bull; {{ today }}
+        </div>
+      </div>
+      </div> <!-- /v-show="reportViewMode === 'document'" -->
+    </div> <!-- /TAB 2: activeTab === 'report' -->

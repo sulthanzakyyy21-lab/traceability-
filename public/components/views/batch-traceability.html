@@ -1,0 +1,1379 @@
+    <!-- ══════════════════════════════════════════════════════════════
+         TAB 1: PENELUSURAN BATCH (7 SIMPUL ALUR PROSES INDUSTRIAL)
+    ══════════════════════════════════════════════════════════════ -->
+    <div v-show="activeTab === 'pipeline'" :class="activeTab !== 'pipeline' ? 'no-print' : ''" class="space-y-4 slow-smooth-entrance">
+
+<!-- include: components/tables/table-work-orders.html -->
+
+      <!-- ── SUB-VIEW 2: DETAIL HASIL PENELUSURAN WORK ORDER AKTIF ── -->
+      <div v-else class="space-y-4">
+      <!-- ── ALERT PARAMETER LAPANGAN BELUM TERISI (TEPAT DI BAWAH BAR ATAS) ── -->
+      <div
+        v-if="auditTimer.status === 'running' && traceResult && traceResult.packing && !traceResult.packing.error && (!auditVerification || !auditVerification.konsentrasi_lye || !auditVerification.helper_packing)"
+        class="p-3 sm:p-3.5 bg-amber-50/90 border border-amber-200/90 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-amber-950 shadow-2xs animate-step-1"
+      >
+        <div class="flex items-center gap-2.5 flex-wrap">
+          <span class="w-6 h-6 rounded-lg bg-amber-100 border border-amber-300 flex items-center justify-center text-amber-700 shrink-0 text-xs font-bold">⚠</span>
+          <span class="text-xs font-black text-amber-950">
+            {{ (!auditVerification?.konsentrasi_lye && !auditVerification?.helper_packing) ? '2' : '1' }} Parameter Lapangan Belum Terisi:
+          </span>
+          <div class="flex items-center gap-2 flex-wrap text-xs">
+            <span v-if="!auditVerification?.konsentrasi_lye" class="px-2.5 py-0.5 rounded-lg bg-white border border-amber-300 text-amber-900 font-bold inline-flex items-center gap-1 shadow-2xs">
+              <span class="text-[10px] text-amber-700 uppercase font-mono">PA</span> Konsentrasi Lye
+            </span>
+            <span v-if="!auditVerification?.helper_packing" class="px-2.5 py-0.5 rounded-lg bg-white border border-amber-300 text-amber-900 font-bold inline-flex items-center gap-1 shadow-2xs">
+              <span class="text-[10px] text-amber-700 uppercase font-mono">Produksi</span> Helper Packing
+            </span>
+          </div>
+        </div>
+        <button
+          type="button"
+          @click="openVerificationModal"
+          class="px-4 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl text-xs shadow-xs transition-all flex items-center gap-1.5 shrink-0 cursor-pointer border border-amber-600"
+        >
+          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+          <span>Input Verifikasi</span>
+        </button>
+      </div>
+
+      <!-- ── TOP WORK ORDER CONTEXT BAR (TERKUNCI & MUTLAK) ── -->
+      <div class="flex flex-wrap items-center justify-between gap-3 bg-white px-4 py-3 sm:py-3.5 rounded-2xl border border-slate-200/90 shadow-2xs">
+        <div class="flex items-center gap-2.5 flex-wrap">
+          <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Sesi:</span>
+          <select
+            v-if="traceabilitySessions && traceabilitySessions.length"
+            :value="activeSessionId"
+            @change="openSession($event.target.value)"
+            class="bg-slate-50 hover:bg-slate-100 border border-slate-300 hover:border-cyan-400 rounded-xl text-xs font-bold px-3 py-1.5 text-slate-800 outline-none shadow-2xs cursor-pointer transition-colors"
+            title="Pilih sesi work order aktif"
+          >
+            <option v-for="s in traceabilitySessions" :key="s.id" :value="s.id">
+              {{ s.code || s.id }} ({{ s.noBatch || s.forward?.namaBahan }})
+            </option>
+          </select>
+          <span v-else class="text-xs font-mono font-bold text-slate-700">
+            {{ activeSession?.code || activeSessionId || '-' }}
+          </span>
+        </div>
+
+        <div class="flex items-center gap-2 flex-wrap">
+          <!-- Badge Batch Terkunci -->
+          <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-cyan-50 border border-cyan-200 text-cyan-900 font-mono text-xs font-black">
+            <span class="w-1.5 h-1.5 rounded-full bg-cyan-600"></span>
+            <span>Batch #{{ traceForm.noBatch || activeSession?.targetBatch || '-' }}</span>
+          </div>
+
+          <!-- Badge Arah Terkunci -->
+          <div class="inline-flex items-center gap-1 px-3 py-1 rounded-xl bg-slate-100 border border-slate-200 text-slate-800 text-xs font-bold">
+            <span>{{ auditSession.jenis === 'Backward' ? '⟵ Backward (FG → RM)' : 'Forward (RM → FG) ⟶' }}</span>
+          </div>
+
+          <!-- Badge Tower & Tahun Terkunci -->
+          <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-slate-50 border border-slate-200 text-slate-600 font-mono text-xs font-semibold">
+            <span>Tower {{ traceForm.tower || activeSession?.tower || '1' }}</span>
+            <span class="text-slate-300">&bull;</span>
+            <span>{{ traceForm.tahun || activeSession?.tahun || '2026' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── HERO BATCH OVERVIEW CARD (SESUAI SCREENSHOT) ── -->
+      <div class="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/90 shadow-2xs space-y-5">
+        <!-- Header Row -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
+          <div>
+            <div class="flex items-center gap-2.5 flex-wrap">
+              <h2 class="text-lg sm:text-xl font-black text-slate-900 tracking-tight">
+                Batch <span class="text-cyan-700 font-mono font-black ml-1">#{{ traceForm.noBatch || activeSession?.targetBatch || '-' }}</span>
+              </h2>
+              <span class="text-slate-300 hidden sm:inline">|</span>
+              <p class="text-xs text-slate-500 flex items-center gap-2 flex-wrap">
+                <span>{{ auditSession.area || 'SJA Sukodono' }}</span>
+                <span class="text-slate-300">&bull;</span>
+                <span>PIC: <strong class="text-slate-800 font-semibold">{{ auditSession.picPelaksana || '-' }}</strong></span>
+                <span class="text-slate-300">&bull;</span>
+                <span>{{ auditSession.tanggalPelaksanaan }}</span>
+              </p>
+            </div>
+          </div>
+
+          <!-- Action Buttons on Right -->
+          <div class="flex items-center gap-2 shrink-0 flex-wrap">
+            <button
+              type="button"
+              @click="activeSession ? openSessionReport(activeSession) : navigateToReport('document')"
+              class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 border border-slate-200 transition-colors cursor-pointer"
+              title="Buka Dokumen Form F/QC/01.030 Laporan Traceability Resmi"
+            >
+              <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+              </svg>
+              <span>F/QC/01.030</span>
+            </button>
+
+            <button
+              type="button"
+              @click="showAuditDetails = true"
+              class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 border border-slate-200 transition-colors cursor-pointer"
+              title="Buka rincian tim pelaksana audit"
+            >
+              <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              <span>Tim &amp; Approval</span>
+            </button>
+
+            <!-- Timer / Stopwatch Control -->
+            <div
+              v-if="auditTimer.status === 'running'"
+              class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-mono font-bold bg-rose-50 border border-rose-200 text-rose-800"
+            >
+              <span class="w-2 h-2 rounded-full bg-rose-500 animate-ping"></span>
+              <span>{{ formatStopwatch(auditTimer.elapsedSeconds) }}</span>
+              <button
+                v-if="isAdmin"
+                type="button"
+                @click="stopTraceabilityAudit"
+                class="ml-1 text-rose-600 hover:text-rose-900 font-extrabold cursor-pointer"
+                title="Selesai / Stop Timer"
+              >
+                ■ Stop
+              </button>
+            </div>
+            <div
+              v-else-if="auditTimer.status === 'completed'"
+              class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 border border-slate-200 text-slate-800 font-mono"
+            >
+              <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+              <span>{{ auditSessionTotalWaktu }}</span>
+            </div>
+            <button
+              v-else-if="isAdmin"
+              type="button"
+              @click="startTraceabilityAudit"
+              :disabled="tracing"
+              class="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-cyan-700 hover:bg-cyan-800 text-white font-bold rounded-xl text-xs transition-colors cursor-pointer border border-cyan-700 disabled:opacity-50"
+            >
+              <svg class="w-3 h-3 fill-current" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              <span>Mulai Audit</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 4 Kolom KPI Metrik -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 pt-1">
+          <div>
+            <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">PRODUK FINISHED GOOD</span>
+            <div class="flex items-center gap-1.5 mt-1 flex-wrap">
+              <span class="text-sm sm:text-base font-black text-slate-900 break-words">
+                {{ headerNamaProduk !== '-' ? headerNamaProduk : '—' }}
+              </span>
+              <span v-if="headerPin !== '-'" class="px-2 py-0.5 rounded-md text-[10.5px] font-mono font-bold bg-cyan-50 text-cyan-800 border border-cyan-200">
+                PIN {{ headerPin }}
+              </span>
+            </div>
+          </div>
+
+          <div>
+            <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">TANGGAL PRODUKSI</span>
+            <span class="text-sm sm:text-base font-black text-slate-900 mt-1 block font-mono">
+              {{ headerTanggalProduksi !== '-' ? headerTanggalProduksi : '—' }}
+            </span>
+          </div>
+
+          <div>
+            <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">TOTAL OUTPUT</span>
+            <span class="text-sm sm:text-base font-black text-slate-900 mt-1 block font-mono">
+              <template v-if="headerOutputKg > 0">
+                {{ headerOutputKg.toLocaleString('id-ID') }} kg
+                <span v-if="headerOutputBox > 0" class="text-xs text-slate-500 font-semibold ml-1">({{ headerOutputBox.toLocaleString('id-ID') }} Box)</span>
+              </template>
+              <template v-else>—</template>
+            </span>
+          </div>
+
+          <div>
+            <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">YIELD / RASIO IC</span>
+            <span class="text-sm sm:text-base font-black text-slate-900 mt-1 block font-mono">
+              <template v-if="headerYieldVal !== '-'">
+                {{ headerYieldVal }}
+                <span v-if="headerRasioVal !== '-'" class="text-xs text-cyan-700 font-semibold ml-1">
+                  (Rasio {{ headerRasioVal }})
+                </span>
+              </template>
+              <template v-else class="text-xs text-slate-400 font-normal">
+                — Menunggu Verifikasi PA
+              </template>
+            </span>
+          </div>
+        </div>
+
+        <!-- Banner Jika Data Batch Tidak Ditemukan -->
+        <div
+          v-if="traceResult && (!traceResult.packing || traceResult.packing.error) && (!traceResult.dryer || traceResult.dryer.error)"
+          class="p-3.5 bg-rose-50 border border-rose-200 rounded-xl flex items-center gap-3 text-rose-900 text-xs animate-step-1"
+        >
+          <svg class="w-5 h-5 text-rose-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+          <div>
+            <span class="font-bold">Data Tidak Ditemukan:</span>
+            <span> Rekaman untuk batch <strong>{{ traceResult?.input?.noBatchFull || traceForm.noBatch }}</strong> (Tower {{ traceResult?.input?.tower || traceForm.tower }}, Tahun {{ traceResult?.input?.tahun || traceForm.tahun }}) tidak ditemukan di database MySQL. Seluruh data disajikan murni tanpa data tiruan.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── MODAL: RINCIAN AUDIT & TIM APPROVAL (FORM F/QC/01.030) ── -->
+      <div v-if="showAuditDetails" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs no-print">
+        <div class="bg-white rounded-2xl shadow-2xl border border-cyan-100 max-w-2xl w-full overflow-hidden animate-step-1">
+          <!-- Modal Header -->
+          <div class="bg-gradient-to-r from-cyan-600 to-cyan-500 px-6 py-4 border-b border-cyan-700/30 flex items-center justify-between text-white">
+            <div>
+              <div class="flex items-center gap-2">
+                <h3 class="text-base font-black text-white">Informasi Audit &amp; Tim Approval</h3>
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-cyan-600 text-white border border-cyan-400/40 shadow-2xs">
+                  Form F/QC/01.030
+                </span>
+              </div>
+              <p class="text-xs text-slate-100 mt-0.5 font-medium">Konfigurasi metadata pelaksanaan audit resmi PT. Santos Jaya Abadi.</p>
+            </div>
+            <button
+              type="button"
+              @click="showAuditDetails = false"
+              class="w-8 h-8 rounded-lg bg-white/20 hover:bg-white text-white hover:text-slate-900 border border-white/30 flex items-center justify-center font-bold text-sm cursor-pointer transition-colors shadow-2xs"
+            >
+              &times;
+            </button>
+          </div>
+
+          <div class="p-6 space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-xs">
+              <div>
+                <label class="block font-bold text-stone-700 mb-1">Area Audit</label>
+                <input v-model="auditSession.area" type="text" class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-cyan-500" />
+              </div>
+              <div>
+                <label class="block font-bold text-stone-700 mb-1">Tanggal Pelaksanaan</label>
+                <input v-model="auditSession.tanggalPelaksanaan" type="text" class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-cyan-500" />
+              </div>
+              <div>
+                <label class="block font-bold text-stone-700 mb-1">PIC Pelaksana</label>
+                <input v-model="auditSession.picPelaksana" type="text" class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-cyan-500" />
+              </div>
+              <div>
+                <label class="block font-bold text-stone-700 mb-1">FSTL (Food Safety Team Leader)</label>
+                <input v-model="auditSession.fstl" type="text" class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-cyan-500" />
+              </div>
+              <div>
+                <label class="block font-bold text-stone-700 mb-1">Auditor (Nama &amp; TTD)</label>
+                <textarea v-model="auditSession.auditor" rows="2" class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-cyan-500 resize-none"></textarea>
+              </div>
+              <div>
+                <label class="block font-bold text-stone-700 mb-1">Auditee (Nama &amp; TTD)</label>
+                <textarea v-model="auditSession.auditee" rows="2" class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-cyan-500 resize-none"></textarea>
+              </div>
+              <div class="sm:col-span-2">
+                <label class="block font-bold text-stone-700 mb-1">Scenario / Case Traceability</label>
+                <input v-model="auditSession.scenario" type="text" class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-cyan-500" />
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between pt-3 border-t border-stone-200">
+              <button
+                type="button"
+                @click="loadPresetAudit"
+                class="text-xs font-bold text-cyan-600 hover:text-cyan-700 hover:underline cursor-pointer"
+              >
+                ↺ Muat Preset Default FSSC (A370/26)
+              </button>
+              <button
+                type="button"
+                @click="showAuditDetails = false"
+                class="px-5 py-2 bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white font-bold rounded-xl text-xs cursor-pointer shadow-xs transition-colors"
+              >
+                Simpan &amp; Tutup
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── BARIS 8 TAHAPAN PROSES (SIMPUL ALUR BERSIH SESUAI SCREENSHOT) ── -->
+      <div class="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/90 shadow-2xs space-y-3.5">
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex items-center gap-2">
+            <h4 class="text-xs font-black uppercase tracking-wider text-slate-900">
+              ALUR PROSES PRODUKSI &bull; <span class="text-slate-500 font-semibold">{{ auditSession.jenis === 'Backward' ? 'Urutan Backward (FG → RM)' : 'Urutan Forward (RM → FG)' }}</span>
+            </h4>
+          </div>
+          <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-cyan-50 text-cyan-800 border border-cyan-200">
+            {{ clusterConfigList.length }} Tahapan
+          </span>
+        </div>
+
+        <div id="flow-stage-chips-container" class="relative">
+          <!-- KAPSUL MELUNCUR (HARDWARE-ACCELERATED SLIDING ACTIVE PILL INDICATOR) -->
+          <div id="flow-stage-active-pill" aria-hidden="true"></div>
+
+          <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2.5">
+            <button
+              v-for="(cfg, cIdx) in clusterConfigList"
+              :key="cfg.key"
+              :data-flow-cluster="cfg.key"
+              type="button"
+              @click="selectCluster(cfg.key)"
+              :title="cfg.name"
+              class="flow-stage-card relative z-2 flex flex-col items-center text-center p-3 rounded-2xl transition-all cursor-pointer select-none group border"
+              :class="selectedClusterKey === cfg.key ? 'is-active' : ''"
+            >
+            <!-- Status Badge di Pojok Kanan Atas -->
+            <span
+              v-if="(cfg.key === 'packing' || cfg.key === 'extraction') && (!auditVerification || !auditVerification.konsentrasi_lye || (!auditVerification.helper_packing && cfg.key === 'packing'))"
+              class="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-amber-400 shadow-[0_0_6px_rgba(251,191,36,0.8)]"
+              title="Menunggu verifikasi lapangan"
+            ></span>
+            <span
+              v-else
+              class="absolute top-2 right-2.5 text-emerald-500 font-black text-xs"
+              title="Terverifikasi lengkap"
+            >
+              ✓
+            </span>
+
+            <!-- Kotak Ikon: Berisi Blok Warna Solid Cyan Saat Ditekan / Aktif -->
+            <div
+              class="w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200 shrink-0"
+              :class="selectedClusterKey === cfg.key
+                ? 'bg-cyan-700 text-white shadow-xs'
+                : 'bg-slate-100 text-slate-500 group-hover:bg-slate-200/80 group-hover:text-slate-800'"
+              v-html="cfg.iconSvg"
+            ></div>
+
+            <!-- Nama Tahapan -->
+            <span
+              class="text-xs mt-2 font-bold truncate w-full px-1"
+              :class="selectedClusterKey === cfg.key ? 'text-slate-900 font-black' : 'text-slate-700'"
+            >
+              {{ cfg.name }}
+            </span>
+
+            <!-- Label Flow -->
+            <span
+              class="text-[10px] mt-0.5 font-mono font-semibold"
+              :class="selectedClusterKey === cfg.key ? 'text-cyan-700 font-bold' : 'text-slate-400'"
+            >
+              {{ cfg.flows.join(' & ') }}
+            </span>
+          </button>
+        </div>
+      </div>
+      </div>
+
+      <div id="flow-detail-panel" class="transition-all duration-300">
+        <!-- Skeleton Shimmer Screen saat loading penelusuran (CLS = 0) -->
+        <div v-if="tracing" class="space-y-5 animate-pulse no-print" aria-busy="true" aria-label="Memuat data penelusuran...">
+          <div class="h-24 rounded-2xl skeleton-shimmer border border-stone-200"></div>
+          <div class="h-64 rounded-2xl skeleton-shimmer border border-stone-200"></div>
+          <div class="h-64 rounded-2xl skeleton-shimmer border border-stone-200"></div>
+        </div>
+        <Transition v-else name="cluster-fade" mode="out-in">
+          <div :key="selectedClusterKey" class="space-y-5">
+            <!-- Banner Klaster Atas (Clean White Card) -->
+            <div v-if="activeCluster" class="bg-white text-slate-900 rounded-2xl p-5 sm:p-6 shadow-xs flex items-center justify-between gap-4 animate-step-1 border border-slate-200 relative">
+              <div class="flex items-center gap-4">
+                <div class="w-11 h-11 rounded-xl bg-cyan-50 border border-cyan-200 flex items-center justify-center text-cyan-700 shrink-0" v-html="activeCluster.iconSvg"></div>
+                <div>
+                  <span class="text-[10px] font-mono uppercase tracking-wider text-cyan-700 font-bold">{{ activeCluster.clusterBadge }}</span>
+                  <h3 class="text-lg sm:text-xl font-black text-slate-900 tracking-tight mt-0.5">{{ activeCluster.name }}</h3>
+                  <p class="text-xs text-slate-500 mt-0.5">Menampilkan data operasional dan pengujian mutu untuk {{ activeCluster.subflows?.length || 0 }} tahapan alur penelusuran.</p>
+                </div>
+              </div>
+              <span class="hidden sm:inline-flex px-3 py-1.5 rounded-xl bg-slate-100 text-xs font-bold text-slate-700 border border-slate-200">
+                {{ activeCluster.subflows?.length || 0 }} Flow Tergabung
+              </span>
+            </div>
+
+            <!-- Kartu Sub-Flows -->
+            <div
+              v-for="(flow, flowIdx) in (activeCluster?.subflows || [])"
+              :key="flowIdx"
+              class="bg-white/95 backdrop-blur-xs border border-cyan-100 rounded-2xl shadow-xs overflow-hidden"
+              :class="`animate-step-${Math.min(flowIdx + 2, 3)}`"
+            >
+              <!-- Header Tahapan Ambient Ribbon -->
+              <div class="px-5 sm:px-6 py-3.5 flow-ribbon-bg border-b border-cyan-100 flex items-center justify-between gap-4 relative overflow-hidden">
+                <div class="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-cyan-600 via-cyan-500 to-cyan-600"></div>
+                <div class="flex items-center gap-3.5 flex-wrap pl-1">
+                  <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-gradient-to-r from-cyan-600 via-cyan-500 to-cyan-600 text-white font-mono font-bold text-xs shadow-xs border border-cyan-600">
+                    <span class="w-1.5 h-1.5 rounded-full bg-cyan-200"></span>
+                    <span>{{ flow.flowNumber }}</span>
+                  </div>
+                  <h4 class="text-sm sm:text-base font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
+                    <span v-if="flow.iconSvg" class="w-4 h-4 text-cyan-700 shrink-0 inline-flex items-center" v-html="flow.iconSvg"></span>
+                    {{ flow.title }}
+                  </h4>
+                  <span class="px-2.5 py-0.5 rounded-lg text-[11px] font-mono font-semibold bg-cyan-50 text-cyan-900 border border-cyan-200 shadow-2xs">
+                    {{ flow.refDoc }}
+                  </span>
+                </div>
+
+                <!-- Status Badge Header -->
+                <div class="flex items-center gap-2 shrink-0">
+                  <span
+                    class="px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 border"
+                    :class="flow.isAvailable !== false
+                      ? 'bg-emerald-50 text-emerald-800 border-emerald-300/60'
+                      : 'bg-slate-100 text-slate-700 border-slate-200'"
+                  >
+                    <span class="w-1.5 h-1.5 rounded-full" :class="flow.isAvailable !== false ? 'bg-emerald-500' : 'bg-white'"></span>
+                    <span>{{ flow.isAvailable !== false ? 'Data MySQL Terverifikasi' : 'Data Belum Tersedia' }}</span>
+                  </span>
+                </div>
+              </div>
+
+              <!-- Notice Banner jika data PIC belum tersedia di database -->
+              <div v-if="flow.isAvailable === false" class="m-5 sm:m-6 p-5 rounded-xl bg-slate-50 border border-slate-200 flex items-start gap-3.5">
+                <div class="w-8 h-8 rounded-lg bg-cyan-50 border border-cyan-200 text-cyan-700 flex items-center justify-center shrink-0 mt-0.5">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                </div>
+                <div class="text-xs">
+                  <span class="font-bold text-slate-900 block text-sm">Data Belum Ada di Database (PIC {{ flow.pendingPicName }})</span>
+                  <span class="text-slate-600 leading-relaxed block mt-1">
+                    {{ flow.noticeText || 'Rekaman untuk alur proses ini belum tersedia atau belum diinput ke database MySQL. Seluruh isian dikosongkan untuk menjamin akurasi data tanpa asumsi fiktif.' }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Body Kartu: Data Operasional & Uji Mutu (Hanya jika data tersedia) -->
+              <!-- Body Kartu: Data Operasional & Uji Mutu (Hanya jika data tersedia) -->
+              <div v-if="flow.isAvailable !== false" class="p-5 sm:p-6 space-y-5">
+                <!-- ── CONTAINER 1: PIC PRODUKSI (atau PA jika flow khusus air) ── -->
+                <div class="border border-cyan-100 bg-white rounded-2xl p-4 sm:p-5 shadow-2xs">
+                  <div class="flex flex-wrap items-center justify-between gap-3 mb-4 pb-3 border-b border-cyan-100">
+                    <div class="flex items-center gap-2 flex-wrap">
+                      <span class="w-2.5 h-2.5 rounded-full bg-cyan-600"></span>
+                      <h5 class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2 flex-wrap">
+                        <span>{{ cleanSectionTitle(flow.operationalTitle) }}</span>
+                        <span class="px-2 py-0.5 rounded-md text-[11px] font-black uppercase bg-cyan-50 text-cyan-900 border border-cyan-200 normal-case tracking-normal shadow-2xs">({{ getProdRole(flow) }})</span>
+                      </h5>
+                    </div>
+                    <!-- Tombol Raw Data MySQL Produksi -->
+                    <button
+                      v-if="flow.prodTable && flow.prodTable.rows?.length > 0"
+                      type="button"
+                      @click="openInspectProd(flow)"
+                      class="btn-secondary-action inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-white hover:bg-cyan-50 text-slate-800 border border-cyan-200 rounded-xl transition-all cursor-pointer shadow-2xs hover:shadow-xs"
+                      title="Inspect data produksi di pop-up modal"
+                    >
+                      <svg class="w-3.5 h-3.5 text-cyan-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+                      <span>Inspect Data ({{ getProdRole(flow) }})</span>
+                      <span class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-cyan-100 text-cyan-900 font-bold">
+                        {{ flow.prodTable.rows.length }} Baris
+                      </span>
+                      <span class="text-[9.5px] font-mono px-1.5 py-0.2 rounded bg-cyan-600 text-white font-bold">
+                        Pop-up
+                      </span>
+                    </button>
+                  </div>
+
+                  <!-- ── RENDER MODULAR SUB-SEKSI OPERASIONAL / PA (Fisika Kimia, Mikrobiologi, dll) ── -->
+                  <template v-if="flow.sections && flow.sections.length > 0">
+                    <div
+                      v-for="(sec, sIdx) in flow.sections"
+                      :key="sIdx"
+                      :class="sIdx > 0 ? 'pt-4 mt-4 border-t border-cyan-100' : ''"
+                    >
+                      <div class="flex flex-wrap items-center justify-between gap-2 mb-2.5">
+                        <div class="flex items-center gap-2">
+                          <span class="w-2 h-2 rounded-full" :class="sec.dotColor || 'bg-cyan-600'"></span>
+                          <h6 class="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                            {{ cleanSectionTitle(sec.title) }}
+                          </h6>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                          <span v-if="sec.refForm" class="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-50 text-cyan-900 font-semibold border border-cyan-200">
+                            {{ sec.refForm }}
+                          </span>
+                          <span v-if="sec.badge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-semibold border border-slate-200">
+                            {{ sec.badge }}
+                          </span>
+                        </div>
+                      </div>
+
+                      <!-- Grid Isian Parameter Sub-seksi -->
+                      <div v-if="sec.fields && sec.fields.length > 0" class="dynamic-param-grid">
+                        <div
+                          v-for="(f, fIdx) in sec.fields"
+                          :key="fIdx"
+                          class="param-metric-card flex flex-col justify-between"
+                          :class="f.colSpan || ''"
+                        >
+                          <div class="flex items-start justify-between gap-1 mb-1 min-w-0">
+                            <span class="param-metric-label" :title="f.label">{{ f.label }}</span>
+                            <span v-if="f.badge" class="text-[9.5px] font-mono px-1.5 py-0.2 rounded bg-stone-100 text-stone-600 border border-stone-200 shrink-0 mt-0.5">{{ f.badge }}</span>
+                          </div>
+                          <div class="my-0.5 min-w-0 min-h-[1.5rem] flex items-center">
+                            <span
+                              class="text-xs sm:text-[13px] md:text-sm font-bold text-stone-900 break-words leading-tight"
+                              :title="formatMetricVal(f.value)"
+                            >
+                              {{ formatMetricVal(f.value) }}
+                            </span>
+                          </div>
+                          <span v-if="f.spec" class="text-[11px] font-mono text-stone-600 font-medium mt-1 flex items-center gap-1.5" :title="f.spec">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></span>
+                            <span class="break-words leading-snug">{{ f.spec }}</span>
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </template>
+
+                  <!-- Grid Isian Parameter Operasional Standar (Fallback jika tidak ada sub-sections) -->
+                  <div v-else-if="flow.fields && flow.fields.length > 0" class="dynamic-param-grid">
+                    <div
+                      v-for="(f, fIdx) in flow.fields"
+                      :key="fIdx"
+                      class="param-metric-card flex flex-col justify-between"
+                      :class="f.colSpan || ''"
+                    >
+                      <div class="flex items-start justify-between gap-1 mb-1 min-w-0">
+                        <span class="param-metric-label" :title="f.label">{{ f.label }}</span>
+                        <span v-if="f.badge" class="text-[9.5px] font-mono px-1.5 py-0.2 rounded bg-stone-100 text-stone-600 border border-stone-200 shrink-0 mt-0.5">{{ f.badge }}</span>
+                      </div>
+                      <div class="my-0.5 min-w-0 min-h-[1.5rem] flex items-center">
+                        <span
+                          class="text-xs sm:text-[13px] md:text-sm font-bold text-stone-900 break-words leading-tight"
+                          :title="formatMetricVal(f.value)"
+                        >
+                          {{ formatMetricVal(f.value) }}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div v-else class="text-xs text-slate-400 italic py-2">
+                    Belum ada rekaman parameter operasional di database untuk alur ini.
+                  </div>
+
+                  <!-- Petugas PIC Produksi (Di bawah Container Produksi) -->
+                  <div
+                    v-if="(flow.pic?.operasional && flow.pic.operasional !== '-') || (getProdRole(flow) === 'PA' && flow.pic?.pa)"
+                    class="mt-4 pt-3 border-t border-cyan-100 flex items-center justify-between text-xs"
+                  >
+                    <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-cyan-200 text-slate-800 shadow-2xs">
+                      <span class="w-2 h-2 rounded-full bg-cyan-600 shrink-0"></span>
+                      <span class="text-[11px] font-bold text-cyan-800 uppercase tracking-wide">Petugas {{ getProdRole(flow) }}:</span>
+                      <strong class="font-black text-slate-900 text-xs sm:text-sm tracking-tight break-words">{{ formatMetricVal(flow.pic?.operasional || flow.pic?.pa) }}</strong>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- ── CONTAINER 2: PIC PA (Product Assurance & Sanitasi CIP) ── -->
+                <div
+                  v-if="(flow.paSections && flow.paSections.length > 0) || (flow.paFields && flow.paFields.length > 0) || flow.paTable"
+                  class="border border-emerald-900/20 bg-emerald-50/15 rounded-2xl p-4 sm:p-5 shadow-2xs"
+                >
+                  <div class="flex flex-wrap items-center justify-between gap-3 mb-4 pb-3 border-b border-emerald-900/10">
+                    <div class="flex items-center gap-2 flex-wrap">
+                      <span class="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
+                      <h5 class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2 flex-wrap">
+                        <span>{{ cleanSectionTitle(flow.paTitle || 'Verifikasi Sanitasi CIP & Pasokan Air') }}</span>
+                        <span class="px-2 py-0.5 rounded-md text-[11px] font-black uppercase bg-emerald-100 text-emerald-950 border border-emerald-300 normal-case tracking-normal shadow-2xs">(PA)</span>
+                      </h5>
+                    </div>
+                    <div class="flex items-center gap-2 flex-wrap">
+                      <!-- Tombol Checklist Sanitasi CIP / COP (Plant 1 / Plant 2) -->
+                      <button
+                        v-if="flow.cipChecklist && !(flow.paSections && flow.paSections.some(s => s.cipChecklist))"
+                        type="button"
+                        @click="openInspectCip(flow.cipChecklist, flow.flowNumber?.includes('2') ? 'Checklist COP & Sanitasi Area Packing' : (flow.flowNumber?.includes('4') ? 'Checklist CIP & Flushing Area Dryer' : 'Checklist CIP & Flushing Area Extraction'))"
+                        class="btn-secondary-action inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-blue-50/80 hover:bg-blue-100 text-blue-950 border border-blue-200 rounded-xl transition-all cursor-pointer shadow-2xs hover:shadow-xs active:scale-97"
+                        :title="'Buka checklist sanitasi ' + (flow.flowNumber?.includes('2') ? 'COP Packing' : 'CIP') + ' di pop-up inspector'"
+                      >
+                        <span class="font-bold">{{ flow.flowNumber?.includes('2') ? 'Inspect Checklist COP' : 'Inspect Checklist CIP' }}</span>
+                        <span class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-white text-blue-950 border border-blue-200 font-bold">
+                          {{ flow.cipChecklist.recordedItems }} / {{ flow.cipChecklist.totalItems }} Titik
+                        </span>
+                      </button>
+
+                      <!-- Tombol Raw Data MySQL PA (hanya tampil jika sub-seksi belum memiliki tombol masing-masing) -->
+                      <button
+                        v-if="flow.paTable && flow.paTable.rows?.length > 0 && !(flow.paSections && flow.paSections.some(s => s.paTable))"
+                        type="button"
+                        @click="openInspectPa(flow)"
+                        class="btn-secondary-action inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-white hover:bg-emerald-50 text-emerald-950 border border-emerald-900/20 rounded-xl transition-all cursor-pointer shadow-2xs hover:shadow-xs"
+                        title="Buka raw data PA di pop-up inspector"
+                      >
+                        <svg class="w-3.5 h-3.5 text-emerald-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
+                        <span>Inspect Raw Data PA</span>
+                        <span class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-emerald-100/70 text-emerald-900 font-bold">
+                          {{ flow.paTable.rows.length }} Baris
+                        </span>
+                        <span class="text-[9.5px] font-mono px-1.5 py-0.2 rounded bg-emerald-800 text-white font-bold">
+                          Pop-up
+                        </span>
+                      </button>
+                      <span v-else-if="!flow.cipChecklist && !(flow.paSections && flow.paSections.some(s => s.cipChecklist || s.paTable))" class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-100/80 text-emerald-900 font-bold border border-emerald-300/60">
+                        Sanitasi & Product Assurance
+                      </span>
+                    </div>
+                  </div>
+
+                  <!-- ── RENDER MODULAR SUB-SEKSI PA (COP Instrument, EMP, ABE, CIP, dll) ── -->
+                  <template v-if="flow.paSections && flow.paSections.length > 0">
+                    <div
+                      v-for="(sec, sIdx) in flow.paSections"
+                      :key="sIdx"
+                      :class="sIdx > 0 ? 'pt-4 mt-4 border-t border-emerald-900/15' : ''"
+                    >
+                      <div class="flex flex-wrap items-center justify-between gap-2 mb-2.5">
+                        <div class="flex items-center gap-2">
+                          <span class="w-2 h-2 rounded-full" :class="sec.dotColor || 'bg-emerald-600'"></span>
+                          <h6 class="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                            {{ cleanSectionTitle(sec.title) }}
+                          </h6>
+                        </div>
+                        <div class="flex items-center gap-1.5 flex-wrap">
+                          <!-- Tombol Checklist Titik Instrumen per Sub-seksi -->
+                          <button
+                            v-if="sec.cipChecklist"
+                            type="button"
+                            @click="openInspectCip(sec.cipChecklist, 'Checklist ' + sec.title)"
+                            class="btn-secondary-action inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold bg-blue-50/80 hover:bg-blue-100 text-blue-950 border border-blue-200 rounded-lg transition-all cursor-pointer shadow-2xs active:scale-97"
+                            :title="'Buka checklist ' + sec.title + ' di pop-up inspector'"
+                          >
+                            <span class="font-bold">{{ (sec.title?.includes('COP') || sec.badge === 'COP') ? 'Inspect Checklist COP' : 'Inspect Checklist CIP' }}</span>
+                            <span class="text-[9.5px] font-mono px-1.5 py-0.2 rounded bg-white text-blue-950 border border-blue-200 font-bold">
+                              {{ sec.cipChecklist.recordedItems }} / {{ sec.cipChecklist.totalItems }} Titik
+                            </span>
+                          </button>
+
+                          <!-- Tombol Checklist EMP Internal (Non-Pathogen) -->
+                          <button
+                            v-if="sec.empInternalChecklist"
+                            type="button"
+                            @click="openInspectEmp(sec.empInternalChecklist, 'Checklist Environmental Swab Internal (Non Pathogen)', 'internal')"
+                            class="btn-secondary-action inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold bg-teal-50/80 hover:bg-teal-100 text-teal-950 border border-teal-200 rounded-lg transition-all cursor-pointer shadow-2xs active:scale-97"
+                            title="Buka checklist Environmental Swab Internal di pop-up inspector"
+                          >
+                            <span class="font-bold">Inspect Checklist Internal</span>
+                            <span class="text-[9.5px] font-mono px-1.5 py-0.2 rounded bg-white text-teal-950 border border-teal-200 font-bold">
+                              {{ sec.empInternalChecklist.totalItems }} Titik
+                            </span>
+                          </button>
+
+                          <!-- Tombol Checklist EMP Eksternal (Pathogen) -->
+                          <button
+                            v-if="sec.empExternalChecklist"
+                            type="button"
+                            @click="openInspectEmp(sec.empExternalChecklist, 'Checklist Environmental Swab Eksternal (Pathogen)', 'external')"
+                            class="btn-secondary-action inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold bg-blue-50/80 hover:bg-blue-100 text-blue-950 border border-blue-200 rounded-lg transition-all cursor-pointer shadow-2xs active:scale-97"
+                            title="Buka checklist Environmental Swab Eksternal di pop-up inspector"
+                          >
+                            <span class="font-bold">Inspect Checklist Eksternal</span>
+                            <span class="text-[9.5px] font-mono px-1.5 py-0.2 rounded bg-white text-blue-950 border border-blue-200 font-bold">
+                              {{ sec.empExternalChecklist.totalItems }} Titik
+                            </span>
+                          </button>
+
+                          <!-- Tombol Checklist Air Bacteria Exposed (ABE) -->
+                          <button
+                            v-if="sec.abeChecklist"
+                            type="button"
+                            @click="openInspectAbe(sec.abeChecklist, 'Checklist Air Bacteria Exposed')"
+                            class="btn-secondary-action inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold bg-cyan-50/80 hover:bg-cyan-100 text-cyan-950 border border-cyan-200 rounded-lg transition-all cursor-pointer shadow-2xs active:scale-97"
+                            title="Buka checklist Air Bacteria Exposed di pop-up inspector"
+                          >
+                            <span class="font-bold">Inspect Checklist ABE</span>
+                            <span class="text-[9.5px] font-mono px-1.5 py-0.2 rounded bg-white text-cyan-950 border border-cyan-200 font-bold">
+                              {{ sec.abeChecklist.totalItems }} Titik
+                            </span>
+                          </button>
+
+                          <!-- Tombol Raw Data MySQL per Sub-seksi -->
+                          <button
+                            v-if="sec.paTable && sec.paTable.rows?.length > 0"
+                            type="button"
+                            @click="openInspectPa(sec.paTable)"
+                            class="btn-secondary-action inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold bg-white hover:bg-emerald-50 text-emerald-950 border border-emerald-900/20 rounded-lg transition-all cursor-pointer shadow-2xs hover:shadow-xs active:scale-97"
+                            :title="'Buka tabel data ' + sec.title + ' di pop-up inspector'"
+                          >
+                            <svg class="w-3 h-3 text-emerald-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
+                            <span>Inspect Table</span>
+                            <span class="text-[9.5px] font-mono px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-900 font-bold">
+                              {{ sec.paTable.rows.length }} Baris
+                            </span>
+                          </button>
+
+                          <span v-if="sec.refForm" class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-50 text-emerald-900 font-semibold border border-emerald-200">
+                            {{ sec.refForm }}
+                          </span>
+                          <span v-if="sec.badge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-semibold border border-slate-200">
+                            {{ sec.badge }}
+                          </span>
+                        </div>
+                      </div>
+
+                      <!-- Grid Isian Parameter Sub-seksi PA -->
+                      <div v-if="sec.fields && sec.fields.length > 0" class="dynamic-param-grid">
+                        <div
+                          v-for="(pa, paIdx) in sec.fields"
+                          :key="paIdx"
+                          class="param-metric-card flex flex-col justify-between"
+                          :class="pa.colSpan || ''"
+                        >
+                          <div class="flex items-start justify-between gap-1.5 mb-1 min-w-0">
+                            <span class="param-metric-label" :title="pa.label">{{ pa.label }}</span>
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0 mt-1"></span>
+                          </div>
+                          <div class="my-0.5 min-w-0 min-h-[1.5rem] flex items-center">
+                            <span
+                              class="text-xs sm:text-[13px] md:text-sm font-bold text-stone-900 break-words leading-tight"
+                              :title="formatMetricVal(pa.value)"
+                            >
+                              {{ formatMetricVal(pa.value) }}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </template>
+
+                  <!-- Grid Parameter PA Standar (Fallback jika tidak ada sub-sections) -->
+                  <div v-else-if="flow.paFields && flow.paFields.length > 0" class="dynamic-param-grid">
+                    <div
+                      v-for="(pa, paIdx) in flow.paFields"
+                      :key="paIdx"
+                      class="param-metric-card flex flex-col justify-between"
+                      :class="pa.colSpan || ''"
+                    >
+                      <div class="flex items-start justify-between gap-1.5 mb-1 min-w-0">
+                        <span class="param-metric-label" :title="pa.label">{{ pa.label }}</span>
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0 mt-1"></span>
+                      </div>
+                      <div class="my-0.5 min-w-0 min-h-[1.5rem] flex items-center">
+                        <span
+                          class="text-xs sm:text-[13px] md:text-sm font-bold text-stone-900 break-words leading-tight"
+                          :title="formatMetricVal(pa.value)"
+                        >
+                          {{ formatMetricVal(pa.value) }}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Petugas PIC PA (Di bawah Container PA) -->
+                  <div
+                    v-if="flow.pic?.pa && flow.pic.pa !== '-'"
+                    class="mt-4 pt-3 border-t border-emerald-900/15 flex items-center justify-between text-xs"
+                  >
+                    <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-emerald-300/80 text-emerald-950 shadow-2xs">
+                      <span class="w-2 h-2 rounded-full bg-emerald-600 shrink-0"></span>
+                      <span class="text-[11px] font-bold text-emerald-900 uppercase tracking-wide">Petugas PA:</span>
+                      <strong class="font-black text-emerald-950 text-xs sm:text-sm tracking-tight break-words">{{ formatMetricVal(flow.pic.pa) }}</strong>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- ── CONTAINER 3: PIC QC (Quality Control & Laboratorium) ── -->
+                <div
+                  v-if="(flow.qcSections && flow.qcSections.length > 0) || (flow.qcMetrics && flow.qcMetrics.length > 0) || (flow.cuptestMetrics && flow.cuptestMetrics.length > 0) || flow.qcTable || (flow.extraQcBlocks && flow.extraQcBlocks.length > 0) || flow.qcNotice"
+                  class="border border-blue-900/20 bg-blue-50/15 rounded-2xl p-4 sm:p-5 shadow-2xs"
+                >
+                  <div class="flex flex-wrap items-center justify-between gap-3 mb-4 pb-3 border-b border-blue-900/10">
+                    <div class="flex items-center gap-2 flex-wrap">
+                      <span class="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
+                      <h5 class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2 flex-wrap">
+                        <span>{{ cleanSectionTitle(flow.qcTitle || 'Hasil Pengujian Laboratorium Mutu') }}</span>
+                        <span class="px-2 py-0.5 rounded-md text-[11px] font-black uppercase bg-blue-100 text-blue-950 border border-blue-300 normal-case tracking-normal shadow-2xs">({{ getQcRole(flow) }})</span>
+                      </h5>
+                    </div>
+                    <!-- Action Button QC: Inspect Table Sesuai Batch -->
+                    <div class="flex items-center gap-2 flex-wrap">
+                      <button
+                        v-if="flow.qcTable && flow.qcTable.rows?.length > 0 && (!flow.qcSections || flow.qcSections.length === 0 || !flow.qcSections.some(s => s.qcTable))"
+                        type="button"
+                        @click="openInspectQc(flow)"
+                        class="btn-secondary-action inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-blue-50/80 hover:bg-blue-100 text-blue-950 border border-blue-300 rounded-xl transition-all cursor-pointer shadow-2xs hover:shadow-xs active:scale-97"
+                        :title="'Inspect tabel ' + (flow.qcTable.title || flow.qcTable.tableName)"
+                      >
+                        <svg class="w-3.5 h-3.5 text-blue-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
+                        <span class="font-bold">Inspect Table {{ flow.qcTable.badge || 'QC' }}</span>
+                        <span class="text-[9.5px] font-mono px-1.5 py-0.2 rounded bg-cyan-700 text-white font-bold">
+                          {{ flow.qcTable.rows.length }} Baris
+                        </span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Banner Pemberitahuan jika QC untuk alur ini belum ada di database -->
+                  <div v-if="flow.qcNotice" class="p-3.5 rounded-xl bg-cyan-50/80 border border-cyan-200 text-xs text-cyan-950 flex items-start gap-2.5 mb-3 shadow-2xs">
+                    <svg class="w-4 h-4 text-cyan-700 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                    <div>
+                      <span class="font-bold text-slate-900 block text-xs sm:text-sm">Pemberitahuan Data QC</span>
+                      <span class="text-cyan-900/90 leading-relaxed block mt-0.5">{{ flow.qcNotice }}</span>
+                    </div>
+                  </div>
+
+                  <!-- ── RENDER MODULAR SUB-SEKSI QC (Grinding, Aroma, Hidrolise, dll) ── -->
+                  <template v-if="flow.qcSections && flow.qcSections.length > 0">
+                    <div
+                      v-for="(sec, sIdx) in flow.qcSections"
+                      :key="sIdx"
+                      :class="sIdx > 0 ? 'pt-4 mt-4 border-t border-blue-900/10' : ''"
+                    >
+                      <div class="flex flex-wrap items-center justify-between gap-2 mb-2.5">
+                        <div class="flex items-center gap-2">
+                          <span class="w-2 h-2 rounded-full" :class="sec.dotColor || 'bg-blue-600'"></span>
+                          <h6 class="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                            {{ cleanSectionTitle(sec.title) }}
+                          </h6>
+                        </div>
+                        <div class="flex items-center gap-1.5 flex-wrap">
+                          <!-- Tombol Inspect Table Per Sub-Seksi QC -->
+                          <button
+                            v-if="sec.qcTable && sec.qcTable.rows?.length > 0"
+                            type="button"
+                            @click="openInspectQc(sec.qcTable)"
+                            class="btn-secondary-action inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold bg-white hover:bg-blue-50 text-blue-950 border border-blue-300 rounded-lg transition-all cursor-pointer shadow-2xs hover:shadow-xs active:scale-97 mr-1"
+                            :title="'Inspect tabel ' + (sec.qcTable.title || sec.qcTable.tableName)"
+                          >
+                            <svg class="w-3.5 h-3.5 text-blue-700 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
+                            <span class="font-bold">Inspect Table {{ sec.badge || cleanSectionTitle(sec.title) }}</span>
+                            <span class="text-[9.5px] font-mono px-1.5 py-0.2 rounded bg-cyan-700 text-white font-bold">
+                              {{ sec.qcTable.rows.length }} Baris
+                            </span>
+                          </button>
+                          <span v-if="sec.refForm" class="text-[10px] font-mono px-2 py-0.5 rounded bg-blue-50 text-blue-900 font-semibold border border-blue-200">
+                            {{ sec.refForm }}
+                          </span>
+                          <span v-if="sec.badge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-semibold border border-slate-200">
+                            {{ sec.badge }}
+                          </span>
+                        </div>
+                      </div>
+
+                      <!-- Grid Metrik QC Sub-seksi -->
+                      <div v-if="sec.metrics && sec.metrics.length > 0" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
+                        <div
+                          v-for="(m, mIdx) in sec.metrics"
+                          :key="mIdx"
+                          class="param-metric-card flex flex-col justify-between"
+                          :class="m.colSpan || ''"
+                        >
+                          <div class="mb-1 min-w-0">
+                            <span class="param-metric-label" :title="m.label">{{ m.label }}</span>
+                          </div>
+                          <div class="my-0.5 min-w-0 min-h-[1.5rem] flex items-center">
+                            <span
+                              class="text-xs sm:text-[13px] md:text-sm font-extrabold text-stone-900 break-words leading-tight"
+                              :title="formatMetricVal(m.value)"
+                            >
+                              {{ formatMetricVal(m.value) }}
+                            </span>
+                          </div>
+                          <span v-if="m.spec" class="text-[11px] font-mono text-stone-600 font-medium mt-1 flex items-center gap-1.5" :title="m.spec">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></span>
+                            <span class="break-words leading-snug">{{ m.spec }}</span>
+                          </span>
+                        </div>
+                      </div>
+
+                      <!-- Sub-grid Cuptest jika sub-seksi ini punya organoleptik -->
+                      <div v-if="sec.cuptest && sec.cuptest.length > 0" class="mt-3 pt-3 border-t border-dashed border-cyan-200">
+                        <div class="flex items-center justify-between mb-2">
+                          <span class="text-[11px] font-bold text-cyan-800 uppercase tracking-wide flex items-center gap-1.5">
+                            <span class="w-1.5 h-1.5 rounded-full bg-cyan-600"></span>
+                            Score Cuptest / Evaluasi Sensori Cita Rasa {{ sec.cuptestTitle ? `(${sec.cuptestTitle})` : '' }}
+                          </span>
+                          <span class="text-[9px] font-mono px-1.5 py-0.2 rounded bg-cyan-50 text-cyan-900 font-bold border border-cyan-200">
+                            Organoleptik
+                          </span>
+                        </div>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
+                          <div
+                            v-for="(c, cIdx) in sec.cuptest"
+                            :key="cIdx"
+                            class="cuptest-metric-card flex flex-col justify-between"
+                          >
+                            <div class="flex items-start justify-between gap-1 mb-1 min-w-0">
+                              <span class="text-[11px] font-bold text-slate-900 uppercase tracking-wide line-clamp-2 leading-snug min-h-[28px]" :title="c.label">{{ c.label }}</span>
+                              <span class="w-1.5 h-1.5 rounded-full bg-cyan-600 shrink-0 mt-1"></span>
+                            </div>
+                            <div class="my-0.5 min-w-0 min-h-[1.5rem] flex items-center">
+                              <span
+                                class="text-xs sm:text-[13px] md:text-sm font-extrabold text-slate-900 font-mono break-words leading-tight"
+                                :title="formatMetricVal(c.value)"
+                              >
+                                {{ formatMetricVal(c.value) }}
+                              </span>
+                            </div>
+                            <span class="text-[10px] font-mono text-cyan-800/90 font-medium">Skala Organoleptik</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </template>
+
+                  <!-- ── FALLBACK FORMAT (JIKA qcSections TIDAK DIDEFINISIKAN) ── -->
+                  <template v-else>
+                    <!-- Grid Metrik QC -->
+                    <div v-if="flow.qcMetrics && flow.qcMetrics.length > 0" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
+                      <div
+                        v-for="(m, mIdx) in flow.qcMetrics"
+                        :key="mIdx"
+                        class="param-metric-card flex flex-col justify-between"
+                        :class="m.colSpan || ''"
+                      >
+                        <div class="mb-1 min-w-0">
+                          <span class="param-metric-label" :title="m.label">{{ m.label }}</span>
+                        </div>
+                        <div class="my-0.5 min-w-0 min-h-[1.5rem] flex items-center">
+                          <span
+                            class="text-xs sm:text-[13px] md:text-sm font-extrabold text-stone-900 break-words leading-tight"
+                            :title="formatMetricVal(m.value)"
+                          >
+                            {{ formatMetricVal(m.value) }}
+                          </span>
+                        </div>
+                        <span v-if="m.spec" class="text-[11px] font-mono text-stone-600 font-medium mt-1 flex items-center gap-1.5" :title="m.spec">
+                          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></span>
+                          <span class="break-words leading-snug">{{ m.spec }}</span>
+                        </span>
+                      </div>
+                    </div>
+
+                    <!-- Sub-Blok Score Cuptest / Evaluasi Sensori Cita Rasa -->
+                    <div v-if="flow.cuptestMetrics && flow.cuptestMetrics.length > 0" class="pt-4 mt-4 border-t border-blue-900/10">
+                      <div class="flex items-center justify-between mb-2.5">
+                        <div class="flex items-center gap-2">
+                          <span class="w-2 h-2 rounded-full bg-cyan-600"></span>
+                          <h6 class="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                            Score Cuptest / Evaluasi Sensori Cita Rasa
+                          </h6>
+                        </div>
+                        <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-100 text-cyan-900 font-semibold border border-cyan-200">Organoleptik</span>
+                      </div>
+
+                      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
+                        <div
+                          v-for="(c, cIdx) in flow.cuptestMetrics"
+                          :key="cIdx"
+                          class="cuptest-metric-card flex flex-col justify-between"
+                        >
+                          <div class="flex items-start justify-between gap-1 mb-1 min-w-0">
+                            <span class="text-[11px] font-bold text-slate-900 uppercase tracking-wide line-clamp-2 leading-snug min-h-[28px]" :title="c.label">{{ c.label }}</span>
+                            <span class="w-1.5 h-1.5 rounded-full bg-cyan-600 shrink-0 mt-1"></span>
+                          </div>
+                          <div class="my-1 min-w-0 min-h-[1.5rem] flex items-center">
+                            <span
+                              class="text-xs sm:text-[13px] md:text-sm font-extrabold text-slate-900 font-mono break-words leading-tight"
+                              :title="formatMetricVal(c.value)"
+                            >
+                              {{ formatMetricVal(c.value) }}
+                            </span>
+                          </div>
+                          <span class="text-[10px] font-mono text-cyan-800/90 font-medium">Skala Organoleptik</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Sub-Blok Extra QC Blocks -->
+                    <template v-if="flow.extraQcBlocks && flow.extraQcBlocks.length > 0">
+                      <div v-for="(ex, exIdx) in flow.extraQcBlocks" :key="exIdx" class="pt-4 mt-4 border-t border-blue-900/10">
+                        <div class="flex items-center justify-between mb-2.5">
+                          <div class="flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-indigo-600"></span>
+                            <h6 class="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                              {{ cleanSectionTitle(ex.title) }}
+                            </h6>
+                          </div>
+                          <span v-if="ex.badge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 font-semibold border border-indigo-200">{{ ex.badge }}</span>
+                        </div>
+
+                        <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-2.5">
+                          <div
+                            v-for="(it, itIdx) in ex.items"
+                            :key="itIdx"
+                            class="param-metric-card flex flex-col justify-between"
+                            :class="it.colSpan || ''"
+                          >
+                            <div class="mb-1 min-w-0">
+                              <span class="param-metric-label" :title="it.label">{{ it.label }}</span>
+                            </div>
+                            <div class="my-0.5 min-w-0 min-h-[1.5rem] flex items-center">
+                              <span
+                                class="text-xs sm:text-[13px] md:text-sm font-bold text-stone-900 font-mono break-words leading-tight"
+                                :title="formatMetricVal(it.value)"
+                              >
+                                {{ formatMetricVal(it.value) }}
+                              </span>
+                            </div>
+                            <span class="text-[10px] font-mono text-stone-500 mt-1">{{ it.sub || 'Uji Terpadu' }}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </template>
+                  </template>
+
+                  <!-- Petugas PIC QC (Di bawah Container QC) -->
+                  <div
+                    v-if="(flow.pic?.qc && flow.pic.qc !== '-') || (getQcRole(flow) === 'PA' && flow.pic?.pa)"
+                    class="mt-4 pt-3 border-t border-blue-900/15 flex items-center justify-between text-xs"
+                  >
+                    <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-blue-300/80 text-blue-950 shadow-2xs">
+                      <span class="w-2 h-2 rounded-full bg-blue-600 shrink-0"></span>
+                      <span class="text-[11px] font-bold text-blue-900 uppercase tracking-wide">Petugas {{ getQcRole(flow) }}:</span>
+                      <strong class="font-black text-blue-950 text-xs sm:text-sm tracking-tight break-words">{{ formatMetricVal(flow.pic?.qc || flow.pic?.pa) }}</strong>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Footer Signature & Verifikasi Digital Mutu Terintegrasi -->
+              <div class="bg-slate-50/90 border-t border-slate-200/80 px-5 sm:px-6 py-3.5 flex flex-wrap items-center justify-between gap-3 text-xs">
+                <div class="flex items-center gap-2 text-slate-500 font-medium">
+                  <span class="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
+                  <span class="font-mono text-[11px] text-slate-600">Dokumen Mutu Terintegrasi: <span class="font-bold text-slate-800">{{ flow.refDoc || 'Form F/QC/01.030' }}</span></span>
+                </div>
+
+                <span v-if="flow.isAvailable !== false" class="text-emerald-700 font-bold flex items-center gap-1.5 text-xs bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-200">
+                  <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                  Terverifikasi Form F/QC/01.030
+                </span>
+                <span v-else class="text-slate-600 font-medium flex items-center gap-1.5 text-xs bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200">
+                  <span class="w-2 h-2 rounded-full bg-white"></span>
+                  Menunggu Data PIC {{ flow.pendingPicName }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </Transition>
+      </div>
+
+      </div> <!-- /v-else (SUB-VIEW 2: DETAIL HASIL PENELUSURAN WORK ORDER AKTIF) -->
+
+      <!-- ── MODAL WORK ORDER: FORM 2-STEP INFORMASI AWAL & KONFIGURASI PENELUSURAN ── -->
+      <div v-if="showNewSessionModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs no-print">
+        <div class="bg-white rounded-2xl shadow-2xl border border-stone-200 max-w-2xl w-full p-6 space-y-5 animate-step-1 max-h-[92vh] overflow-y-auto">
+          
+          <!-- Modal Header -->
+          <div class="flex items-center justify-between pb-3 border-b border-stone-200">
+            <div>
+              <div class="flex items-center gap-2">
+                <h3 class="text-base font-extrabold text-stone-900">
+                  {{ newSessionMode === 'create' ? 'Buat Sesi Traceability Baru' : 'Ubah Informasi Work Order' }}
+                </h3>
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-cyan-50 text-cyan-800 border border-cyan-200">
+                  Form F/QC/01.030
+                </span>
+              </div>
+              <p class="text-xs text-stone-500 mt-0.5">
+                Lengkapi informasi awal pelaksanaan audit sebelum menentukan konfigurasi backward/forward.
+              </p>
+            </div>
+            <button
+              type="button"
+              @click="showNewSessionModal = false"
+              class="w-8 h-8 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-600 flex items-center justify-center font-bold text-sm cursor-pointer transition-colors"
+            >
+              &times;
+            </button>
+          </div>
+
+          <!-- Stepper Tabs -->
+          <div class="grid grid-cols-2 gap-2 bg-stone-50 p-1.5 rounded-xl border border-stone-200">
+            <button
+              type="button"
+              @click="newSessionStep = 1"
+              class="wo-stepper-tab"
+              :class="newSessionStep === 1 ? 'active' : 'inactive'"
+            >
+              <span class="wo-step-num">1</span>
+              <span>Informasi Pelaksanaan &amp; Approval</span>
+            </button>
+            <button
+              type="button"
+              @click="(draftSession.area && draftSession.tanggalPelaksanaan && draftSession.picPelaksana) && (newSessionStep = 2)"
+              class="wo-stepper-tab"
+              :class="newSessionStep === 2 ? 'active' : 'inactive'"
+            >
+              <span class="wo-step-num">2</span>
+              <span>Konfigurasi Penelusuran (Bwd/Fwd)</span>
+            </button>
+          </div>
+
+          <!-- ── STEP 1: INFORMASI PELAKSANAAN & APPROVAL (GAMBAR KE-2) ── -->
+          <div v-show="newSessionStep === 1" class="space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-xs">
+              <div>
+                <label class="block font-bold text-stone-700 mb-1">
+                  Area Pelaksanaan <span class="text-red-500">*</span>
+                </label>
+                <input
+                  v-model="draftSession.area"
+                  type="text"
+                  placeholder="Contoh: SJA Sukodono"
+                  class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-cyan-500"
+                />
+              </div>
+
+              <div>
+                <label class="block font-bold text-stone-700 mb-1">
+                  Tanggal Pelaksanaan <span class="text-red-500">*</span>
+                </label>
+                <input
+                  v-model="draftSession.tanggalPelaksanaan"
+                  type="text"
+                  placeholder="Contoh: 13 Oktober 2026"
+                  class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-cyan-500"
+                />
+              </div>
+
+              <div>
+                <label class="block font-bold text-stone-700 mb-1">
+                  PIC Pelaksana <span class="text-red-500">*</span>
+                </label>
+                <input
+                  v-model="draftSession.picPelaksana"
+                  type="text"
+                  placeholder="Contoh: Frengky Wahyudi"
+                  class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-cyan-500"
+                />
+              </div>
+
+              <div>
+                <label class="block font-bold text-stone-700 mb-1">
+                  FSTL (Food Safety Team Leader)
+                </label>
+                <input
+                  v-model="draftSession.fstl"
+                  type="text"
+                  placeholder="Contoh: Suhendar Adikusuma"
+                  class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-cyan-500"
+                />
+              </div>
+
+              <div>
+                <label class="block font-bold text-stone-700 mb-1">
+                  Auditor (Nama &amp; TTD)
+                </label>
+                <textarea
+                  v-model="draftSession.auditor"
+                  rows="2"
+                  placeholder="Contoh: Pak Armando&#10;Ibu Asih"
+                  class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-cyan-500 resize-none"
+                ></textarea>
+              </div>
+
+              <div>
+                <label class="block font-bold text-stone-700 mb-1">
+                  Auditee (Nama &amp; TTD)
+                </label>
+                <textarea
+                  v-model="draftSession.auditee"
+                  rows="2"
+                  placeholder="Contoh: Meisy, Dini, Udin, Yolanda"
+                  class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-cyan-500 resize-none"
+                ></textarea>
+              </div>
+
+              <div class="sm:col-span-2">
+                <label class="block font-bold text-stone-700 mb-1">
+                  Scenario / Case Traceability
+                </label>
+                <input
+                  v-model="draftSession.scenario"
+                  type="text"
+                  placeholder="Contoh: Simulasi traceability untuk audit eksternal FSSC"
+                  class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-cyan-500"
+                />
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between pt-3 border-t border-stone-200">
+              <button
+                type="button"
+                @click="loadPresetIntoDraft"
+                class="text-xs font-bold text-cyan-700 hover:underline cursor-pointer"
+              >
+                ↺ Muat Preset Default FSSC
+              </button>
+
+              <div class="flex items-center gap-2">
+                <button
+                  type="button"
+                  @click="showNewSessionModal = false"
+                  class="clean-btn g text-xs py-2 px-4"
+                >
+                  Batal
+                </button>
+                <button
+                  type="button"
+                  @click="newSessionStep = 2"
+                  :disabled="!draftSession.area || !draftSession.tanggalPelaksanaan || !draftSession.picPelaksana"
+                  class="px-5 py-2 bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white border border-cyan-600 shadow-xs font-bold rounded-xl text-xs cursor-pointer shadow-xs disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Lanjut ke Step 2: Konfigurasi Penelusuran &rarr;
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── STEP 2: KONFIGURASI PENELUSURAN (GAMBAR KE-3) ── -->
+          <div v-show="newSessionStep === 2" class="space-y-4">
+            
+            <!-- Arah Penelusuran Segmented Control -->
+            <div>
+              <label class="block font-bold text-stone-700 text-xs mb-1.5">
+                Arah Penelusuran (Traceability Direction):
+              </label>
+              <div class="grid grid-cols-2 gap-2 bg-stone-100 p-1.5 rounded-xl border border-stone-200">
+                <button
+                  type="button"
+                  @click="draftSession.jenis = 'Backward'"
+                  :class="draftSession.jenis === 'Backward' ? 'bg-blue-600 text-white font-bold shadow-xs' : 'text-stone-600 hover:text-stone-900 font-medium'"
+                  class="py-2.5 px-3 rounded-lg text-xs transition-all cursor-pointer text-center"
+                >
+                  <div class="font-bold">⟵ Backward</div>
+                  <div class="text-[10px] opacity-85 mt-0.5">Produk Jadi ke Bahan Mentah</div>
+                </button>
+                <button
+                  type="button"
+                  @click="draftSession.jenis = 'Forward'"
+                  :class="draftSession.jenis === 'Forward' ? 'bg-emerald-600 text-white font-bold shadow-xs' : 'text-stone-600 hover:text-stone-900 font-medium'"
+                  class="py-2.5 px-3 rounded-lg text-xs transition-all cursor-pointer text-center"
+                >
+                  <div class="font-bold">Forward ⟶</div>
+                  <div class="text-[10px] opacity-85 mt-0.5">Bahan Mentah ke Produk Jadi</div>
+                </button>
+              </div>
+            </div>
+
+            <!-- Mode Backward Form -->
+            <div v-if="draftSession.jenis === 'Backward'" class="space-y-3 p-4 bg-stone-50 rounded-xl border border-stone-200 text-xs">
+              <div class="font-bold text-stone-800 text-xs uppercase tracking-wide pb-1 border-b border-stone-200">
+                Identitas Produk (Backward)
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label class="block font-bold text-stone-700 mb-1">
+                    Nomor Batch Finished Good <span class="text-red-500">*</span>
+                  </label>
+                  <input
+                    v-model="draftSession.noBatch"
+                    type="text"
+                    placeholder="Contoh: A370/26 atau 370"
+                    class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-mono font-bold uppercase focus:outline-none focus:border-cyan-500 bg-white"
+                  />
+                </div>
+                <div>
+                  <label class="block font-bold text-stone-700 mb-1">
+                    Tower Produksi
+                  </label>
+                  <div class="flex items-center gap-2 pt-0.5">
+                    <button
+                      type="button"
+                      @click="draftSession.tower = '1'"
+                      :class="draftSession.tower === '1' ? 'bg-cyan-500 text-white font-bold shadow-2xs' : 'bg-white text-stone-700 border border-stone-200'"
+                      class="flex-1 py-2 rounded-xl text-xs transition-all cursor-pointer font-semibold"
+                    >
+                      Tower 1
+                    </button>
+                    <button
+                      type="button"
+                      @click="draftSession.tower = '2'"
+                      :class="draftSession.tower === '2' ? 'bg-cyan-500 text-white font-bold shadow-2xs' : 'bg-white text-stone-700 border border-stone-200'"
+                      class="flex-1 py-2 rounded-xl text-xs transition-all cursor-pointer font-semibold"
+                    >
+                      Tower 2
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Mode Forward Form -->
+            <div v-else class="space-y-3 p-4 bg-stone-50 rounded-xl border border-stone-200 text-xs">
+              <div class="font-bold text-stone-800 text-xs uppercase tracking-wide pb-1 border-b border-stone-200">
+                Identitas Bahan / Proses (Forward)
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label class="block font-bold text-stone-700 mb-1">
+                    Nama Bahan / Kode Lot <span class="text-red-500">*</span>
+                  </label>
+                  <input
+                    v-model="draftSession.forward.namaBahan"
+                    type="text"
+                    placeholder="Contoh: Biji Kopi Robusta Mentah"
+                    class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-bold focus:outline-none focus:border-cyan-500 bg-white"
+                  />
+                </div>
+                <div>
+                  <label class="block font-bold text-stone-700 mb-1">
+                    Nama Supplier Bahan
+                  </label>
+                  <input
+                    v-model="draftSession.forward.supplierBahan"
+                    type="text"
+                    placeholder="Contoh: PT. Santos Jaya Abadi Rekanan"
+                    class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-cyan-500 bg-white"
+                  />
+                </div>
+                <div>
+                  <label class="block font-bold text-stone-700 mb-1">
+                    Tanggal Kedatangan / Proses
+                  </label>
+                  <input
+                    v-model="draftSession.forward.tglKedatangan"
+                    type="text"
+                    placeholder="Contoh: 25 Agustus 2026"
+                    class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-cyan-500 bg-white"
+                  />
+                </div>
+                <div>
+                  <label class="block font-bold text-stone-700 mb-1">
+                    Lokasi Bahan / Proses
+                  </label>
+                  <input
+                    v-model="draftSession.forward.lokasiBahan"
+                    type="text"
+                    placeholder="Contoh: Gudang GBJ / Silo UPBM"
+                    class="w-full border border-stone-200 px-3 py-2 rounded-xl text-stone-900 font-medium focus:outline-none focus:border-cyan-500 bg-white"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <!-- Footer Step 2 -->
+            <div class="flex items-center justify-between pt-3 border-t border-stone-200">
+              <button
+                type="button"
+                @click="newSessionStep = 1"
+                class="clean-btn g text-xs py-2 px-3.5 flex items-center gap-1.5"
+              >
+                &larr; Kembali ke Step 1
+              </button>
+
+              <div class="flex items-center gap-2">
+                <button
+                  type="button"
+                  @click="saveDraftSession(false)"
+                  class="clean-btn g text-xs py-2 px-3.5 hover:bg-stone-100"
+                >
+                  Simpan sebagai Draft
+                </button>
+                <button
+                  type="button"
+                  @click="saveDraftSession(true)"
+                  :disabled="draftSession.jenis === 'Backward' ? !draftSession.noBatch : !draftSession.forward.namaBahan"
+                  class="px-5 py-2.5 bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white border border-cyan-600 shadow-xs font-bold rounded-xl text-xs cursor-pointer shadow-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed btn-action"
+                >
+                  <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                  <span>Simpan &amp; Mulai Traceability</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div> <!-- /TAB 1: activeTab === 'pipeline' -->

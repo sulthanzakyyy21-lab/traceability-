@@ -8,6 +8,7 @@ createApp({
     const authIsLoggedIn = computed(() => (window.sjaAuth && window.sjaAuth.isAuthenticated.value) || false);
     const isAdmin = computed(() => authRole.value === 'admin');
     const isProduksi = computed(() => authRole.value === 'produksi');
+    const isPa = computed(() => authRole.value === 'pa');
     const isQc = computed(() => authRole.value === 'qc');
     const isViewer = computed(() => authRole.value === 'viewer');
 
@@ -20,7 +21,6 @@ createApp({
         setTimeout(() => { copiedToast.value = ''; }, 1800);
       }).catch(() => {});
     }
-    const paramFilter = ref('all'); // 'all' | 'filled' | 'empty'
 
     const portalRevealed = ref(false);
     const loginModalOpen = ref(false);
@@ -85,11 +85,13 @@ createApp({
           loginError.value = res.error || 'Username atau kata sandi tidak valid.';
           loginState.value = 'idle';
         } else {
-          if (rememberMe.value) {
-            localStorage.setItem('sja_saved_username', loginForm.username);
-          } else {
-            localStorage.removeItem('sja_saved_username');
-          }
+          try {
+            if (rememberMe.value) {
+              localStorage.setItem('sja_saved_username', loginForm.username);
+            } else {
+              localStorage.removeItem('sja_saved_username');
+            }
+          } catch {}
           loginState.value = 'success';
           // Tampilkan animasi tombol sukses sejenak sebelum beralih ke dashboard
           await new Promise((r) => setTimeout(r, 650));
@@ -132,6 +134,20 @@ createApp({
     }
 
     const sidebarOpen = ref(true);
+    const isScrolledPastHeader = ref(typeof window !== 'undefined' ? (window.scrollY || window.pageYOffset || document.documentElement.scrollTop || 0) >= 56 : false);
+    function handleScrollHeader() {
+      const scrollY = window.scrollY || window.pageYOffset || document.documentElement.scrollTop || 0;
+      isScrolledPastHeader.value = scrollY >= 56;
+      // Sticky topbar shadow on scroll
+      const topbar = document.getElementById('app-topbar');
+      if (topbar) {
+        if (scrollY > 10) {
+          topbar.classList.add('is-scrolled');
+        } else {
+          topbar.classList.remove('is-scrolled');
+        }
+      }
+    }
     const validTabs = ['dashboard', 'pipeline', 'report', 'sync', 'pic'];
     function getInitialTab() {
       try {
@@ -156,39 +172,63 @@ createApp({
         const targetBtn = targetGroup.querySelector('.sidebar-item');
         if (!targetBtn) return;
 
-        const isCollapsed = !sidebarOpen.value;
-        const offsetY = targetGroup.offsetTop + targetBtn.offsetTop;
-        const targetHeight = isCollapsed ? 42 : 48;
+        const navRect = nav.getBoundingClientRect();
+        const btnRect = targetBtn.getBoundingClientRect();
+        if (btnRect.width === 0 || btnRect.height === 0) return;
 
-        pill.style.height = `${targetHeight}px`;
-        if (isCollapsed) {
-          pill.style.left = '50%';
-          pill.style.right = 'auto';
-          pill.style.width = '42px';
-          pill.style.marginLeft = '-21px';
-          pill.style.transform = `translate3d(0, ${offsetY}px, 0)`;
-        } else {
-          pill.style.left = '8px';
-          pill.style.right = '8px';
-          pill.style.width = 'calc(100% - 16px)';
-          pill.style.marginLeft = '0';
-          pill.style.transform = `translate3d(0, ${offsetY}px, 0)`;
-        }
+        const offsetX = Math.round(btnRect.left - navRect.left + nav.scrollLeft);
+        const offsetY = Math.round(btnRect.top - navRect.top + nav.scrollTop);
+
+        pill.style.width = `${Math.round(btnRect.width)}px`;
+        pill.style.height = `${Math.round(btnRect.height)}px`;
+        pill.style.left = '0';
+        pill.style.right = 'auto';
+        pill.style.marginLeft = '0';
+        pill.style.transform = `translate3d(${offsetX}px, ${offsetY}px, 0)`;
         pill.style.opacity = '1';
       });
     }
-
-    watch([activeTab, sidebarOpen], () => {
-      const fn = typeof updateAllPills === 'function' ? updateAllPills : updateSlidingPill;
-      fn();
-      setTimeout(fn, 60);
-      setTimeout(fn, 160);
-      setTimeout(fn, 300);
-    });
     const tracing = ref(false);
     const traceError = ref('');
     const traceResult = ref(null);
     const dbConnected = ref(true);
+
+    // ── Industrial Operations Clock & Shift Indicator ──
+    const currentTimeStr = ref('');
+    const currentDateStr = ref('');
+    const currentShift = computed(() => {
+      const now = new Date();
+      const h = now.getHours();
+      if (h >= 7 && h < 15) {
+        return {
+          name: 'Shift 1',
+          timeRange: '07:00 - 15:00',
+          badgeClass: 'bg-amber-100 text-amber-900 border-amber-300'
+        };
+      } else if (h >= 15 && h < 23) {
+        return {
+          name: 'Shift 2',
+          timeRange: '15:00 - 23:00',
+          badgeClass: 'bg-cyan-600 text-white border-cyan-700/60'
+        };
+      } else {
+        return {
+          name: 'Shift 3',
+          timeRange: '23:00 - 07:00',
+          badgeClass: 'bg-stone-800 text-stone-200 border-stone-600'
+        };
+      }
+    });
+
+    function updateClock() {
+      const now = new Date();
+      const pad = (n) => String(n).padStart(2, '0');
+      currentTimeStr.value = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())} WIB`;
+
+      const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+      currentDateStr.value = `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+    }
 
     // ── Clean Data Ingestion State & Stepper Workflow ──
     const ingestionTab = ref('file'); // 'file' | 'sheet' | 'manual'
@@ -489,9 +529,7 @@ createApp({
     }
 
 
-    // ── Pipeline & Data Preview State ──
-    const selectedPipelineStage = ref('PACKING');
-    const pipelineStages = ref(window.PIPELINE_STAGES || []);
+    // ── Data Preview State ──
     const previewDrawerOpen = ref(false);
     const previewTableData = reactive({
       tableName: '',
@@ -727,17 +765,7 @@ createApp({
       selectedClusterKey.value = key;
       updateFlowStagePill();
       setTimeout(updateFlowStagePill, 40);
-    }
-
-    function selectPipelineStage(key) {
-      selectedPipelineStage.value = key;
-    }
-
-    function getStageMetrics(key) {
-      if (typeof window.extractStageMetrics === 'function') {
-        return window.extractStageMetrics(key, traceResult.value);
-      }
-      return { status: 'idle', label: '-', metrics: [] };
+      setTimeout(updateFlowStagePill, 120);
     }
 
     async function openTablePreview(tableName, label) {
@@ -817,12 +845,31 @@ createApp({
       activeInspectModal.value = {
         type: isExt ? 'emp_external' : 'emp_internal',
         title: customTitle || (isExt ? 'Checklist Environmental Swab Eksternal (Pathogen)' : 'Checklist Environmental Swab Internal (Non Pathogen)'),
-        subtitle: isExt ? 'Hasil pengujian mikroba patogen eksternal (Salmonella & S.Aureus) dari database MySQL.' : 'Hasil monitoring mikrobiologi internal (Non-Pathogen) dari database MySQL.',
+        subtitle: isExt ? 'Hasil monitoring area sampling eksternal dari database MySQL (Kolom spesifik Salmonella & S.Aureus belum tersedia di tabel DB).' : 'Hasil monitoring mikrobiologi internal (Non-Pathogen) dari database MySQL.',
         tableName: checklistData.tableName || 'pa_emp_t1',
         refForm: checklistData.refForm || (isExt ? 'Form Patogen Eksternal' : 'Form F/QC.2.35'),
         plantName: checklistData.plantName || 'Plant 1',
         totalItems: checklistData.items?.length || 0,
         sessionDate: checklistData.sessionDate || '-',
+        items: checklistData.items || []
+      };
+    }
+
+    function openInspectAbe(checklistData, customTitle) {
+      if (!checklistData) return;
+      inspectSearchInput.value = ''; inspectSearchQuery.value = '';
+      activeInspectModal.value = {
+        type: 'abe',
+        title: customTitle || 'Checklist Air Bacteria Exposed',
+        subtitle: `Hasil monitoring paparan mikrobiologi udara dari database MySQL ${checklistData.tableName || 'pa_abe_t1'}.`,
+        tableName: checklistData.tableName || 'pa_abe_t1',
+        refForm: checklistData.refForm || 'Form F/QC.2.5',
+        plantName: checklistData.plantName || checklistData.tower || 'Tower 1',
+        totalItems: checklistData.items?.length || 0,
+        sessionDate: checklistData.sessionDate || '-',
+        sessionTime: checklistData.sessionTime || '-',
+        team: checklistData.team || '-',
+        waktuTeam: checklistData.waktuTeam || '-',
         items: checklistData.items || []
       };
     }
@@ -855,14 +902,18 @@ createApp({
     function openInspectProd(flow) {
       if (!flow || !flow.prodTable) return;
       inspectSearchInput.value = ''; inspectSearchQuery.value = '';
+      const isWater = String(flow.prodTable.tableName || '').includes('fwt');
       activeInspectModal.value = {
-        type: 'prod',
-        title: `Tabel Data Produksi • ${flow.prodTable.title || flow.flowTitle}`,
-        subtitle: `Data transaksi proses produksi batch ${traceResult.value?.input?.noBatchFull || ''} tersimpan di database MySQL.`,
+        type: isWater ? 'pa_water' : 'prod',
+        title: flow.prodTable.title ? flow.prodTable.title : `Tabel Data Produksi • ${flow.flowTitle}`,
+        subtitle: isWater
+          ? `Data pengujian air proses (WTP) batch ${traceResult.value?.input?.noBatchFull || ''} dari database MySQL (Uji Mingguan Lab & Harian Ekstraksi).`
+          : `Data transaksi proses produksi batch ${traceResult.value?.input?.noBatchFull || ''} tersimpan di database MySQL.`,
         tableName: flow.prodTable.tableName,
-        refForm: 'PROD LOG',
+        refForm: isWater ? 'Form Water Process WTP' : 'PROD LOG',
         columns: flow.prodTable.columns || [],
-        rows: flow.prodTable.rows || []
+        rows: flow.prodTable.rows || [],
+        averages: flow.prodTable.averages || null
       };
     }
 
@@ -875,7 +926,7 @@ createApp({
         'produk', 'product', 'bahan', 'percolator', 'silo', 'tank', 'shift',
         'transfer', 'masakan', 'verifikasi', 'status', 'screening', 'ttd',
         'pic', 'operator', 'analisa', 'formula', 'keterangan', 'lokasi', 'action',
-        'aksi', 'disposisi', 'note', 'catatan', 'mesin', 'line'
+        'aksi', 'disposisi', 'note', 'catatan', 'mesin', 'line', 'kategori'
       ];
       if (excludeKeywords.some(kw => lower.includes(kw))) return true;
       if (['fm', 'vis', 'visual', 'fluidity', 'floating', 'floating particles'].includes(lower)) return true;
@@ -929,21 +980,44 @@ createApp({
       return avgs;
     }
 
-    function openInspectQc(flow) {
-      if (!flow || !flow.qcTable) return;
+    function openInspectQc(flowOrTable) {
+      const table = flowOrTable?.qcTable || (flowOrTable?.rows ? flowOrTable : null);
+      if (!table || !table.rows) return;
       inspectSearchInput.value = ''; inspectSearchQuery.value = '';
-      const cols = flow.qcTable.columns || [];
-      const rows = flow.qcTable.rows || [];
-      const avgs = computeTableAverages(rows, cols, flow.qcTable.averages);
+      const cols = table.columns || (table.rows[0] ? Object.keys(table.rows[0]) : []);
+      const rows = table.rows || [];
+      const avgs = computeTableAverages(rows, cols, table.averages);
       activeInspectModal.value = {
         type: 'qc',
-        title: `Tabel Pengujian Mutu (QC) • ${flow.qcTable.title || flow.flowTitle}`,
+        title: table.title || `Tabel Pengujian Mutu (QC) • ${flowOrTable?.flowTitle || table.tableName}`,
         subtitle: 'Hasil analisa laboratorium Quality Control untuk parameter mutu batch terkait.',
-        tableName: flow.qcTable.tableName,
-        refForm: 'QC LAB',
+        tableName: table.tableName,
+        refForm: table.refForm || 'QC LAB',
         columns: cols,
         rows: rows,
         averages: avgs
+      };
+    }
+
+    const inspectQcMode = ref('checklist'); // 'checklist' | 'raw'
+
+    function openInspectQcChecklist(param, customTitle) {
+      const checklist = param?.qcChecklist || param;
+      if (!checklist || !checklist.items) return;
+      inspectSearchInput.value = ''; inspectSearchQuery.value = '';
+      inspectQcMode.value = 'checklist';
+      activeInspectModal.value = {
+        type: 'qc_checklist',
+        title: customTitle || checklist.title || 'Checklist Pengujian Mutu (QC)',
+        subtitle: checklist.subtitle || 'Hasil evaluasi pengujian mutu laboratorium Quality Control dari tabel MySQL.',
+        tableName: checklist.tableName || 'qc_table',
+        refForm: checklist.refForm || 'Form QF/PDQC/QC/016',
+        totalItems: checklist.totalItems || (checklist.items?.length || 0),
+        sessionDate: checklist.sessionDate || '-',
+        analisQc: checklist.analisQc || 'Data tidak ditemukan di database',
+        items: checklist.items || [],
+        rawRows: checklist.rawRows || [],
+        rawColumns: checklist.rawColumns || (checklist.rawRows?.[0] ? Object.keys(checklist.rawRows[0]) : [])
       };
     }
 
@@ -987,6 +1061,78 @@ createApp({
       const pre = activeInspectModal.value.averages;
       if (rows.length === 0) return pre || {};
       return computeTableAverages(rows, cols, pre);
+    });
+
+    const inspectCalcMode = ref('avg'); // 'avg' | 'sum' | 'min' | 'max' | 'count' | 'count_num' | 'none'
+
+    const inspectCalculations = computed(() => {
+      const mode = inspectCalcMode.value;
+      if (mode === 'none' || !activeInspectModal.value) return {};
+      const rows = filteredInspectTableRows.value || [];
+      const cols = activeInspectModal.value.columns || [];
+      if (rows.length === 0 || cols.length === 0) return {};
+
+      const res = {};
+      const pre = activeInspectModal.value.averages;
+      for (const col of cols) {
+        if (mode === 'count') {
+          let count = 0;
+          for (const r of rows) {
+            const v = r[col];
+            if (v !== null && v !== undefined && String(v).trim() !== '' && String(v).trim() !== '-') count++;
+          }
+          res[col] = String(count);
+          continue;
+        }
+
+        const nums = [];
+        for (const r of rows) {
+          const n = parseNumericVal(r[col]);
+          if (n !== null) nums.push(n);
+        }
+
+        if (mode === 'count_num') {
+          res[col] = String(nums.length);
+          continue;
+        }
+
+        if (nums.length === 0 || isExcludedAvgCol(col)) {
+          if (mode === 'avg' && pre && pre[col] !== undefined && pre[col] !== null && String(inspectSearchQuery.value || '').trim() === '') {
+            res[col] = String(pre[col]);
+          } else {
+            res[col] = '-';
+          }
+          continue;
+        }
+
+        if (mode === 'sum') {
+          const sum = nums.reduce((a, b) => a + b, 0);
+          res[col] = sum % 1 === 0
+            ? sum.toLocaleString('id-ID')
+            : sum.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        } else if (mode === 'avg') {
+          if (pre && pre[col] !== undefined && pre[col] !== null && String(inspectSearchQuery.value || '').trim() === '') {
+            res[col] = String(pre[col]);
+          } else {
+            const avg = nums.reduce((a, b) => a + b, 0) / nums.length;
+            const isPh = col.toLowerCase().includes('ph');
+            res[col] = avg % 1 === 0
+              ? String(avg)
+              : avg.toLocaleString('id-ID', { minimumFractionDigits: isPh ? 3 : 2, maximumFractionDigits: isPh ? 3 : 2 });
+          }
+        } else if (mode === 'min') {
+          const min = Math.min(...nums);
+          res[col] = min % 1 === 0
+            ? min.toLocaleString('id-ID')
+            : min.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        } else if (mode === 'max') {
+          const max = Math.max(...nums);
+          res[col] = max % 1 === 0
+            ? max.toLocaleString('id-ID')
+            : max.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+      }
+      return res;
     });
 
     const explorerCalcMode = ref('none'); // 'none' | 'sum' | 'avg' | 'min' | 'max' | 'count' | 'count_num'
@@ -1111,6 +1257,22 @@ createApp({
       );
     });
 
+    const filteredInspectAbeItems = computed(() => {
+      if (!activeInspectModal.value || activeInspectModal.value.type !== 'abe') return [];
+      const items = activeInspectModal.value.items || [];
+      const q = String(inspectSearchQuery.value || '').trim().toLowerCase();
+      if (!q) return items;
+      return items.filter(i =>
+        String(i.room || '').toLowerCase().includes(q) ||
+        String(i.titikUji || '').toLowerCase().includes(q) ||
+        String(i.code || '').toLowerCase().includes(q) ||
+        String(i.team || '').toLowerCase().includes(q) ||
+        String(i.waktu || '').toLowerCase().includes(q) ||
+        String(i.tpc || '').toLowerCase().includes(q) ||
+        String(i.ym || '').toLowerCase().includes(q)
+      );
+    });
+
     const filteredInspectTableRows = computed(() => {
       if (!activeInspectModal.value || !activeInspectModal.value.rows) return [];
       const rows = activeInspectModal.value.rows;
@@ -1119,6 +1281,28 @@ createApp({
       return rows.filter(r => {
         return Object.values(r).some(v => String(v || '').toLowerCase().includes(q));
       });
+    });
+
+    const filteredInspectQcItems = computed(() => {
+      if (!activeInspectModal.value || activeInspectModal.value.type !== 'qc_checklist') return [];
+      const items = activeInspectModal.value.items || [];
+      const q = String(inspectSearchQuery.value || '').trim().toLowerCase();
+      if (!q) return items;
+      return items.filter(it =>
+        String(it.parameter || '').toLowerCase().includes(q) ||
+        String(it.category || '').toLowerCase().includes(q) ||
+        String(it.standar || '').toLowerCase().includes(q) ||
+        String(it.hasil || '').toLowerCase().includes(q) ||
+        String(it.status || '').toLowerCase().includes(q)
+      );
+    });
+
+    const filteredInspectQcRawRows = computed(() => {
+      if (!activeInspectModal.value || activeInspectModal.value.type !== 'qc_checklist') return [];
+      const rows = activeInspectModal.value.rawRows || [];
+      const q = String(inspectSearchQuery.value || '').trim().toLowerCase();
+      if (!q) return rows;
+      return rows.filter(r => Object.values(r).some(v => String(v || '').toLowerCase().includes(q)));
     });
 
     function toggleFlowCipChecklist(flow) {
@@ -1174,7 +1358,17 @@ createApp({
     function formatMetricVal(val) {
       if (val === null || val === undefined || val === '') return '';
       const s = String(val).trim();
-      if (s === '-' || s === 'Data tidak ditemukan' || s.toLowerCase() === 'tidak ditemukan' || s === '(-)') return '';
+      const lower = s.toLowerCase();
+      if (
+        s === '-' ||
+        s === '(-)' ||
+        lower.includes('tidak ditemukan') ||
+        lower.includes('belum ada di database') ||
+        lower === 'null' ||
+        lower === 'undefined'
+      ) {
+        return '';
+      }
       return s;
     }
 
@@ -1716,114 +1910,434 @@ createApp({
       return '3 jam 30 menit';
     });
 
-    function startTraceabilityAudit() {
-      if (auditTimer.intervalId) {
-        clearInterval(auditTimer.intervalId);
-      }
-      const now = new Date();
-      auditTimer.startTime = now;
-      auditTimer.endTime = null;
-      auditTimer.elapsedSeconds = 0;
-      auditTimer.status = 'running';
-      auditSession.manualWaktuStart = formatTimeHHMM(now);
-      auditSession.manualWaktuEnd = '';
-      auditSession.manualTotalWaktu = '';
-
-      if (activeSession.value) {
-        activeSession.value.status = 'running';
-        if (!activeSession.value.timer) activeSession.value.timer = {};
-        activeSession.value.timer.status = 'running';
-        activeSession.value.timer.startTime = now.toISOString();
-        activeSession.value.timer.endTime = null;
-        activeSession.value.timer.elapsedSeconds = 0;
-        activeSession.value.manualWaktuStart = formatTimeHHMM(now);
-        activeSession.value.manualWaktuEnd = '';
-        activeSession.value.manualTotalWaktu = '';
-      }
-
-      auditTimer.intervalId = setInterval(() => {
-        auditTimer.elapsedSeconds++;
-        if (activeSession.value && activeSession.value.timer) {
-          activeSession.value.timer.elapsedSeconds = auditTimer.elapsedSeconds;
+    async function syncActiveAuditSession() {
+      try {
+        const res = await fetch('/api/trace/session/active');
+        const data = await res.json();
+        if (data.success && data.session) {
+          applyServerSession(data.session);
         }
-      }, 1000);
+      } catch (_) {}
+    }
 
-      const batchToTrace = traceForm.noBatch || activeSession.value?.noBatch;
-      if (auditSession.jenis === 'Backward' && batchToTrace) {
-        traceForm.noBatch = batchToTrace;
-        doTrace();
-      } else if (auditSession.jenis === 'Forward' && auditSession.forward?.namaBahan) {
-        setTimeout(() => {
-          if (auditTimer.status === 'running') {
-            stopTraceabilityAudit();
+    function applyServerSession(s) {
+      if (!s) return;
+      auditTimer.status = s.status || 'idle';
+
+      if (s.status === 'running') {
+        auditTimer.elapsedSeconds = s.elapsed_seconds || 0;
+        if (s.start_time) auditTimer.startTime = new Date(s.start_time);
+        auditSession.manualWaktuStart = formatTimeHHMM(auditTimer.startTime || new Date());
+
+        // Otomatis arahkan semua tab PIC ke alur penelusuran jika batch belum dimuat
+        const targetBatch = s.no_batch || 'A370/26';
+        if (!traceResult.value || traceResult.value?.input?.noBatchFull !== targetBatch) {
+          traceForm.noBatch = targetBatch;
+          traceForm.tahun = s.tahun || 2026;
+          traceForm.tower = s.tower || '1';
+          if (activeTab.value !== 'pipeline') {
+            activeTab.value = 'pipeline';
           }
-        }, 1200);
+          doTrace();
+        }
+      } else if (s.status === 'completed') {
+        auditTimer.elapsedSeconds = s.duration_seconds || s.elapsed_seconds || 0;
+        if (s.end_time) auditTimer.endTime = new Date(s.end_time);
+        auditSession.manualWaktuEnd = formatTimeHHMM(auditTimer.endTime || new Date());
+
+        const hrs = Math.floor(auditTimer.elapsedSeconds / 3600);
+        const mins = Math.floor((auditTimer.elapsedSeconds % 3600) / 60);
+        const secs = auditTimer.elapsedSeconds % 60;
+        let durText = '';
+        if (hrs > 0) durText = `${hrs} jam ${mins} menit`;
+        else if (mins > 0) durText = `${mins} menit ${secs} detik`;
+        else if (secs > 0) durText = `${secs} detik`;
+        else durText = '< 1 detik';
+        auditSession.manualTotalWaktu = durText;
+      } else if (s.status === 'idle') {
+        auditTimer.elapsedSeconds = 0;
+        auditTimer.startTime = null;
+        auditTimer.endTime = null;
+      }
+
+      // Sync verification from server session
+      if (s.verification) {
+        auditVerification.value = s.verification;
+        if (traceResult.value?.packing && s.verification.helper_packing) {
+          traceResult.value.packing.helper_packing = s.verification.helper_packing;
+        }
+        if (traceResult.value?.pa?.cip && s.verification.konsentrasi_lye) {
+          ['evaporation', 'final_tank', 'extraction', 'dryer', 'rework'].forEach(k => {
+            if (traceResult.value.pa.cip[k]) traceResult.value.pa.cip[k].konsentrasi_lye = s.verification.konsentrasi_lye;
+          });
+        }
+      } else if (s.status === 'idle') {
+        auditVerification.value = null;
       }
     }
 
-    function stopTraceabilityAudit() {
-      if (auditTimer.intervalId) {
-        clearInterval(auditTimer.intervalId);
-        auditTimer.intervalId = null;
+    async function startTraceabilityAudit() {
+      if (!isAdmin.value) {
+        copiedToast.value = 'Hanya Super Admin yang berwenang memulai simulasi audit.';
+        setTimeout(() => { copiedToast.value = ''; }, 3000);
+        return;
       }
-      const now = new Date();
-      auditTimer.endTime = now;
-      auditTimer.status = 'completed';
-      auditSession.manualWaktuEnd = formatTimeHHMM(now);
 
-      const hrs = Math.floor(auditTimer.elapsedSeconds / 3600);
-      const mins = Math.floor((auditTimer.elapsedSeconds % 3600) / 60);
-      const secs = auditTimer.elapsedSeconds % 60;
-      let durText = '';
-      if (hrs > 0) durText = `${hrs} jam ${mins} menit`;
-      else if (mins > 0) durText = `${mins} menit ${secs} detik`;
-      else if (secs > 0) durText = `${secs} detik`;
-      else durText = '< 1 detik';
-      auditSession.manualTotalWaktu = durText;
+      if (auditSession.jenis === 'Backward' && !traceForm.noBatch) {
+        traceForm.noBatch = 'A370/26';
+      }
+      applyBatchFormatting();
 
-      if (activeSession.value) {
-        activeSession.value.status = 'completed';
-        if (!activeSession.value.timer) activeSession.value.timer = {};
-        activeSession.value.timer.status = 'completed';
-        activeSession.value.timer.endTime = now.toISOString();
-        activeSession.value.timer.elapsedSeconds = auditTimer.elapsedSeconds;
-        activeSession.value.manualWaktuEnd = auditSession.manualWaktuEnd;
-        activeSession.value.manualTotalWaktu = durText;
-        saveSessionsToStorage();
+      try {
+        const res = await fetch('/api/trace/session/start', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(window.sjaAuth ? window.sjaAuth.getAuthHeaders() : {})
+          },
+          body: JSON.stringify({
+            no_batch: traceForm.noBatch || 'A370/26',
+            tahun: traceForm.tahun || 2026,
+            tower: traceForm.tower || '1'
+          })
+        });
+        const data = await res.json();
+        if (data.success && data.session) {
+          applyServerSession(data.session);
+          doTrace();
+        } else {
+          copiedToast.value = data.error || data.message || 'Gagal memulai sesi audit.';
+          setTimeout(() => { copiedToast.value = ''; }, 3000);
+        }
+      } catch (err) {
+        console.error('startTraceabilityAudit error:', err);
       }
     }
 
-    function resetTraceabilityAudit() {
-      if (auditTimer.intervalId) {
-        clearInterval(auditTimer.intervalId);
-        auditTimer.intervalId = null;
+    async function stopTraceabilityAudit() {
+      if (!isAdmin.value) {
+        copiedToast.value = 'Waktu hanya dapat dihentikan oleh Admin atau saat verifikasi lengkap.';
+        setTimeout(() => { copiedToast.value = ''; }, 3000);
+        return;
       }
-      auditTimer.status = 'idle';
-      auditTimer.startTime = null;
-      auditTimer.endTime = null;
-      auditTimer.elapsedSeconds = 0;
-      auditSession.manualWaktuStart = '08:06';
-      auditSession.manualWaktuEnd = '11:36';
-      auditSession.manualTotalWaktu = '3 jam 30 menit';
+      try {
+        const res = await fetch('/api/trace/session/stop', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(window.sjaAuth ? window.sjaAuth.getAuthHeaders() : {})
+          }
+        });
+        const data = await res.json();
+        if (data.success && data.session) {
+          applyServerSession(data.session);
+        }
+      } catch (err) {
+        console.error('stopTraceabilityAudit error:', err);
+      }
+    }
 
-      if (activeSession.value) {
-        activeSession.value.status = 'draft';
-        if (!activeSession.value.timer) activeSession.value.timer = {};
-        activeSession.value.timer.status = 'idle';
-        activeSession.value.timer.startTime = null;
-        activeSession.value.timer.endTime = null;
-        activeSession.value.timer.elapsedSeconds = 0;
-        activeSession.value.manualWaktuStart = '08:06';
-        activeSession.value.manualWaktuEnd = '11:36';
-        activeSession.value.manualTotalWaktu = '3 jam 30 menit';
-        saveSessionsToStorage();
+    async function resetTraceabilityAudit() {
+      if (!isAdmin.value) {
+        copiedToast.value = 'Hanya Super Admin yang dapat me-reset simulasi audit.';
+        setTimeout(() => { copiedToast.value = ''; }, 3000);
+        return;
+      }
+      try {
+        await fetch('/api/trace/session/reset', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(window.sjaAuth ? window.sjaAuth.getAuthHeaders() : {})
+          }
+        });
+        await resetAuditVerification();
+        syncActiveAuditSession();
+      } catch (err) {
+        console.error('resetTraceabilityAudit error:', err);
+      }
+    }
+
+    // ── Human-in-the-Loop Verifikasi Lapangan (Konsentrasi Lye & Helper Packing) ──
+    const auditVerification = ref(null);
+    const isVerificationModalOpen = ref(false);
+    const verifSubmitting = ref(false);
+    const verifForm = reactive({
+      konsentrasi_lye: '3%',
+      helper_packing: '',
+      pic_pa: '',
+      pic_produksi: ''
+    });
+
+    function openVerificationModal() {
+      verifForm.konsentrasi_lye = auditVerification.value?.konsentrasi_lye || '3%';
+      verifForm.helper_packing = auditVerification.value?.helper_packing || '';
+      const userFullName = authUser.value?.full_name || '';
+      if (authRole.value === 'pa') {
+        verifForm.pic_pa = auditVerification.value?.pic_pa || userFullName || 'Analis PA';
+        verifForm.pic_produksi = auditVerification.value?.pic_produksi || 'Frengky Wahyudi';
+      } else if (authRole.value === 'produksi') {
+        verifForm.pic_pa = auditVerification.value?.pic_pa || 'Huda';
+        verifForm.pic_produksi = auditVerification.value?.pic_produksi || userFullName || 'Operator Produksi';
+      } else {
+        verifForm.pic_pa = auditVerification.value?.pic_pa || 'Huda';
+        verifForm.pic_produksi = auditVerification.value?.pic_produksi || (userFullName || 'Frengky Wahyudi');
+      }
+      isVerificationModalOpen.value = true;
+    }
+
+    function closeVerificationModal() {
+      isVerificationModalOpen.value = false;
+    }
+
+    let verificationPollInterval = null;
+
+    function startVerificationSync() {
+      if (verificationPollInterval) clearInterval(verificationPollInterval);
+      verificationPollInterval = setInterval(async () => {
+        if (auditTimer.status !== 'running') {
+          clearInterval(verificationPollInterval);
+          verificationPollInterval = null;
+          return;
+        }
+        const batch = traceResult.value?.input?.noBatchFull || traceForm.noBatch;
+        if (!batch) return;
+        const tahun = traceResult.value?.input?.tahun || traceForm.tahun || 2026;
+        const tower = traceResult.value?.input?.tower || traceForm.tower || '1';
+        try {
+          const res = await fetch(`/api/trace/verify/${encodeURIComponent(batch)}?tahun=${tahun}&tower=${tower}`);
+          const data = await res.json();
+          if (data.success && data.verification) {
+            auditVerification.value = data.verification;
+            if (data.verification.helper_packing && traceResult.value?.packing) {
+              traceResult.value.packing.helper_packing = data.verification.helper_packing;
+            }
+            if (data.verification.konsentrasi_lye && traceResult.value?.pa?.cip) {
+              ['evaporation', 'final_tank', 'extraction', 'dryer', 'rework'].forEach(k => {
+                if (traceResult.value.pa.cip[k]) traceResult.value.pa.cip[k].konsentrasi_lye = data.verification.konsentrasi_lye;
+              });
+            }
+            if (data.verification.konsentrasi_lye && data.verification.helper_packing) {
+              if (data.verification.duration_seconds > 0) {
+                auditTimer.elapsedSeconds = data.verification.duration_seconds;
+              }
+              stopTraceabilityAudit();
+              if (isVerificationModalOpen.value) {
+                isVerificationModalOpen.value = false;
+              }
+              copiedToast.value = `Seluruh verifikasi manual telah terpenuhi! Simulasi audit selesai dalam ${formatElapsedDuration(auditTimer.elapsedSeconds)}.`;
+              setTimeout(() => { copiedToast.value = ''; }, 4000);
+            }
+          }
+        } catch (_) {}
+      }, 3000);
+    }
+
+    function stopVerificationSync() {
+      if (verificationPollInterval) {
+        clearInterval(verificationPollInterval);
+        verificationPollInterval = null;
+      }
+    }
+
+    async function submitVerification() {
+      verifSubmitting.value = true;
+      try {
+        const batch = traceResult.value?.input?.noBatchFull || traceForm.noBatch || 'A370/26';
+        const tahun = traceResult.value?.input?.tahun || traceForm.tahun || 2026;
+        const tower = traceResult.value?.input?.tower || traceForm.tower || '1';
+
+        const payload = {
+          no_batch: batch,
+          tahun,
+          tower,
+          duration_seconds: auditTimer.elapsedSeconds
+        };
+
+        if (isAdmin.value) {
+          payload.konsentrasi_lye = verifForm.konsentrasi_lye || undefined;
+          payload.helper_packing = verifForm.helper_packing || undefined;
+          payload.pic_pa = verifForm.pic_pa || authUser.value?.full_name || 'Admin';
+          payload.pic_produksi = verifForm.pic_produksi || authUser.value?.full_name || 'Admin';
+        } else if (isPa.value) {
+          payload.konsentrasi_lye = verifForm.konsentrasi_lye;
+          payload.pic_pa = verifForm.pic_pa || authUser.value?.full_name || 'Analis PA';
+        } else if (isProduksi.value) {
+          payload.helper_packing = verifForm.helper_packing;
+          payload.pic_produksi = verifForm.pic_produksi || authUser.value?.full_name || 'Operator Produksi';
+        }
+
+        const res = await fetch('/api/trace/verify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (!data.success) {
+          copiedToast.value = data.error || 'Gagal menyimpan verifikasi.';
+          setTimeout(() => { copiedToast.value = ''; }, 3000);
+          return;
+        }
+
+        auditVerification.value = data.verification;
+        if (traceResult.value) {
+          traceResult.value.verification = data.verification;
+          if (traceResult.value.packing && data.verification.helper_packing) {
+            traceResult.value.packing.helper_packing = data.verification.helper_packing;
+          }
+          if (traceResult.value.pa?.cip && data.verification.konsentrasi_lye) {
+            ['evaporation', 'final_tank', 'extraction', 'dryer', 'rework'].forEach(k => {
+              if (traceResult.value.pa.cip[k]) traceResult.value.pa.cip[k].konsentrasi_lye = data.verification.konsentrasi_lye;
+            });
+          }
+        }
+
+        const isComplete = Boolean(
+          data.verification.konsentrasi_lye &&
+          data.verification.helper_packing
+        );
+
+        isVerificationModalOpen.value = false;
+
+        if (isComplete) {
+          stopTraceabilityAudit();
+          copiedToast.value = `Seluruh verifikasi manual terpenuhi! Audit selesai dalam ${formatElapsedDuration(auditTimer.elapsedSeconds)}.`;
+          setTimeout(() => { copiedToast.value = ''; }, 3500);
+        } else {
+          if (isPa.value) {
+            copiedToast.value = `Verifikasi PA berhasil disimpan (${data.verification.konsentrasi_lye}). Menunggu verifikasi Helper Packing dari PIC Produksi.`;
+          } else if (isProduksi.value) {
+            copiedToast.value = `Verifikasi Helper Packing berhasil disimpan. Menunggu verifikasi Konsentrasi Lye dari PIC PA.`;
+          } else {
+            copiedToast.value = `Data verifikasi tersimpan. Menunggu kelengkapan seluruh parameter agar audit selesai.`;
+          }
+          setTimeout(() => { copiedToast.value = ''; }, 4000);
+        }
+      } catch (err) {
+        console.error('submitVerification error:', err);
+        copiedToast.value = 'Terjadi kesalahan saat menyimpan verifikasi.';
+        setTimeout(() => { copiedToast.value = ''; }, 3000);
+      } finally {
+        verifSubmitting.value = false;
+      }
+    }
+
+    async function resetAuditVerification() {
+      const batch = traceResult.value?.input?.noBatchFull || traceForm.noBatch || 'A370/26';
+      const tahun = traceResult.value?.input?.tahun || traceForm.tahun || 2026;
+      const tower = traceResult.value?.input?.tower || traceForm.tower || '1';
+      try {
+        await fetch('/api/trace/verify/reset', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ no_batch: batch, tahun, tower })
+        });
+        auditVerification.value = null;
+        if (traceResult.value) {
+          traceResult.value.verification = null;
+          if (traceResult.value.packing) traceResult.value.packing.helper_packing = '';
+          if (traceResult.value.pa?.cip) {
+            ['evaporation', 'final_tank', 'extraction', 'dryer', 'rework'].forEach(k => {
+              if (traceResult.value.pa.cip[k]) traceResult.value.pa.cip[k].konsentrasi_lye = '-';
+            });
+          }
+        }
+        startTraceabilityAudit();
+        copiedToast.value = 'Verifikasi di-reset. Simulasi audit dimulai kembali dari 0 detik.';
+        setTimeout(() => { copiedToast.value = ''; }, 3500);
+      } catch (err) {
+        console.error('resetAuditVerification error:', err);
       }
     }
 
     const traceForm = reactive({
       noBatch: 'A370/26',
       tower: '1',
+      tahun: 2026,
     });
+
+    const availableYears = ref([2026, 2025]);
+
+    async function loadAvailableYears() {
+      try {
+        const res = await fetch('/api/trace/years');
+        const data = await res.json();
+        if (data.years && Array.isArray(data.years) && data.years.length > 0) {
+          availableYears.value = data.years;
+          if (!availableYears.value.includes(traceForm.tahun)) {
+            traceForm.tahun = availableYears.value[0];
+          }
+        }
+      } catch (err) {
+        console.error('loadAvailableYears error:', err);
+      }
+    }
+
+    const expectedFormattedBatch = computed(() => {
+      const pfx = String(traceForm.tower) === '2' ? 'B' : 'A';
+      const yr2 = String(traceForm.tahun || 2026).slice(-2);
+      return `${pfx}370/${yr2}`;
+    });
+
+    function applyBatchFormatting() {
+      if (!traceForm.noBatch) return;
+      const str = String(traceForm.noBatch).trim();
+      if (!str) return;
+
+      const pfx = String(traceForm.tower) === '2' ? 'B' : 'A';
+      const yr2 = String(traceForm.tahun || 2026).slice(-2);
+
+      const match = str.match(/([a-zA-Z]?)\s*(\d+)(?:\/(\d{2,4}))?/);
+      if (match) {
+        let num = match[2];
+        if (num.length < 3) {
+          num = num.padStart(3, '0');
+        }
+        let yr = yr2;
+        if (match[3]) {
+          const rawYr = match[3];
+          yr = rawYr.length === 4 ? rawYr.slice(-2) : rawYr;
+          const fullYr = parseInt(rawYr.length === 2 ? ('20' + rawYr) : rawYr, 10);
+          if (!isNaN(fullYr) && traceForm.tahun !== fullYr) {
+            traceForm.tahun = fullYr;
+          }
+        }
+        let targetPfx = pfx;
+        if (match[1]) {
+          const l = match[1].toUpperCase();
+          if (l === 'A') {
+            targetPfx = 'A';
+            traceForm.tower = '1';
+          } else if (l === 'B') {
+            targetPfx = 'B';
+            traceForm.tower = '2';
+          }
+        }
+        traceForm.noBatch = `${targetPfx}${num}/${yr}`;
+      }
+    }
+
+    function onTowerDropdownChange() {
+      const pfx = String(traceForm.tower) === '2' ? 'B' : 'A';
+      if (traceForm.noBatch) {
+        const m = String(traceForm.noBatch).trim().match(/^[a-zA-Z]?(\d+.*)$/);
+        if (m) {
+          traceForm.noBatch = `${pfx}${m[1]}`;
+        }
+      }
+    }
+
+    function onTahunDropdownChange() {
+      const yr2 = String(traceForm.tahun || 2026).slice(-2);
+      if (traceForm.noBatch && traceForm.noBatch.includes('/')) {
+        traceForm.noBatch = traceForm.noBatch.split('/')[0] + '/' + yr2;
+      }
+    }
+
+    function setTower(tw) {
+      traceForm.tower = String(tw);
+      onTowerDropdownChange();
+    }
 
     function formatIndoDate(val, addYears = 0) {
       if (!val) return '-';
@@ -1906,150 +2420,16 @@ createApp({
       const d = traceResult.value;
       if (!d) return '-';
 
-      // ── Single Source of Truth: Shared Resolver ──
+      // Single Source of Truth: Shared Resolver (Pure MySQL from clusterTraceStore)
       if (typeof window.getTraceItemValue === 'function') {
         const sharedVal = window.getTraceItemValue(key, d);
-        if (sharedVal !== undefined && sharedVal !== null) {
+        if (sharedVal !== undefined && sharedVal !== null && sharedVal !== '') {
           return sharedVal;
         }
       }
 
-      // ── QC Auto-Mapped Keys ──
-      if (d.qc && d.qc[key] !== undefined) return d.qc[key];
-
-      // ── 0. PACKING (PIC Produksi) ──
-      if (key === 'packing_waktu_proses') return d.packing?.waktu_proses || '-';
-      if (key === 'packing_shift') return d.packing?.shift ? 'Shift ' + d.packing.shift : '-';
-      if (key === 'packing_operator') return d.packing?.operator_packing || '-';
-      if (key === 'packing_helper') return d.packing?.team ? 'Regu ' + d.packing.team : '-';
-      if (key === 'packing_ccp') return d.packing?.dehumidifier ? 'Dehumidifier: ' + d.packing.dehumidifier : '-';
-      if (key === 'packing_suhu_rh') return d.packing?.suhu_rh_packing || '-';
-      if (key === 'packing_kebersihan') return '-';
-      if (key === 'packing_lot_karton') return d.fgw?.lot_karton || '-';
-      if (key === 'packing_supplier_karton') return d.fgw?.supplier_karton || '-';
-      if (key === 'packing_lot_plastik') return d.fgw?.lot_plastik || '-';
-      if (key === 'packing_supplier_plastik') return d.fgw?.supplier_plastik || '-';
-      if (key === 'packing_abnormalitas') return d.packing?.abnormalitas || '-';
-      if (key === 'packing_berat_box') return d.packing?.berat_box || '-';
-      if (key === 'packing_total_output') return d.packing?.total_output || (d.packing?.total_output_kg ? `${d.packing.total_output_kg} kg` : '-');
-
-      // ── 1. DRYER (PIC Produksi) ──
-      if (key === 'dryer_waktu_proses') return d.dryer?.waktu_proses || '-';
-      if (key === 'dryer_operator') return d.dryer?.operator_produksi || '-';
-      if (key === 'dryer_final_tank') return d.dryer?.final_tank ? 'FT C0' + d.dryer.final_tank : '-';
-      if (key === 'dryer_mode') return d.dryer?.mode || '-';
-      if (key === 'dryer_parameter_kritis') return d.dryer?.raw_rows?.length ? '' : '-';
-      if (key === 'dryer_abnormalitas') return d.dryer?.abnormalitas || '-';
-
-      // ── 2. EVAPORATION (PIC Produksi) ──
-      if (key === 'evap_waktu_proses') return d.evaporation?.waktu_proses || '-';
-      if (key === 'evap_operator') return d.evaporation?.operator_produksi || '-';
-      if (key === 'evap_destination_tank') return d.evaporation?.no_final_tank ? 'FT C0' + d.evaporation.no_final_tank : '-';
-      if (key === 'evap_parameter_kritis') return d.evaporation?.raw_rows?.length ? '' : '-';
-      if (key === 'evap_abnormalitas') return d.evaporation?.abnormalitas || '-';
-
-      // ── 3. EXTRACTION (PIC Produksi) ──
-      if (key === 'ext_waktu_proses') return d.extraction?.waktu_proses || '-';
-      if (key === 'ext_mode') return d.extraction?.mode_ekstraksi || '-';
-      if (key === 'ext_percolator') return d.extraction?.jumlah_percolator ? d.extraction.jumlah_percolator + ' siklus' : '-';
-      if (key === 'ext_operator') return d.extraction?.operator_produksi || '-';
-      if (key === 'ext_silo') return d.extraction?.silo_degassing ? 'Silo ' + d.extraction.silo_degassing : '-';
-      if (key === 'ext_parameter_kritis') return d.extraction?.raw_rows?.length ? '' : '-';
-      if (key === 'ext_abnormalitas') return d.extraction?.abnormalitas || '-';
-
-      // ── 4. ROASTING (PIC Produksi) ──
-      if (key === 'roast_waktu_proses') return d.roasting?.waktu_proses || '-';
-      if (key === 'roast_mesin') return d.roasting?.mesin_goreng || '-';
-      if (key === 'roast_mode') return d.roasting?.jenis_kopi_goreng || '-';
-      if (key === 'roast_silo') return d.roasting?.silo_degassing ? 'Silo ' + d.roasting.silo_degassing : '-';
-      if (key === 'roast_jumlah_batch') return d.roasting?.jumlah_batch ? d.roasting.jumlah_batch + ' batch' : '-';
-      if (key === 'roast_operator') return d.roasting?.operator_produksi || '-';
-      if (key === 'roast_parameter_kritis') return d.roasting?.raw_rows?.length ? '' : '-';
-      if (key === 'roast_abnormalitas') return d.roasting?.catatan_abnormalitas || '-';
-      if (key === 'roast_jenis_biji') return d.roasting?.jenis_biji_mentah || '-';
-      if (key === 'roast_silocell') return d.roasting?.silo_cell_terpakai ? 'Cell ' + d.roasting.silo_cell_terpakai : '-';
-
-      // ── 5. UPBM (PIC Produksi) ──
-      if (key === 'upbm_waktu_inload') return d.upbm?.waktu_inload || '-';
-      if (key === 'upbm_bstb') return d.upbm?.nomor_bstb || '-';
-      if (key === 'upbm_jenis_biji') return d.upbm?.jenis_biji_kopi_mentah || '-';
-      if (key === 'upbm_silo_cell') return d.upbm?.silo_cell || '-';
-      if (key === 'upbm_disposisi') return d.upbm?.disposisi || '-';
-      if (key === 'upbm_total_biji') return d.upbm?.total_kopi_mentah_dipakai || '-';
-      if (key === 'upbm_operator') return d.upbm?.operator_produksi || '-';
-      if (key === 'upbm_abnormalitas') return d.upbm?.catatan_abnormalitas || '-';
-
-      // ── 6. MASS BALANCE PRODUKSI (PIC Produksi) ──
-      if (key === 'mb_output') return d.mass_balance?.total_output_produk || '-';
-      if (key === 'mb_kopi_goreng') return d.mass_balance?.total_kopi_goreng_transfer || '-';
-      if (key === 'mb_kopi_mentah') return d.mass_balance?.total_kopi_mentah || '-';
-      if (key === 'mb_rasio_ic') return d.mass_balance?.rasio_ic || d.mass_balance?.icRatio || '-';
-
-      // ── 7. PA (PRODUCT ASSURANCE) ──
-      if (key === 'water_waktu_analisa') return d.pa?.water?.waktu_analisa || '-';
-      if (key === 'water_ph') return d.pa?.water?.ph || '-';
-      if (key === 'water_tds') return d.pa?.water?.tds ? String(d.pa.water.tds) : '-';
-      if (key === 'water_kekeruhan') return d.pa?.water?.kekeruhan !== undefined && d.pa?.water?.kekeruhan !== null ? String(d.pa.water.kekeruhan) : '-';
-      if (key === 'water_kesadahan') return d.pa?.water?.kesadahan !== undefined && d.pa?.water?.kesadahan !== null ? String(d.pa.water.kesadahan) : '-';
-      if (key === 'water_sisa_khlor') return d.pa?.water?.sisa_khlor !== undefined && d.pa?.water?.sisa_khlor !== null ? String(d.pa.water.sisa_khlor) : '-';
-      if (key === 'water_mangan') return d.pa?.water?.mangan !== undefined && d.pa?.water?.mangan !== null ? String(d.pa.water.mangan) : '-';
-      if (key === 'water_besi') return d.pa?.water?.besi !== undefined && d.pa?.water?.besi !== null ? String(d.pa.water.besi) : '-';
-      if (key === 'water_warna') return d.pa?.water?.warna !== undefined && d.pa?.water?.warna !== null ? String(d.pa.water.warna) : '-';
-      if (key === 'water_aluminium') return d.pa?.water?.aluminium !== undefined && d.pa?.water?.aluminium !== null ? String(d.pa.water.aluminium) : '-';
-      if (key === 'water_e_coli') return d.pa?.water?.e_coli || '-';
-      if (key === 'water_total_coliform') return d.pa?.water?.total_coliform || '-';
-      if (key === 'water_pic_pa') return d.pa?.water?.pic_pa || 'Jefri & Reza';
-
-      const hasCop = !!(d.pa?.cip?.rework?.tanggal || d.pa?.cip?.extraction?.tanggal);
-      if (key === 'pa_packing_cop_waktu') return d.pa?.cip?.rework?.tanggal || d.pa?.cip?.extraction?.tanggal || '-';
-      if (key === 'pa_packing_cop_swab') return hasCop ? 'OK' : '-';
-      if (key === 'pa_packing_cop_pic') return hasCop ? 'Jefri & Rudi' : '-';
-      if (key === 'pa_packing_env_internal_waktu') return d.pa?.env_swab_date || '-';
-      if (key === 'pa_packing_env_internal_list') return d.pa?.env_swab_date ? 'OK' : '-';
-      if (key === 'pa_packing_env_internal_pic') return d.pa?.env_swab_date ? 'Jefri & Rudi' : '-';
-      if (key === 'pa_packing_env_external_waktu') return d.pa?.env_swab_date || '-';
-      if (key === 'pa_packing_env_external_list') return d.pa?.env_swab_date ? 'OK' : '-';
-      if (key === 'pa_packing_env_external_pic') return d.pa?.env_swab_date ? 'Huda & Faiz' : '-';
-      if (key === 'pa_packing_abe_waktu') return d.pa?.air_bacteria_date || '-';
-      if (key === 'pa_packing_abe_hasil') return d.pa?.air_bacteria_date ? 'OK' : '-';
-      if (key === 'pa_packing_abe_pic') return d.pa?.air_bacteria_date ? 'Huda & Faiz' : '-';
-
-      const hasReworkCip = !!(d.pa?.cip?.rework?.tanggal);
-      if (key === 'pa_rework_cip_waktu') return d.pa?.cip?.rework?.tanggal || '-';
-      if (key === 'pa_rework_cip_lye') return hasReworkCip ? '3%' : '-';
-      if (key === 'pa_rework_cip_rinse') return hasReworkCip ? ((d.pa?.cip?.rework?.ph_lab && d.pa.cip.rework.ph_lab !== '-' && d.pa.cip.rework.ph_lab !== '0') ? `pH: ${d.pa.cip.rework.ph_lab} (OK)` : 'OK') : '-';
-      if (key === 'pa_rework_cip_pic') return hasReworkCip ? 'Jefri, Huda, Shandi, Rudi' : '-';
-
-      const hasDryerCip = !!(d.pa?.cip?.dryer?.tanggal);
-      if (key === 'pa_dryer_cip_waktu') return d.pa?.cip?.dryer?.tanggal || '-';
-      if (key === 'pa_dryer_cip_lye') return hasDryerCip ? '3%' : '-';
-      if (key === 'pa_dryer_cip_rinse') return hasDryerCip ? ((d.pa?.cip?.dryer?.ph_lab && d.pa.cip.dryer.ph_lab !== '-' && d.pa.cip.dryer.ph_lab !== '0') ? `pH: ${d.pa.cip.dryer.ph_lab} (OK)` : 'OK') : '-';
-      if (key === 'pa_dryer_cip_pic') return hasDryerCip ? 'Reza' : '-';
-
-      const hasEvapCip = !!(d.pa?.cip?.evaporation?.tanggal);
-      if (key === 'pa_evap_cip_waktu') return d.pa?.cip?.evaporation?.tanggal || '-';
-      if (key === 'pa_evap_cip_lye') return hasEvapCip ? '3%' : '-';
-      if (key === 'pa_evap_cip_rinse') return hasEvapCip ? ((d.pa?.cip?.evaporation?.ph_lab && d.pa.cip.evaporation.ph_lab !== '-' && d.pa.cip.evaporation.ph_lab !== '0') ? `pH: ${d.pa.cip.evaporation.ph_lab} (OK)` : 'OK') : '-';
-      if (key === 'pa_evap_cip_pic') return hasEvapCip ? 'Huda' : '-';
-
-      const hasFtCip = !!(d.pa?.cip?.final_tank?.tanggal);
-      if (key === 'pa_finaltank_cip_waktu') return d.pa?.cip?.final_tank?.tanggal || '-';
-      if (key === 'pa_finaltank_cip_lye') return hasFtCip ? '3%' : '-';
-      if (key === 'pa_finaltank_cip_rinse') return hasFtCip ? ((d.pa?.cip?.final_tank?.ph_lab && d.pa.cip.final_tank.ph_lab !== '-' && d.pa.cip.final_tank.ph_lab !== '0') ? `pH: ${d.pa.cip.final_tank.ph_lab} (OK)` : 'OK') : '-';
-      if (key === 'pa_finaltank_cip_swab') return hasFtCip ? 'OK' : '-';
-      if (key === 'pa_finaltank_cip_pic') return hasFtCip ? 'Reza, Jefri, Huda' : '-';
-
-      if (key === 'pa_ext_cip_checklist') {
-        const c = d.pa?.extraction_cip_checklist;
-        return c ? (c.recordedItems + ' / ' + c.totalItems + ' Titik Terverifikasi (' + c.plantName + ')') : '-';
-      }
-
-      const hasExtCip = !!(d.pa?.cip?.extraction?.tanggal);
-      if (key === 'pa_ext_cip_waktu') return d.pa?.cip?.extraction?.tanggal || '-';
-      if (key === 'pa_ext_cip_lye') return hasExtCip ? '3%' : '-';
-      if (key === 'pa_ext_cip_rinse') return hasExtCip ? ((d.pa?.cip?.extraction?.ph_lab && d.pa.cip.extraction.ph_lab !== '-' && d.pa.cip.extraction.ph_lab !== '0') ? `pH: ${d.pa.cip.extraction.ph_lab} (OK)` : 'OK') : '-';
-      if (key === 'pa_ext_cip_pic') return hasExtCip ? 'Reza, Huda, Toat' : '-';
-
+      // QC Auto-Mapped Keys
+      if (d.qc && d.qc[key] !== undefined && d.qc[key] !== null) return String(d.qc[key]);
       return '-';
     }
 
@@ -2059,8 +2439,8 @@ createApp({
       { code: 'PA',  key: 'PA',       label: 'Process Assurance', desc: '8 Tabel Verifikasi' },
       { code: 'QC',  key: 'QC',       label: 'Quality Control', desc: '22 Tabel Uji Mutu' },
       { code: 'FGW', key: 'FGW',      label: 'Gudang FG (FGW)', desc: 'Belum Ada Rekaman' },
-      { code: 'RMW', key: 'RMW',      label: 'Bahan Baku (RMW)', desc: 'Belum Ada Rekaman' },
-      { code: 'ALL', key: 'Semua',    label: 'Semua Divisi', desc: '41 Tabel Database' },
+      { code: 'RMW', key: 'RMW',      label: 'Bahan Baku (RMW)', desc: '2 Tabel GBB' },
+      { code: 'ALL', key: 'Semua',    label: 'Semua Divisi', desc: '43 Tabel Database' },
     ];
     const towerOptions = ['Tower 1', 'Tower 2', 'Non-Tower / Semua'];
     const savedPic = (() => { try { return localStorage.getItem('traceability_selected_pic'); } catch { return null; } })();
@@ -2075,6 +2455,10 @@ createApp({
         const container = document.getElementById('mini-rail-chips-container');
         const pill = document.getElementById('mini-rail-active-pill');
         if (!container || !pill) return;
+        if (activeTab.value !== 'pic') {
+          pill.style.opacity = '0';
+          return;
+        }
         const targetBtn = container.querySelector(`[data-mini-pic="${selectedPic.value}"]`);
         if (!targetBtn) {
           pill.style.opacity = '0';
@@ -2090,6 +2474,10 @@ createApp({
         const container = document.getElementById('sidebar-submenu-container');
         const pill = document.getElementById('submenu-active-pill');
         if (!container || !pill) return;
+        if (activeTab.value !== 'pic') {
+          pill.style.opacity = '0';
+          return;
+        }
         const targetBtn = container.querySelector(`[data-sub-pic="${selectedPic.value}"]`);
         if (!targetBtn) {
           pill.style.opacity = '0';
@@ -2114,8 +2502,12 @@ createApp({
         }
         const cRect = container.getBoundingClientRect();
         const bRect = targetBtn.getBoundingClientRect();
-        const offsetX = Math.round(bRect.left - cRect.left);
-        const offsetY = Math.round(bRect.top - cRect.top);
+        if (bRect.width === 0 || bRect.height === 0) {
+          pill.style.opacity = '0';
+          return;
+        }
+        const offsetX = Math.round(bRect.left - cRect.left + (container.scrollLeft || 0));
+        const offsetY = Math.round(bRect.top - cRect.top + (container.scrollTop || 0));
         pill.style.width = `${bRect.width}px`;
         pill.style.height = `${bRect.height}px`;
         pill.style.transform = `translate3d(${offsetX}px, ${offsetY}px, 0)`;
@@ -2130,11 +2522,12 @@ createApp({
       updateFlowStagePill();
     }
 
-    watch([activeTab, sidebarOpen, selectedPic, dataExplorerMenuOpen, selectedClusterKey, activeSessionId], () => {
+    watch([activeTab, sidebarOpen, selectedPic, dataExplorerMenuOpen, selectedClusterKey, activeSessionId, authIsLoggedIn], () => {
       updateAllPills();
       setTimeout(updateAllPills, 60);
       setTimeout(updateAllPills, 160);
       setTimeout(updateAllPills, 320);
+      setTimeout(updateAllPills, 550);
     });
 
     function selectPicFromSidebar(pic) {
@@ -2209,6 +2602,9 @@ createApp({
       { key: 'pa_emp_t2',          label: 'EMP Swab T2',             flow: 'PACKING',     pic: 'PA', tower: 'Tower 2', count: null },
       { key: 'pa_abe_t1',          label: 'ABE Air Bacteria T1',     flow: 'PACKING',     pic: 'PA', tower: 'Tower 1', count: null },
       { key: 'pa_abe_t2',          label: 'ABE Air Bacteria T2',     flow: 'PACKING',     pic: 'PA', tower: 'Tower 2', count: null },
+      // RMW (Raw Material Warehouse / GBB) (2 Tabel)
+      { key: 'gbb_penerimaan',      label: 'Penerimaan Kopi Mentah',  flow: 'INCOMING BAHAN', pic: 'RMW', tower: 'Non-Tower', count: null },
+      { key: 'gbb_transaksi_keluar',label: 'Pengeluaran ke UPBM',     flow: 'INCOMING BAHAN', pic: 'RMW', tower: 'Non-Tower', count: null },
     ]);
 
     const filteredTables = computed(() => {
@@ -2221,15 +2617,6 @@ createApp({
     });
 
     // ── Penampil Data PIC State & Methods ──
-    // ── Input Data Modal State & Methods ──
-    const inputModalOpen = ref(false);
-    const inputTargetTable = ref('dryer_tower_1');
-    const inputColumns = ref([]);
-    const inputColumnsLoading = ref(false);
-    const inputFormData = reactive({});
-    const inputSubmitting = ref(false);
-    const inputSuccessMsg = ref('');
-    const inputErrorMsg = ref('');
     const tableFilterQuery = ref('');
 
     const picFilteredTablesSearched = computed(() => {
@@ -2240,91 +2627,6 @@ createApp({
       }
       return list;
     });
-
-    async function openInputModal(tblKey) {
-      const target = tblKey || picSelectedTable.value || 'dryer_tower_1';
-      inputTargetTable.value = target;
-      inputModalOpen.value = true;
-      inputColumnsLoading.value = true;
-      inputSuccessMsg.value = '';
-      inputErrorMsg.value = '';
-      
-      // Clear previous form data
-      Object.keys(inputFormData).forEach(k => delete inputFormData[k]);
-
-      try {
-        const res = await fetch(`/api/import/${target}/columns`);
-        const data = await res.json();
-        if (res.ok && data.columns) {
-          inputColumns.value = data.columns;
-          // Set smart defaults
-          const now = new Date();
-          const todayStr = now.toISOString().split('T')[0];
-          const timeStr = now.toTimeString().split(' ')[0].substring(0, 5);
-          const currentTableObj = getTable(target);
-
-          data.columns.forEach(col => {
-            const colName = col.COLUMN_NAME;
-            const lower = colName.toLowerCase();
-            if (lower.includes('tanggal') || lower.includes('date')) {
-              inputFormData[colName] = todayStr;
-            } else if (lower.includes('waktu') || lower.includes('jam')) {
-              inputFormData[colName] = timeStr;
-            } else if (lower === 'tower') {
-              inputFormData[colName] = currentTableObj?.tower === 'Tower 2' ? '2' : '1';
-            } else if (lower === 'shift') {
-              inputFormData[colName] = '1';
-            } else if (lower === 'team' || lower === 'regu') {
-              inputFormData[colName] = 'A';
-            } else {
-              inputFormData[colName] = '';
-            }
-          });
-        } else {
-          throw new Error(data.error || 'Gagal memuat definisi kolom tabel.');
-        }
-      } catch (err) {
-        inputErrorMsg.value = err.message;
-      } finally {
-        inputColumnsLoading.value = false;
-      }
-    }
-
-    function closeInputModal() {
-      inputModalOpen.value = false;
-      inputSuccessMsg.value = '';
-      inputErrorMsg.value = '';
-    }
-
-    async function submitInputRow() {
-      if (authRole.value !== 'admin') {
-        inputErrorMsg.value = 'Akses Ditolak: Hanya Super Admin yang berwenang menambahkan baris data ke database.';
-        return;
-      }
-      inputSubmitting.value = true;
-      inputSuccessMsg.value = '';
-      inputErrorMsg.value = '';
-      try {
-        const res = await fetch(`/api/import/${inputTargetTable.value}/row`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(inputFormData),
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Gagal menyimpan baris data.');
-        inputSuccessMsg.value = data.message || `1 baris berhasil ditambahkan ke ${inputTargetTable.value}.`;
-        
-        // Refresh counts & live view
-        await fetchCount(inputTargetTable.value);
-        if (picSelectedTable.value === inputTargetTable.value) {
-          loadPicTable(inputTargetTable.value, 1);
-        }
-      } catch (err) {
-        inputErrorMsg.value = err.message;
-      } finally {
-        inputSubmitting.value = false;
-      }
-    }
 
     function getColumnInputType(colName, dataType = '') {
       const lower = colName.toLowerCase();
@@ -2356,9 +2658,194 @@ createApp({
     const picFilterYear = ref('2026');
     const picFilterMonth = ref('');
     const picFilterDate = ref('');
+    const picFilterStartDate = ref('');
+    const picFilterEndDate = ref('');
     const picFilterBean = ref('');
+    const dateRangeDropdownOpen = ref(false);
+    const rangeCalendarYear = ref(2026);
+    const rangeCalendarMonth = ref(new Date().getMonth());
     const tableEquipments = ref([]);
     const tableEquipmentCol = ref('');
+    const searchDropdownOpen = ref(false);
+
+    const rangeMonthNames = [
+      'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+      'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+    ];
+
+    const rangeMonthYearLabel = computed(() => {
+      return `${rangeMonthNames[rangeCalendarMonth.value]} ${rangeCalendarYear.value}`;
+    });
+
+    function prevRangeMonth() {
+      if (rangeCalendarMonth.value === 0) {
+        rangeCalendarMonth.value = 11;
+        rangeCalendarYear.value--;
+      } else {
+        rangeCalendarMonth.value--;
+      }
+    }
+
+    function nextRangeMonth() {
+      if (rangeCalendarMonth.value === 11) {
+        rangeCalendarMonth.value = 0;
+        rangeCalendarYear.value++;
+      } else {
+        rangeCalendarMonth.value++;
+      }
+    }
+
+    const picDateRangeDisplay = computed(() => {
+      const s = picFilterStartDate.value;
+      const e = picFilterEndDate.value;
+      const fmt = (dStr) => {
+        if (!dStr) return '';
+        const parts = dStr.split('-');
+        if (parts.length === 3) return `${parts[0]}.${parseInt(parts[1], 10)}.${parseInt(parts[2], 10)}`;
+        return dStr;
+      };
+      if (s && e) {
+        if (s === e) return fmt(s);
+        return `${fmt(s)} ~ ${fmt(e)}`;
+      }
+      if (s) return `${fmt(s)} ~ ...`;
+      if (picFilterDate.value) return fmt(picFilterDate.value);
+      return '';
+    });
+
+    const rangeCalendarDays = computed(() => {
+      const year = rangeCalendarYear.value;
+      const month = rangeCalendarMonth.value;
+      const firstDayIndex = new Date(year, month, 1).getDay();
+      const totalDaysInMonth = new Date(year, month + 1, 0).getDate();
+      const s = picFilterStartDate.value;
+      const e = picFilterEndDate.value;
+      const pad = n => String(n).padStart(2, '0');
+      const todayStr = new Date().toISOString().slice(0, 10);
+      const days = [];
+
+      for (let i = 0; i < firstDayIndex; i++) {
+        days.push({ day: null, dateStr: '', isCurrentMonth: false });
+      }
+
+      for (let d = 1; d <= totalDaysInMonth; d++) {
+        const dateStr = `${year}-${pad(month + 1)}-${pad(d)}`;
+        const isStart = Boolean(s && s === dateStr);
+        const isEnd = Boolean(e && e === dateStr);
+        const inRange = Boolean(s && e && dateStr > s && dateStr < e);
+        const isToday = dateStr === todayStr;
+
+        days.push({
+          day: d,
+          dateStr,
+          isCurrentMonth: true,
+          isStart,
+          isEnd,
+          inRange,
+          isToday
+        });
+      }
+      return days;
+    });
+
+    function selectRangeDay(dayObj) {
+      if (!dayObj || !dayObj.dateStr) return;
+      const clicked = dayObj.dateStr;
+
+      if (!picFilterStartDate.value || (picFilterStartDate.value && picFilterEndDate.value)) {
+        picFilterStartDate.value = clicked;
+        picFilterEndDate.value = '';
+        picFilterDate.value = '';
+      } else {
+        if (clicked < picFilterStartDate.value) {
+          picFilterEndDate.value = picFilterStartDate.value;
+          picFilterStartDate.value = clicked;
+        } else {
+          picFilterEndDate.value = clicked;
+        }
+        picFilterDate.value = '';
+        dateRangeDropdownOpen.value = false;
+        searchPicTable();
+      }
+    }
+
+    function applyRangePreset(preset) {
+      const pad = n => String(n).padStart(2, '0');
+      const fmt = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+      const now = new Date();
+
+      if (preset === 'today') {
+        const tStr = fmt(now);
+        picFilterStartDate.value = tStr;
+        picFilterEndDate.value = tStr;
+      } else if (preset === '7days') {
+        const past = new Date(now.getTime() - 6 * 24 * 3600 * 1000);
+        picFilterStartDate.value = fmt(past);
+        picFilterEndDate.value = fmt(now);
+      } else if (preset === '30days') {
+        const past = new Date(now.getTime() - 29 * 24 * 3600 * 1000);
+        picFilterStartDate.value = fmt(past);
+        picFilterEndDate.value = fmt(now);
+      } else if (preset === 'thisMonth') {
+        const first = new Date(now.getFullYear(), now.getMonth(), 1);
+        const last = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+        picFilterStartDate.value = fmt(first);
+        picFilterEndDate.value = fmt(last);
+      } else if (preset === 'clear') {
+        picFilterStartDate.value = '';
+        picFilterEndDate.value = '';
+        picFilterDate.value = '';
+      }
+
+      if (picFilterStartDate.value) {
+        const [y, m] = picFilterStartDate.value.split('-');
+        rangeCalendarYear.value = parseInt(y, 10);
+        rangeCalendarMonth.value = parseInt(m, 10) - 1;
+      }
+
+      dateRangeDropdownOpen.value = false;
+      searchPicTable();
+    }
+
+    function clearDateRange() {
+      picFilterStartDate.value = '';
+      picFilterEndDate.value = '';
+      picFilterDate.value = '';
+      searchPicTable();
+    }
+
+    const filteredTableEquipments = computed(() => {
+      if (!tableEquipments.value || !tableEquipments.value.length) return [];
+      const q = (picSearchQuery.value || '').trim().toLowerCase();
+      if (!q) return tableEquipments.value.slice(0, 40);
+      return tableEquipments.value.filter(eq => String(eq).toLowerCase().includes(q)).slice(0, 40);
+    });
+
+    function selectSearchSuggestion(val) {
+      picSearchQuery.value = val;
+      searchDropdownOpen.value = false;
+      searchPicTable();
+    }
+
+    function toggleSearchDropdown() {
+      searchDropdownOpen.value = !searchDropdownOpen.value;
+    }
+
+    function onSearchInput() {
+      searchDropdownOpen.value = true;
+    }
+
+    function onSearchFocus() {
+      if (tableEquipments.value && tableEquipments.value.length > 0) {
+        searchDropdownOpen.value = true;
+      }
+    }
+
+    function onSearchBlur() {
+      setTimeout(() => {
+        searchDropdownOpen.value = false;
+      }, 200);
+    }
 
     async function loadTableEquipments(tblKey) {
       tableEquipments.value = [];
@@ -2385,17 +2872,13 @@ createApp({
       return String(picSelectedTable.value || '').toLowerCase().includes('_cip_');
     });
 
-    const isPaTable = computed(() => {
-      return String(picSelectedTable.value || '').toLowerCase().startsWith('pa_');
-    });
-
     const picSearchPlaceholder = computed(() => {
       const tbl = String(picSelectedTable.value || '').toLowerCase();
       if (tbl.includes('_cip_')) return 'Cari Peralatan...';
       if (tbl.includes('_emp_')) return 'Cari Titik Uji / Area...';
       if (tbl.includes('_abe_')) return 'Cari Titik Uji / Area...';
       if (tbl.includes('_fwt_')) return 'Cari Parameter / Catatan...';
-      if (tbl.startsWith('roasting')) return 'Cari Batch / Petugas...';
+      if (tbl.startsWith('roasting')) return 'Cari Biji Kopi / Batch / Petugas...';
       return 'Cari Batch / Nama...';
     });
 
@@ -2419,24 +2902,13 @@ createApp({
       { value: '06 AM', label: '06 AM' },
     ];
 
-    const monthOptions = [
-      { value: '01', label: '01 - Jan' },
-      { value: '02', label: '02 - Feb' },
-      { value: '03', label: '03 - Mar' },
-      { value: '04', label: '04 - Apr' },
-      { value: '05', label: '05 - Mei' },
-      { value: '06', label: '06 - Jun' },
-      { value: '07', label: '07 - Jul' },
-      { value: '08', label: '08 - Agu' },
-      { value: '09', label: '09 - Sep' },
-      { value: '10', label: '10 - Okt' },
-      { value: '11', label: '11 - Nov' },
-      { value: '12', label: '12 - Des' },
-    ];
-
     function resetPicFilters() {
       picSearchQuery.value = '';
+      searchDropdownOpen.value = false;
       picFilterDate.value = '';
+      picFilterStartDate.value = '';
+      picFilterEndDate.value = '';
+      dateRangeDropdownOpen.value = false;
       picFilterBean.value = '';
       picFilterYear.value = '2026';
       picFilterMonth.value = '';
@@ -2469,6 +2941,11 @@ createApp({
       });
     });
 
+    const totalDatabaseRecords = computed(() => {
+      const sum = tables.reduce((acc, t) => acc + (typeof t.count === 'number' ? t.count : 0), 0);
+      return sum > 0 ? sum.toLocaleString('id-ID') : '...';
+    });
+
     function getPicTablesCount(picName) {
       return tables.filter(t => t.pic === picName).length;
     }
@@ -2489,8 +2966,10 @@ createApp({
         const yr = encodeURIComponent(picFilterYear.value || '');
         const mo = isRoastingTable.value ? encodeURIComponent(picFilterMonth.value || '') : '';
         const dt = encodeURIComponent(picFilterDate.value || '');
+        const sDate = encodeURIComponent(picFilterStartDate.value || '');
+        const eDate = encodeURIComponent(picFilterEndDate.value || '');
         const bn = isRoastingTable.value ? encodeURIComponent(picFilterBean.value || '') : '';
-        const res = await fetch(`/api/import/${picSelectedTable.value}/rows?page=${picPage.value}&limit=${picLimit.value}&search=${q}&year=${yr}&month=${mo}&date=${dt}&bean=${bn}`);
+        const res = await fetch(`/api/import/${picSelectedTable.value}/rows?page=${picPage.value}&limit=${picLimit.value}&search=${q}&year=${yr}&month=${mo}&date=${dt}&startDate=${sDate}&endDate=${eDate}&bean=${bn}`);
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Gagal memuat baris data dari database.');
         picTableColumns.value = data.columns || [];
@@ -2515,7 +2994,11 @@ createApp({
       if (picSelectedTable.value === tblKey && picTableRows.value.length > 0) return;
       picSelectedTable.value = tblKey;
       picSearchQuery.value = '';
+      searchDropdownOpen.value = false;
       picFilterDate.value = '';
+      picFilterStartDate.value = '';
+      picFilterEndDate.value = '';
+      dateRangeDropdownOpen.value = false;
       picFilterBean.value = '';
       picFilterMonth.value = '';
       pageJumpInput.value = 1;
@@ -2906,6 +3389,7 @@ createApp({
     }
 
     async function doTrace() {
+      applyBatchFormatting();
       if (!traceForm.noBatch) return;
       tracing.value = true;
       traceError.value = '';
@@ -2913,6 +3397,7 @@ createApp({
         const p = new URLSearchParams({
           noBatchFull: traceForm.noBatch,
           tower: traceForm.tower,
+          tahun: String(traceForm.tahun || 2026),
         });
         const res = await fetch(`/api/trace?${p.toString()}`);
         const data = await res.json();
@@ -2920,6 +3405,12 @@ createApp({
           traceError.value = data.error || 'Terjadi kesalahan pada server.';
         } else {
           traceResult.value = data;
+          if (data.input?.tower) {
+            traceForm.tower = data.input.tower;
+          }
+          if (data.input?.tahun) {
+            traceForm.tahun = data.input.tahun;
+          }
           if (activeSession.value) {
             activeSession.value.traceResult = data;
             saveSessionsToStorage();
@@ -2929,9 +3420,26 @@ createApp({
           }
           triggerCounters();
 
-          // Otomatis hentikan timer apabila seluruh alur data batch telah berhasil dilacak
-          if (auditTimer.status === 'running') {
-            stopTraceabilityAudit();
+          // Human-in-the-Loop Verifikasi Audit (Konsentrasi Lye & Helper Packing)
+          const isComplete = Boolean(
+            data.verification &&
+            data.verification.konsentrasi_lye &&
+            data.verification.helper_packing
+          );
+
+          if (isComplete) {
+            auditVerification.value = data.verification;
+            if (data.verification.duration_seconds > 0) {
+              auditTimer.elapsedSeconds = data.verification.duration_seconds;
+            }
+            if (auditTimer.status === 'running') {
+              stopTraceabilityAudit();
+            }
+          } else {
+            auditVerification.value = data.verification || null;
+            if (auditTimer.status === 'running') {
+              startVerificationSync();
+            }
           }
 
           pushNotifSent.value = false;
@@ -2951,6 +3459,7 @@ createApp({
     function loadPresetAudit() {
       traceForm.noBatch = 'A370/26';
       traceForm.tower = '1';
+      traceForm.tahun = 2026;
       auditSession.jenis = 'Backward';
       selectedClusterKey.value = 'distribusi';
       auditSession.area = 'SJA Sukodono';
@@ -2989,25 +3498,24 @@ createApp({
     }
 
     function printForm() {
-      window.print();
+      activeTab.value = 'report';
+      reportViewMode.value = 'document';
+      nextTick(() => {
+        setTimeout(() => {
+          window.print();
+        }, 150);
+      });
     }
 
-
-
-    // ── Parameter Kritis SCADA Collapsible Sub-Tables ──
-    const showParamTable = reactive({
-      dryer: false,
-      evaporation: false,
-      extraction: false,
-      roasting: false,
+    window.addEventListener('beforeprint', () => {
+      if (activeTab.value === 'report' && reportViewMode.value !== 'document') {
+        reportViewMode.value = 'document';
+      }
     });
 
-    function toggleParamTable(proc) {
-      if (proc && showParamTable[proc] !== undefined) {
-        showParamTable[proc] = !showParamTable[proc];
-      }
-    }
 
+
+    // ── Parameter Kritis SCADA Inspection ──
     function isParamKritis(key) {
       return [
         'dryer_parameter_kritis',
@@ -3074,6 +3582,20 @@ createApp({
         return `${h}:${m}`;
       }
 
+      // Tanggal & Waktu combined column: format to DD/MM/YYYY HH:mm
+      if (lowerCol.includes('tanggal') && lowerCol.includes('waktu')) {
+        const d = new Date(new Date(sVal).getTime() + 30000);
+        if (!isNaN(d.getTime())) {
+          const pad = (n) => String(n).padStart(2, '0');
+          return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+        }
+      }
+
+      // E. Coli & Coliform micro indicators
+      if ((lowerCol.includes('coli') || lowerCol.includes('coliform')) && (sVal === '0' || sVal.toLowerCase() === 'negatif')) {
+        return 'Negatif';
+      }
+
       // Tanggal column: format to DD/MM/YYYY with +30s drift compensation
       if (lowerCol.includes('tanggal')) {
         const d = new Date(new Date(sVal).getTime() + 30000);
@@ -3138,180 +3660,42 @@ createApp({
       return traceResult.value?.[procKey]?.raw_rows || [];
     }
 
-    function getProcessColumnChunksByKey(procKey) {
-      const allCols = getProcessColumnsByKey(procKey);
-      if (!allCols || allCols.length === 0) return [];
-
-      if (procKey === 'dryer') {
-        const splitIdx = allCols.findIndex((c) => c && c.includes('Pressure Supply Steam'));
-        if (splitIdx !== -1) {
-          return [
-            allCols.slice(0, splitIdx + 1),
-            allCols.slice(splitIdx + 1),
-          ];
-        }
-      }
-
-      if (allCols.length > 12) {
-        const half = Math.ceil(allCols.length / 2);
-        return [
-          allCols.slice(0, half),
-          allCols.slice(half),
-        ];
-      }
-
-      return [allCols];
-    }
-
-    function getProcessColumnChunks(key) {
-      const p = getProcessKey(key);
-      return getProcessColumnChunksByKey(p);
-    }
-
-    // ── Google Spreadsheet Live Sync ──
-    const gsheetLoading = ref(false);
-    const gsheetTower = ref('1');
-    const gsheetStatus = reactive({
-      folderUrl: 'https://drive.google.com/drive/folders/1fNUUqJSoE1JesqkkmKZ6PU4dDP5MEswn',
-      sheetId: '1gYPOqD4NT0v3U0eZewDCYNpwf-3zk_iclXsJcTsITdo',
-      sheetUrl: 'https://docs.google.com/spreadsheets/d/1gYPOqD4NT0v3U0eZewDCYNpwf-3zk_iclXsJcTsITdo/edit',
-      towers: {
-        '1': {
-          tower: 'Tower 1',
-          sheetId: '1gYPOqD4NT0v3U0eZewDCYNpwf-3zk_iclXsJcTsITdo',
-          sheetUrl: 'https://docs.google.com/spreadsheets/d/1gYPOqD4NT0v3U0eZewDCYNpwf-3zk_iclXsJcTsITdo/edit',
-          tableCount: 11,
-        },
-        '2': {
-          tower: 'Tower 2',
-          sheetId: '18skCecZKGdFj8uSE7hu7F-X8XQ2PD1Ys5EIvdh8iez8',
-          sheetUrl: 'https://docs.google.com/spreadsheets/d/18skCecZKGdFj8uSE7hu7F-X8XQ2PD1Ys5EIvdh8iez8/edit',
-          tableCount: 11,
-        },
-      },
-      isSyncing: false,
-      lastSyncTime: null,
-      lastSummary: null,
-    });
-    const gsheetResult = ref(null);
-    const gsheetError = ref('');
-
-    const activeSheetUrl = computed(() => {
-      if (gsheetTower.value === '2') {
-        return gsheetStatus.towers?.['2']?.sheetUrl || 'https://docs.google.com/spreadsheets/d/18skCecZKGdFj8uSE7hu7F-X8XQ2PD1Ys5EIvdh8iez8/edit';
-      }
-      return gsheetStatus.towers?.['1']?.sheetUrl || gsheetStatus.sheetUrl || 'https://docs.google.com/spreadsheets/d/1gYPOqD4NT0v3U0eZewDCYNpwf-3zk_iclXsJcTsITdo/edit';
-    });
-
-    const activeSheetTitle = computed(() => {
-      if (gsheetTower.value === '2') return 'Analisa Tower 2';
-      if (gsheetTower.value === 'all') return 'Analisa Tower 1 & 2';
-      return 'Analisa Tower 1';
-    });
-
-    function setGsheetTower(t) {
-      gsheetTower.value = t;
-    }
-
-    function formatSyncTime(ts) {
-      if (!ts) return '-';
-      const d = new Date(ts);
-      return d.toLocaleDateString('id-ID') + ' ' + d.toLocaleTimeString('id-ID');
-    }
-
-    async function loadGsheetStatus() {
-      try {
-        const res = await fetch('/api/gsheet/status');
-        if (res.ok) {
-          const d = await res.json();
-          Object.assign(gsheetStatus, d);
-          if (d.lastSummary) gsheetResult.value = d.lastSummary;
-        }
-      } catch (e) {
-        console.error('Failed to load gsheet status:', e);
-      }
-    }
-
-    // ── Google Spreadsheet Unified & Targeted Sync State & Methods ──
-    const syncMode = ref('all'); // 'all' | 'single'
-    const gsheetDivision = ref('all'); // 'all' | 'produksi' | 'qc'
-    const singleSyncPic = ref('Produksi');
-    const singleSyncTower = ref('Tower 1');
-    const singleSyncTable = ref('dryer_tower_1');
-    const singleSyncLoadingTable = ref('');
-
-    const singleSyncAvailableTables = computed(() => {
-      return tables.filter(t => {
-        if (singleSyncPic.value && t.pic !== singleSyncPic.value) return false;
-        if (singleSyncTower.value === 'Non-Tower / Semua' || !singleSyncTower.value) return true;
-        return t.tower === singleSyncTower.value || (singleSyncTower.value === 'Non-Tower' && t.tower === 'Non-Tower');
-      });
-    });
-
-    async function syncAllGoogleSheets() {
-      gsheetLoading.value = true;
-      gsheetError.value = '';
-      try {
-        const res = await fetch('/api/gsheet/sync-unified', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            tower: gsheetTower.value || 'all',
-            division: gsheetDivision.value || 'all',
-            force: true,
-          }),
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Gagal sinkronisasi Google Spreadsheet');
-        gsheetResult.value = data;
-        await refreshAllCounts();
-        if (picSelectedTable.value) await loadPicTable(picSelectedTable.value, 1);
-      } catch (err) {
-        gsheetError.value = err.message;
-        alert('Gagal Sinkronisasi Google Spreadsheet: ' + err.message);
-      } finally {
-        gsheetLoading.value = false;
-      }
-    }
-
-    async function syncSpecificTable(tblKey, tblLabel) {
-      const target = tblKey || singleSyncTable.value || 'dryer_tower_1';
-      singleSyncLoadingTable.value = target;
-      gsheetLoading.value = true;
-      gsheetError.value = '';
-      try {
-        const res = await fetch(`/api/gsheet/sync/${target}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ force: true }),
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || `Gagal sinkronisasi tabel ${target}`);
-        
-        // Wrap as single-row summary
-        gsheetResult.value = {
-          division: data.pic || 'Targeted',
-          tower: data.tower || '-',
-          totalTables: 1,
-          totalImported: data.imported || 0,
-          totalDuplicates: data.duplicates || 0,
-          durationSeconds: '1.2s',
-          timestamp: new Date().toISOString(),
-          results: [data],
-        };
-        await fetchCount(target);
-        if (picSelectedTable.value === target) await loadPicTable(target, 1);
-      } catch (err) {
-        gsheetError.value = err.message;
-        alert(`Gagal Sinkronisasi Tabel ${target}: ${err.message}`);
-      } finally {
-        singleSyncLoadingTable.value = '';
-        gsheetLoading.value = false;
-      }
-    }
-
     // Auto-init on mount and scroll reveal
     onMounted(async () => {
+      loadAvailableYears();
+      window.addEventListener('click', (e) => {
+        const el = document.getElementById('pic-date-range-container');
+        if (el && !el.contains(e.target)) {
+          dateRangeDropdownOpen.value = false;
+        }
+      });
+      // Scroll-adaptive listener for floating sidebar logo & header
+      window.addEventListener('scroll', handleScrollHeader, { passive: true });
+      document.addEventListener('scroll', handleScrollHeader, { passive: true });
+      // Also listen on main content scroll
+      const mainEl = document.querySelector('main');
+      if (mainEl) mainEl.addEventListener('scroll', handleScrollHeader, { passive: true });
+      handleScrollHeader();
+      if ('IntersectionObserver' in window) {
+        const topbar = document.querySelector('header');
+        if (topbar) {
+          const obs = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+              if (!entry.isIntersecting || entry.boundingClientRect.bottom <= 20) {
+                isScrolledPastHeader.value = true;
+              } else {
+                isScrolledPastHeader.value = false;
+              }
+            });
+          }, { threshold: [0, 0.1, 0.5, 1.0] });
+          obs.observe(topbar);
+        }
+      }
+
+      // Start Real-Time Operational Clock
+      updateClock();
+      setInterval(updateClock, 1000);
+
       // Zero-lag smooth portal animation trigger after DOM paint settles
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
@@ -3334,11 +3718,13 @@ createApp({
       if (window.sjaAuth) {
         try { await window.sjaAuth.initAuth(); } catch (e) { console.warn(e); }
       }
-      const savedUser = localStorage.getItem('sja_saved_username');
-      if (savedUser) {
-        loginForm.username = savedUser;
-        rememberMe.value = true;
-      }
+      try {
+        const savedUser = localStorage.getItem('sja_saved_username');
+        if (savedUser) {
+          loginForm.username = savedUser;
+          rememberMe.value = true;
+        }
+      } catch {}
       nextTick(() => {
         if (!authIsLoggedIn.value && usernameInputRef.value) {
           usernameInputRef.value.focus();
@@ -3350,11 +3736,19 @@ createApp({
       } catch {
         dbConnected.value = false;
       }
-      loadGsheetStatus();
       refreshAllCounts();
       loadSessionsFromStorage();
       loadTableEquipments(picSelectedTable.value || 'dryer_tower_1');
       loadPicTable(picSelectedTable.value || 'dryer_tower_1', 1);
+
+      // Real-Time Global Audit Session Synchronization (Lintas Tab & Multi-Device)
+      await syncActiveAuditSession();
+      setInterval(syncActiveAuditSession, 1500);
+      setInterval(() => {
+        if (auditTimer.status === 'running') {
+          auditTimer.elapsedSeconds++;
+        }
+      }, 1000);
 
       // Auto-fetch fresh trace from database on mount if batch is specified
       if (traceForm.noBatch) {
@@ -3365,11 +3759,17 @@ createApp({
       try {
         history.replaceState({ tab: activeTab.value }, '', '#' + initialHash);
       } catch {}
-      if (window.initScrollReveal) window.initScrollReveal();
       nextTick(() => {
         updateAllPills();
       });
-      window.addEventListener('resize', updateAllPills);
+      let resizeTimer = null;
+      const onWindowResize = () => {
+        if (resizeTimer) clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => {
+          requestAnimationFrame(updateAllPills);
+        }, 100);
+      };
+      window.addEventListener('resize', onWindowResize, { passive: true });
       const asideEl = document.querySelector('.app-sidebar');
       if (asideEl) {
         // Saat transisi mulai — kunci overflow agar konten ter-clip rapi
@@ -3401,10 +3801,6 @@ createApp({
         nextTick(() => {
           updateAllPills();
           setTimeout(updateAllPills, 120);
-          // Beri waktu Vue render semua v-show sebelum initScrollReveal
-          setTimeout(() => { if (window.initScrollReveal) window.initScrollReveal(); }, 80);
-          setTimeout(() => { if (window.initScrollReveal) window.initScrollReveal(); }, 300);
-          setTimeout(() => { if (window.initScrollReveal) window.initScrollReveal(); }, 600);
         });
       } else {
         document.documentElement.classList.remove('logged-in');
@@ -3419,9 +3815,6 @@ createApp({
     let isNavigatingFromHistory = false;
 
     watch(activeTab, (newTab) => {
-      if (newTab === 'pipeline') {
-        triggerCounters();
-      }
       if (newTab === 'pic' && !picTableRows.value.length) {
         loadTableEquipments(picSelectedTable.value || 'dryer_tower_1');
         loadPicTable(picSelectedTable.value || 'dryer_tower_1', 1);
@@ -3438,9 +3831,6 @@ createApp({
         }
       } catch {}
       isNavigatingFromHistory = false;
-      setTimeout(() => {
-        if (window.initScrollReveal) window.initScrollReveal();
-      }, 80);
     });
 
     // ── Browser History Navigation (Back / Forward Button Support) ──
@@ -3507,31 +3897,12 @@ createApp({
       onManualPicChange,
       onManualTableChange,
       onManualTowerChange,
-      syncMode,
-      gsheetDivision,
-      singleSyncPic,
-      singleSyncTower,
-      singleSyncTable,
-      singleSyncLoadingTable,
-      singleSyncAvailableTables,
-      syncSpecificTable,
       counterOutputKg,
       counterBox,
       counterYield,
       triggerCounters,
-      inputModalOpen,
-      inputTargetTable,
-      inputColumns,
-      inputColumnsLoading,
-      inputFormData,
-      inputSubmitting,
-      inputSuccessMsg,
-      inputErrorMsg,
       tableFilterQuery,
       picFilteredTablesSearched,
-      openInputModal,
-      closeInputModal,
-      submitInputRow,
       getColumnInputType,
       formatFieldLabel,
       selectedClusterKey,
@@ -3539,10 +3910,6 @@ createApp({
       clusterDataStore,
       activeCluster,
       selectCluster,
-      selectedPipelineStage,
-      pipelineStages,
-      selectPipelineStage,
-      getStageMetrics,
       previewDrawerOpen,
       previewTableData,
       openTablePreview,
@@ -3565,16 +3932,24 @@ createApp({
       inspectCipFilter,
       openInspectCip,
       openInspectEmp,
+      openInspectAbe,
       openInspectScada,
       openInspectProd,
       openInspectQc,
+      openInspectQcChecklist,
+      inspectQcMode,
+      filteredInspectQcItems,
+      filteredInspectQcRawRows,
       openInspectPa,
       closeInspectModal,
       filteredInspectCipItems,
       filteredInspectEmpItems,
+      filteredInspectAbeItems,
       filteredInspectTableRows,
       inspectTableAverages,
       shouldShowInspectAverages,
+      inspectCalcMode,
+      inspectCalculations,
       explorerCalcMode,
       explorerCalculations,
       getCalcModeLabel,
@@ -3590,17 +3965,8 @@ createApp({
       toggleFlowRawTable,
       getFlowColumns,
       getFlowRows,
-      gsheetLoading,
-      gsheetTower,
-      gsheetStatus,
-      gsheetResult,
-      gsheetError,
-      activeSheetUrl,
-      activeSheetTitle,
-      setGsheetTower,
-      formatSyncTime,
-      syncAllGoogleSheets,
       sidebarOpen,
+      isScrolledPastHeader,
       updateSlidingPill,
       updateMiniRailPill,
       updateSubmenuPill,
@@ -3612,9 +3978,29 @@ createApp({
       picTableLoading,
       picTableError,
       picSearchQuery,
+      searchDropdownOpen,
+      filteredTableEquipments,
+      selectSearchSuggestion,
+      toggleSearchDropdown,
+      onSearchInput,
+      onSearchFocus,
+      onSearchBlur,
       picFilterYear,
       picFilterMonth,
       picFilterDate,
+      picFilterStartDate,
+      picFilterEndDate,
+      dateRangeDropdownOpen,
+      rangeCalendarYear,
+      rangeCalendarMonth,
+      rangeMonthYearLabel,
+      prevRangeMonth,
+      nextRangeMonth,
+      picDateRangeDisplay,
+      rangeCalendarDays,
+      selectRangeDay,
+      applyRangePreset,
+      clearDateRange,
       picFilterBean,
       tableEquipments,
       tableEquipmentCol,
@@ -3622,10 +4008,8 @@ createApp({
       beanOptions,
       isRoastingTable,
       isCipTable,
-      isPaTable,
       picSearchPlaceholder,
       activeDateCol,
-      monthOptions,
       resetPicFilters,
       picPage,
       picLimit,
@@ -3649,6 +4033,12 @@ createApp({
       dbConnected,
       today,
       traceForm,
+      availableYears,
+      expectedFormattedBatch,
+      applyBatchFormatting,
+      onTowerDropdownChange,
+      onTahunDropdownChange,
+      setTower,
       headerNamaProduk,
       headerTanggalProduksi,
       headerBestBefore,
@@ -3660,6 +4050,7 @@ createApp({
       headerRasioVal,
       flowSections,
       tables,
+      totalDatabaseRecords,
       getItemValue,
       clearTable,
       clearAllTables,
@@ -3675,19 +4066,14 @@ createApp({
       syncStatusMessage,
       refreshAndSyncActiveTable,
       toggleAutoSync,
-      showParamTable,
-      toggleParamTable,
       isParamKritis,
       getProcessKey,
       getProcessTitle,
       getProcessColumns,
       getProcessRows,
-      getProcessColumnChunks,
       getProcessTitleByKey,
       getProcessColumnsByKey,
       getProcessRowsByKey,
-      getProcessColumnChunksByKey,
-      activeModalProcess,
       formatParamCell,
       formatColHeader,
       picList,
@@ -3726,6 +4112,14 @@ createApp({
       startTraceabilityAudit,
       stopTraceabilityAudit,
       resetTraceabilityAudit,
+      auditVerification,
+      isVerificationModalOpen,
+      verifSubmitting,
+      verifForm,
+      openVerificationModal,
+      closeVerificationModal,
+      submitVerification,
+      resetAuditVerification,
       // Work Order Multi-Session Exports
       traceabilitySessions,
       activeSessionId,
@@ -3755,6 +4149,7 @@ createApp({
       authIsLoggedIn,
       isAdmin,
       isProduksi,
+      isPa,
       isQc,
       isViewer,
       portalRevealed,
@@ -3778,7 +4173,9 @@ createApp({
       logoutAuth,
       copiedToast,
       copyToClipboard,
-      paramFilter,
+      currentTimeStr,
+      currentDateStr,
+      currentShift,
     };
   },
 }).mount('#app');

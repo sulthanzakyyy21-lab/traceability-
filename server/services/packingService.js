@@ -13,15 +13,8 @@ async function getPackingFlow(batch, tahun, tower) {
     );
 
     if (rows.length === 0) {
-      [rows] = await pool.execute(
-        `SELECT * FROM \`${packingTable}\` WHERE batch = ? ORDER BY tanggal ASC, waktu ASC`,
-        [batch]
-      );
-    }
-
-    if (rows.length === 0) {
       return {
-        error: `Tidak ada data di ${packingTable} untuk batch ${batch}`,
+        error: `Tidak ada data di ${packingTable} untuk batch ${batch} tahun ${tahun}`,
         columns: TABLE_COLUMNS_MAP[packingTable] || [],
         raw_rows: [],
       };

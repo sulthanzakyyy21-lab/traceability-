@@ -22,8 +22,7 @@ router.get('/status', (req, res) => {
   res.json(getSyncStatus());
 });
 
-// POST /api/gsheet/sync-all — Sync tables (Khusus Super Admin)
-router.post('/sync-all', verifyToken, requireRole('admin'), async (req, res) => {
+async function handleUnifiedSync(req, res) {
   try {
     const bodyResult = SyncBodySchema.safeParse(req.body);
     const tower = bodyResult.success && bodyResult.data.tower ? bodyResult.data.tower : 'all';
@@ -37,28 +36,13 @@ router.post('/sync-all', verifyToken, requireRole('admin'), async (req, res) => 
     res.json(summary);
   } catch (err) {
     console.error('Google Sheet Unified Sync Error:', err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Terjadi kesalahan internal saat sinkronisasi Google Sheets.' });
   }
-});
+}
 
-// POST /api/gsheet/sync-unified — Dedicated unified endpoint (Khusus Super Admin)
-router.post('/sync-unified', verifyToken, requireRole('admin'), async (req, res) => {
-  try {
-    const bodyResult = SyncBodySchema.safeParse(req.body);
-    const tower = bodyResult.success && bodyResult.data.tower ? bodyResult.data.tower : 'all';
-    const division = bodyResult.success && bodyResult.data.division ? bodyResult.data.division : 'all';
-    const sheetId = bodyResult.success ? bodyResult.data.sheetId : null;
-    const force = bodyResult.success && req.body && req.body.force !== undefined ? Boolean(bodyResult.data.force) : true;
-    const summary = await syncUnifiedTables({ division, tower, customSheetId: sheetId, force });
-    if (!summary.success) {
-      return res.status(500).json({ error: summary.error || 'Gagal sinkronisasi Google Sheets', ...summary });
-    }
-    res.json(summary);
-  } catch (err) {
-    console.error('Google Sheet Unified Sync Error:', err);
-    res.status(500).json({ error: err.message });
-  }
-});
+// POST /api/gsheet/sync-all & /api/gsheet/sync-unified (Khusus Super Admin)
+router.post('/sync-all', verifyToken, requireRole('admin'), handleUnifiedSync);
+router.post('/sync-unified', verifyToken, requireRole('admin'), handleUnifiedSync);
 
 // POST /api/gsheet/sync-prod — Sync Production tables (Khusus Super Admin)
 router.post('/sync-prod', verifyToken, requireRole('admin'), async (req, res) => {
@@ -79,6 +63,18 @@ router.post('/sync-pa', verifyToken, requireRole('admin'), async (req, res) => {
     res.json(summary);
   } catch (err) {
     console.error('Google Sheet PA Sync Error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/gsheet/sync-gbb — Sync GBB tables (Khusus Super Admin)
+router.post('/sync-gbb', verifyToken, requireRole('admin'), async (req, res) => {
+  try {
+    const { syncGbbData } = require('../services/gbbSyncService');
+    const summary = await syncGbbData(req.body?.sheetId);
+    res.json(summary);
+  } catch (err) {
+    console.error('Google Sheet GBB Sync Error:', err);
     res.status(500).json({ error: err.message });
   }
 });

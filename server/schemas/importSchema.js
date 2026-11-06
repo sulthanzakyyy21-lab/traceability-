@@ -14,6 +14,8 @@ const PicRowsQuerySchema = z.object({
   year: z.string().optional().default(''),
   month: z.string().optional().default(''),
   date: z.string().optional().default(''),
+  startDate: z.string().optional().default(''),
+  endDate: z.string().optional().default(''),
   bean: z.string().optional().default(''),
   equipment: z.string().optional().default(''),
 });

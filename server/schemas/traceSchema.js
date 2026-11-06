@@ -11,6 +11,7 @@ const TraceQuerySchema = z.object({
   tower: z.enum(['1', '2'], {
     errorMap: () => ({ message: 'Parameter tower harus bernilai 1 atau 2.' }),
   }),
+  tahun: z.coerce.number().optional().nullable(),
   tglProduksi: z.string().optional().nullable(),
   totalOutput: z.coerce.number().positive('totalOutput harus angka positif.').optional().nullable(),
 }).transform(data => {

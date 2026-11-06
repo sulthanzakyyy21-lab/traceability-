@@ -6,7 +6,11 @@ async function getTableEquipments(tableName) {
     [tableName]
   );
   const colNames = cols.map(c => c.COLUMN_NAME);
-  const eqCol = colNames.find(c => ['peralatan', 'titik uji'].includes(c.toLowerCase()));
+  const isRoast = tableName.toLowerCase().startsWith('roasting');
+  let eqCol = colNames.find(c => ['peralatan', 'titik uji'].includes(c.toLowerCase()));
+  if (!eqCol && isRoast) {
+    eqCol = colNames.find(c => c.toLowerCase() === 'jenis kopi mentah' || (c.toLowerCase().includes('jenis') && c.toLowerCase().includes('kopi')));
+  }
 
   if (!eqCol) {
     return { tableName, hasEquipment: false, equipmentCol: null, equipments: [] };
@@ -25,7 +29,7 @@ async function getTableEquipments(tableName) {
 }
 
 async function getTableRows(tableName, queryParams) {
-  const { page, limit, search, year, month, date, bean, equipment } = queryParams;
+  const { page, limit, search, year, month, date, startDate, endDate, bean, equipment } = queryParams;
   const offset = (page - 1) * limit;
 
   const [cols] = await pool.query(
@@ -42,7 +46,10 @@ async function getTableRows(tableName, queryParams) {
   const isAbe = tableName.toLowerCase().includes('_abe_');
   const isFwt = tableName.toLowerCase().includes('_fwt_');
 
-  const eqCol = columns.find(c => ['peralatan', 'titik uji'].includes(c.toLowerCase()));
+  let eqCol = columns.find(c => ['peralatan', 'titik uji'].includes(c.toLowerCase()));
+  if (!eqCol && isRoast) {
+    eqCol = columns.find(c => c.toLowerCase() === 'jenis kopi mentah' || (c.toLowerCase().includes('jenis') && c.toLowerCase().includes('kopi')));
+  }
   const hasEquipmentFilter = Boolean(equipment && equipment.trim() && eqCol);
   if (hasEquipmentFilter) {
     whereClauses.push(`\`${eqCol}\` = ?`);
@@ -95,7 +102,35 @@ async function getTableRows(tableName, queryParams) {
   const shouldApplyDateCutoff = (hasEquipmentFilter || isCipOrPaSearch) && Boolean(date && date.includes('-'));
 
   if (dateCol) {
-    if (shouldApplyDateCutoff) {
+    if (startDate && endDate) {
+      const start = `${startDate.trim()} 00:00:00`;
+      const end = `${endDate.trim()} 23:59:59`;
+      if (stampCol) {
+        whereClauses.push(`((COALESCE(\`${stampCol}\`, \`${dateCol}\`) >= ? AND COALESCE(\`${stampCol}\`, \`${dateCol}\`) <= ?) OR (\`${dateCol}\` >= ? AND \`${dateCol}\` <= ?))`);
+        params.push(start, end, start, end);
+      } else {
+        whereClauses.push(`(\`${dateCol}\` >= ? AND \`${dateCol}\` <= ?)`);
+        params.push(start, end);
+      }
+    } else if (startDate) {
+      const start = `${startDate.trim()} 00:00:00`;
+      if (stampCol) {
+        whereClauses.push(`(COALESCE(\`${stampCol}\`, \`${dateCol}\`) >= ? OR \`${dateCol}\` >= ?)`);
+        params.push(start, start);
+      } else {
+        whereClauses.push(`\`${dateCol}\` >= ?`);
+        params.push(start);
+      }
+    } else if (endDate) {
+      const end = `${endDate.trim()} 23:59:59`;
+      if (stampCol) {
+        whereClauses.push(`(COALESCE(\`${stampCol}\`, \`${dateCol}\`) <= ? OR \`${dateCol}\` <= ?)`);
+        params.push(end, end);
+      } else {
+        whereClauses.push(`\`${dateCol}\` <= ?`);
+        params.push(end);
+      }
+    } else if (shouldApplyDateCutoff) {
       const cutoff = `${date.trim()} 23:59:59`;
       if (stampCol) {
         whereClauses.push(`(COALESCE(\`${stampCol}\`, \`${dateCol}\`) <= ? OR \`${dateCol}\` <= ?)`);
@@ -121,7 +156,7 @@ async function getTableRows(tableName, queryParams) {
   }
 
   let orderClause = 'ORDER BY id ASC';
-  if (hasEquipmentFilter || isCipOrPaSearch) {
+  if (hasEquipmentFilter || isCipOrPaSearch || startDate || endDate) {
     if (stampCol && dateCol) {
       orderClause = `ORDER BY COALESCE(\`${stampCol}\`, \`${dateCol}\`) DESC, id DESC`;
     } else if (dateCol) {

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Automated Digital Traceability System PT. Santos Jaya Abadi - Form F/QC/01.030" />
+  <title>Laporan Traceability – PT. Santos Jaya Abadi (Form F/QC/01.030)</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
+  <link rel="dns-prefetch" href="//fonts.googleapis.com" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            coffee: {
+              50: '#fdfaf7',
+              100: '#f4ede6',
+              200: '#e8dcce',
+              300: '#d5c2ad',
+              400: '#bca188',
+              500: '#a38165',
+              600: '#876348',
+              700: '#6d4c35',
+              800: '#4a2c1d',
+              900: '#3c2415',
+              950: '#26160c',
+            },
+          },
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'Inter', 'system-ui', 'sans-serif'],
+            serif: ['"Times New Roman"', 'Times', 'serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+        },
+      },
+    };
+  </script>
+  <script>
+    /* ── Auto-DPI Normalizer: Mengunci visual density agar selalu setara Scale 125% ── */
+    (function () {
+      function normalizeDisplayDpi() {
+        var dpr = window.devicePixelRatio || 1;
+        // Jika layar menggunakan scale 150% (DPR ~1.5) atau lebih besar,
+        // kalibrasi zoom root HTML agar kanvas render persis setara scale 125%
+        if (dpr > 1.28) {
+          var targetZoom = 1.25 / dpr;
+          document.documentElement.style.zoom = targetZoom;
+          document.documentElement.style.setProperty('--app-zoom', targetZoom);
+        } else {
+          document.documentElement.style.zoom = '1';
+          document.documentElement.style.setProperty('--app-zoom', '1');
+        }
+
+        // Sinkronisasi warna canvas latar agar tidak ada celah putih
+        try {
+          var isAuth = localStorage.getItem('sja_auth_token') || localStorage.getItem('auth_token') || localStorage.getItem('auth_user');
+          if (isAuth) {
+            document.documentElement.classList.add('logged-in');
+            if (document.body) document.body.classList.add('logged-in');
+          } else {
+            document.documentElement.classList.remove('logged-in');
+            if (document.body) document.body.classList.remove('logged-in');
+          }
+        } catch (e) {}
+      }
+      normalizeDisplayDpi();
+      window.addEventListener('resize', normalizeDisplayDpi);
+    })();
+  </script>
+  <link rel="stylesheet" href="css/industrial-theme.css?v=8.6" />
+  <script src="js/vue.global.js"></script>
+  <script src="js/authStore.js?v=8.6"></script>
+  <script src="flowSections.js?v=8.6"></script>
+  <script src="js/clusterTraceStore.js?v=8.6"></script>
+
+  <link rel="stylesheet" href="/css/custom-styles.css?v=8.6">
+</head>
+<body class="min-h-screen font-sans antialiased text-stone-900 ambient-pattern">
+<div id="app" v-cloak class="min-h-screen">
+
+  <!-- ── PORTAL AUTH CROSSFADE (SMOOTH & LOW-SPEC PC OPTIMIZED) ── -->
+  <Transition name="portal-crossfade" mode="out-in">
+    <!-- ══════════════════════════════════════════════════════════════ -->
+    <!-- HALAMAN LOGIN UTAMA (COFFEE TRACEABILITY TWO-COLUMN SPLIT PORTAL) -->
+    <!-- Ditampilkan saat pengguna belum terautentikasi                 -->
+    <!-- ══════════════════════════════════════════════════════════════ -->
+<!-- include: components/auth/login-portal.html -->
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <!-- DASHBOARD UTAMA (SETELAH PENGGUNA TERAUTENTIKASI)             -->
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <div v-else key="main-app" class="min-h-screen flex flex-row">
+
+<!-- include: components/layout/sidebar.html -->
+
+  <!-- ── MAIN CONTENT WRAPPER ── -->
+  <div class="main-content-wrap flex-1 flex flex-col min-w-0 min-h-screen bg-[#f8fafc]">
+
+<!-- include: components/layout/topbar.html -->
+    <!-- Content Body -->
+    <main class="flex-1 w-full p-4 sm:p-6 overflow-y-auto">
+
+<!-- include: components/views/dashboard.html -->
+<!-- include: components/views/batch-traceability.html -->
+<!-- include: components/views/audit-report.html -->
+<!-- include: components/views/data-ingestion.html -->
+<!-- include: components/views/data-explorer.html -->
+<!-- include: components/modals/inspector-modal.html -->
+<!-- include: components/modals/verification-modal.html -->
+<!-- include: components/modals/preview-drawer.html -->
+<!-- include: components/auth/auth-modal.html -->
+<!-- include: components/modals/toast-feedback.html -->
+  </main>
+</div>
+</div>
+</Transition>
+</div>
+
+<script src="/js/app-main.js?v=8.6"></script>
+  <script>
+    if ('serviceWorker' in navigator && window.location.protocol.startsWith('http')) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').then((reg) => {
+          reg.update();
+        }).catch((err) => {
+          console.warn('Service Worker registration skipped:', err);
+        });
+      });
+    }
+  </script>
+</body>
+</html>

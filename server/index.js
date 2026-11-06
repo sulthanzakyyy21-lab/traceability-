@@ -3,13 +3,8 @@ const cors = require('cors');
 const compression = require('compression');
 const path = require('path');
 const fs = require('fs');
-const { securityHeaders } = require('./middleware/securityHeaders');
-const { migrateUsersTable } = require('./db/migrations/createUsersTable');
-const { migrateAuditLogsTable } = require('./db/migrations/createAuditLogsTable');
-const { verifyToken, requireRole } = require('./middleware/auth');
-const { getRecentAuditLogs } = require('./services/auditLogService');
 
-// Load environment variables from .env if present
+// Load environment variables from .env before loading application modules
 const envPath = path.join(__dirname, '../.env');
 if (fs.existsSync(envPath)) {
   fs.readFileSync(envPath, 'utf8').split(/\r?\n/).forEach((line) => {
@@ -23,9 +18,22 @@ if (fs.existsSync(envPath)) {
   });
 }
 
+const { securityHeaders } = require('./middleware/securityHeaders');
+const { migrateUsersTable } = require('./db/migrations/createUsersTable');
+const { migrateAuditLogsTable } = require('./db/migrations/createAuditLogsTable');
+const { verifyToken, requireRole } = require('./middleware/auth');
+const { getRecentAuditLogs } = require('./services/auditLogService');
+
 // Keep server alive on unhandled errors
 process.on('uncaughtException', (err) => console.error('[uncaughtException]', err.message, err.stack));
 process.on('unhandledRejection', (reason) => console.error('[unhandledRejection]', reason));
+
+try {
+  const { buildHtml } = require('../scripts/build-html');
+  buildHtml();
+} catch (e) {
+  console.warn('[build-html] Auto-build skipped:', e.message);
+}
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -60,6 +68,8 @@ app.use(express.static(path.join(__dirname, '../public'), {
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/import', require('./routes/import'));
 app.use('/api/trace', require('./routes/trace'));
+app.use('/api/trace/session', require('./routes/sessionRoute'));
+app.use('/api/trace/verify', require('./routes/verificationRoute'));
 app.use('/api/gsheet', require('./routes/gsheet'));
 
 // Audit Logs Endpoint (Admin only)
@@ -73,6 +83,8 @@ app.get('/api/audit-logs', verifyToken, requireRole('admin'), async (req, res) =
 // Auto-migrate tables on start
 migrateUsersTable().catch(e => console.error('[AuthMigration] Error:', e.message));
 migrateAuditLogsTable().catch(e => console.error('[AuditMigration] Error:', e.message));
+require('./services/verificationService').initVerificationTable().catch(e => console.error('[VerificationMigration] Error:', e.message));
+require('./services/auditSessionService').initSessionTable().catch(e => console.error('[AuditSessionMigration] Error:', e.message));
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -82,6 +94,16 @@ app.get('/api/health', (req, res) => {
 // SPA fallback
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/index.html'));
+});
+
+// Express Global JSON Error Handler (Mencegah SyntaxError HTML saat upload Multer gagal)
+app.use((err, req, res, next) => {
+  if (res.headersSent) return next(err);
+  const status = err.status || err.statusCode || 400;
+  res.status(status).json({
+    success: false,
+    message: err.message || 'Terjadi kesalahan pada server.'
+  });
 });
 
 const server = app.listen(PORT, () => {

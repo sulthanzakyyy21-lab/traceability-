@@ -17,7 +17,7 @@ async function syncAllPaTables(options = {}) {
   });
 
   const buffer = await fetchGoogleSheetBuffer(targetId, { isQc: true });
-  const wb = xlsx.read(buffer, { type: 'buffer', cellDates: true, cellNF: false, cellText: false });
+  const wb = xlsx.read(buffer, { type: 'buffer', cellDates: true, cellNF: true, cellText: true });
 
   const results = [];
   let totalImported = 0;

@@ -1,0 +1,257 @@
+    <!-- ══════════════════════════════════════════════════════════════
+         TAB 3: PENAMPIL DATA PIC (DATABASE EXPLORER)
+    ══════════════════════════════════════════════════════════════ -->
+    <div v-show="activeTab === 'pic'" class="space-y-5 no-print slow-smooth-entrance">
+
+      <!-- Header Banner Penampil Data PIC -->
+      <div class="modern-card px-5 py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 luxury-reveal delay-2">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <span class="relative flex h-2.5 w-2.5 shrink-0">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+          </span>
+          <h2 class="text-xs sm:text-sm font-bold text-stone-900 uppercase tracking-tight truncate">
+            Database Operasional &amp; Pratinjau Rekaman Divisi
+          </h2>
+        </div>
+
+        <div class="flex items-center gap-2.5 shrink-0">
+          <!-- Auto-Sync 10s Toggle Button (Khusus Super Admin) -->
+          <button
+            v-if="authRole === 'admin'"
+            type="button"
+            @click="toggleAutoSync"
+            :class="autoSyncEnabled ? 'bg-emerald-50 border-emerald-300 text-emerald-800 ring-2 ring-emerald-500/20' : 'bg-stone-100 hover:bg-stone-200/80 border-stone-200 text-stone-700'"
+            class="inline-flex items-center gap-2 px-3 py-1.5 border rounded-xl text-xs font-semibold transition-all cursor-pointer shadow-2xs whitespace-nowrap"
+            :title="autoSyncEnabled ? 'Klik untuk mematikan penarikan otomatis' : 'Aktifkan penarikan otomatis dari Google Sheets setiap 10 detik (Khusus Super Admin)'"
+          >
+            <span class="relative flex h-2 w-2" v-if="autoSyncEnabled">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
+            <span class="w-2 h-2 rounded-full bg-stone-400" v-else></span>
+            <span>Auto-Sync 10s: <strong :class="autoSyncEnabled ? 'text-emerald-700 font-mono font-bold' : ''">{{ autoSyncEnabled ? (autoSyncCountdown + 's') : 'OFF' }}</strong></span>
+          </button>
+
+          <!-- Refresh & Tarik Data Button -->
+          <button
+            type="button"
+            @click="refreshAndSyncActiveTable(false)"
+            :disabled="isSyncingActiveTable"
+            class="inline-flex items-center gap-2 px-3.5 py-1.5 bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white border border-cyan-600 shadow-xs rounded-xl text-xs font-semibold transition-all cursor-pointer shadow-2xs disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+            :title="authRole === 'admin' ? 'Tarik seluruh data terbaru dari semua PIC dan tabel Google Sheets secara real-time' : 'Segarkan tampilan tabel dari database lokal'"
+          >
+            <svg :class="{ 'spin': isSyncingActiveTable }" class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <polyline points="23 4 23 10 17 10"></polyline>
+              <polyline points="1 20 1 14 7 14"></polyline>
+              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+            </svg>
+            <span>{{ isSyncingActiveTable ? 'Memuat Data...' : (authRole === 'admin' ? 'Refresh &amp; Tarik Data GSheet' : 'Refresh Tampilan Data') }}</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Status Notifikasi Sync Data Explorer -->
+      <div v-if="syncStatusMessage" class="px-4 py-2.5 rounded-xl text-xs flex items-center justify-between border shadow-2xs slow-smooth-entrance" :class="syncStatusMessage.startsWith('Gagal') || syncStatusMessage.startsWith('Koneksi gagal') ? 'bg-rose-50 border-rose-200 text-rose-800' : (syncStatusMessage.includes('Menghubungi') || syncStatusMessage.includes('memeriksa') || syncStatusMessage.includes('berlangsung') ? 'bg-cyan-50 border-cyan-200 text-cyan-900' : 'bg-emerald-50/80 border-emerald-200 text-emerald-900')">
+        <div class="flex items-center gap-2 min-w-0">
+          <span class="w-2 h-2 rounded-full shrink-0" :class="syncStatusMessage.startsWith('Gagal') || syncStatusMessage.startsWith('Koneksi gagal') ? 'bg-rose-500' : (syncStatusMessage.includes('Menghubungi') || syncStatusMessage.includes('memeriksa') || syncStatusMessage.includes('berlangsung') ? 'bg-white animate-pulse' : 'bg-emerald-500')"></span>
+          <span class="truncate font-medium">{{ syncStatusMessage }}</span>
+        </div>
+        <button type="button" @click="syncStatusMessage = ''" class="text-stone-400 hover:text-stone-700 text-xs ml-3 cursor-pointer shrink-0" title="Tutup notifikasi">✕</button>
+      </div>
+
+      <!-- Filter PIC & Tower Selector (Clean Select Box Controls) -->
+      <div class="modern-card p-4 sm:p-5 slow-smooth-entrance stagger-1">
+        <div class="flex flex-wrap items-center gap-4 sm:gap-6">
+          <!-- 1. Active Divisi PIC Indicator (Dipilih melalui Sidebar) -->
+          <div class="flex items-center gap-2.5 min-w-[240px] flex-1 sm:flex-initial">
+            <div class="flex items-center gap-2 px-3.5 py-2 bg-stone-50 border border-stone-200/90 rounded-xl text-xs shadow-2xs">
+              <span class="w-2 h-2 rounded-full ring-2" :class="getPicTablesCount(selectedPic) > 0 || selectedPic === 'Semua' ? 'bg-emerald-500 ring-emerald-500/20' : 'bg-white ring-cyan-500/20'"></span>
+              <span class="text-stone-500 font-semibold">Divisi Aktif:</span>
+              <span class="font-extrabold text-cyan-700">{{ selectedPic === 'Semua' ? 'Semua PIC' : selectedPic }}</span>
+              <span class="text-[10.5px] px-2 py-0.5 rounded-full font-mono font-bold bg-white border border-stone-200 text-stone-700">
+                {{ selectedPic === 'Semua' ? tables.length : getPicTablesCount(selectedPic) }} Tabel
+              </span>
+            </div>
+          </div>
+
+          <!-- 2. Select Filter Tower -->
+          <div class="flex items-center gap-2.5 min-w-[220px] flex-1 sm:flex-initial">
+            <label for="select-tower" class="text-xs font-bold text-stone-700 whitespace-nowrap shrink-0 flex items-center gap-1.5">
+              <svg class="w-4 h-4 text-stone-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+              </svg>
+              <span>Filter Tower:</span>
+            </label>
+            <div class="relative flex-1 sm:w-48">
+              <select
+                id="select-tower"
+                v-model="selectedTower"
+                @change="changeTower(selectedTower); autoSelectFirstPicTable();"
+                class="w-full appearance-none bg-white hover:bg-stone-50/80 border border-stone-200/90 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-3.5 py-2 text-xs font-semibold text-stone-800 pr-9 transition-all cursor-pointer shadow-2xs"
+              >
+                <option v-for="tw in towerOptions" :key="tw" :value="tw">
+                  {{ tw }}
+                </option>
+              </select>
+              <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-stone-400">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <!-- Total Filtered Badge / Info -->
+          <div class="hidden md:flex items-center gap-2 ml-auto text-xs text-stone-500 bg-stone-50 px-3 py-1.5 rounded-lg border border-stone-200/60 font-medium">
+            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+            <span>Total: <strong class="text-stone-800 font-bold">{{ picFilteredTables.length }}</strong> tabel aktif</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Direktori Tabel & Parameter Divisi (Industrial High-Contrast Table View) -->
+      <div class="modern-card border border-stone-200/90 rounded-2xl shadow-sm overflow-hidden slow-smooth-entrance stagger-2">
+        <!-- Directory Header -->
+        <div class="bg-stone-50/80 border-b border-stone-200 text-stone-900 px-5 py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-lg bg-coffee-800 text-white flex items-center justify-center shrink-0">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>
+            </div>
+            <div>
+              <div class="font-extrabold text-xs text-stone-900 uppercase tracking-wide">Direktori Parameter {{ selectedPic === 'Semua' ? 'Semua Divisi PIC' : 'Divisi ' + selectedPic }}</div>
+              <div class="text-[11px] text-stone-500">Menampilkan {{ picFilteredTablesSearched.length }} dari {{ picFilteredTables.length }} proses terdaftar</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="relative w-44 sm:w-56">
+              <input
+                v-model="tableFilterQuery"
+                type="text"
+                placeholder="Saring nama proses..."
+                @keydown.enter.prevent="selectFirstSearchedProcess"
+                @keyup.enter.prevent="selectFirstSearchedProcess"
+                class="w-full bg-white border border-stone-200 text-stone-900 placeholder-stone-400 text-xs rounded-lg px-3 py-1.5 focus:outline-none focus:border-coffee-700 shadow-2xs transition-colors"
+              />
+            </div>
+            <button
+              v-if="authRole === 'admin'"
+              type="button"
+              @click="clearAllTables()"
+              :disabled="isClearingAll"
+              class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200/90 text-xs font-bold rounded-lg transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs btn-action shrink-0 disabled:opacity-40 disabled:cursor-not-allowed"
+              title="Hapus seluruh data rekaman pada semua 33 tabel database (Khusus Super Admin)"
+            >
+              <svg class="w-3.5 h-3.5 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              </svg>
+              <span>{{ isClearingAll ? 'Menghapus Semua...' : 'Hapus Semua Tabel' }}</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Table Listing -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="bg-stone-100/70 border-b border-stone-200 text-stone-600 font-bold uppercase text-[10px] tracking-wider">
+                <th class="py-2.5 px-4 w-12 text-center">#</th>
+                <th class="py-2.5 px-4">Nama Proses &amp; Parameter</th>
+                <th class="py-2.5 px-4">Alur (Flow)</th>
+                <th class="py-2.5 px-4">Tower</th>
+                <th class="py-2.5 px-4">Total Rekaman</th>
+                <th class="py-2.5 px-4 text-right">Aksi</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-stone-100 bg-white">
+              <tr
+                v-for="(tbl, idx) in picFilteredTablesSearched"
+                :key="tbl.key"
+                :class="picSelectedTable === tbl.key
+                  ? 'bg-cyan-50 border-l-4 border-l-cyan-500 font-semibold shadow-2xs'
+                  : 'border-l-4 border-l-transparent hover:bg-stone-50/80 hover:border-l-stone-300'"
+                class="transition-all duration-200 cursor-pointer group"
+                @click="changePicTable(tbl.key)"
+              >
+                <td class="py-2.5 px-4 text-center font-mono text-[11px] text-stone-400">
+                  {{ idx + 1 }}
+                </td>
+                <td class="py-2.5 px-4">
+                  <div class="flex items-center gap-2">
+                    <span v-if="picSelectedTable === tbl.key" class="w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-emerald-500/30 scale-110 shrink-0 transition-transform"></span>
+                    <span v-else class="w-2 h-2 rounded-full bg-stone-300 group-hover:bg-cyan-500 shrink-0 transition-colors"></span>
+                    <div class="font-bold text-stone-900 group-hover:text-coffee-800 transition-colors">{{ tbl.label }}</div>
+                  </div>
+                </td>
+                <td class="py-2.5 px-4">
+                  <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-stone-100 text-stone-700 border border-stone-200">
+                    {{ tbl.flow }}
+                  </span>
+                </td>
+                <td class="py-2.5 px-4">
+                  <span class="px-2 py-0.5 rounded-full text-[10.5px] font-semibold" :class="tbl.tower === 'Tower 1' ? 'bg-cyan-50 text-cyan-800 border border-cyan-200' : tbl.tower === 'Tower 2' ? 'bg-cyan-100 text-cyan-900 border border-cyan-300' : 'bg-slate-100 text-slate-800 border border-slate-200'">
+                    {{ tbl.tower }}
+                  </span>
+                </td>
+                <td class="py-2.5 px-4">
+                  <div class="flex items-center gap-1.5 font-mono text-stone-800">
+                    <span class="w-1.5 h-1.5 rounded-full inline-block" :class="tbl.count > 0 ? 'bg-emerald-500' : 'bg-stone-300'"></span>
+                    <span class="font-semibold">{{ tbl.count !== null ? Number(tbl.count).toLocaleString() + ' baris' : '...' }}</span>
+                  </div>
+                </td>
+                <td class="py-2.5 px-4 text-right">
+                  <div class="inline-flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      @click.stop="changePicTable(tbl.key)"
+                      :class="picSelectedTable === tbl.key
+                        ? 'bg-cyan-500 text-white border border-cyan-600 font-bold shadow-xs'
+                        : 'bg-stone-100 hover:bg-stone-200 text-stone-700'"
+                      class="px-2.5 py-1 rounded-lg text-[11px] transition-all cursor-pointer"
+                      title="Lihat data tabel ini di panel bawah"
+                    >
+                      {{ picSelectedTable === tbl.key ? 'Sedang Dilihat' : 'Lihat Data' }}
+                    </button>
+                    <button
+                      v-if="authRole === 'admin'"
+                      type="button"
+                      @click.stop="clearTable(tbl.key)"
+                      :disabled="tbl.count === 0"
+                      class="px-2 py-1 bg-stone-100 hover:bg-rose-50 text-stone-500 hover:text-rose-700 rounded-lg text-[11px] font-semibold transition-all flex items-center gap-1 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+                      :title="'Hapus semua data pada tabel ' + tbl.label + ' (Khusus Super Admin)'"
+                    >
+                      <svg class="w-3 h-3 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                      </svg>
+                      <span>Hapus Data</span>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <tr v-if="picFilteredTablesSearched.length === 0">
+                <td colspan="6" class="py-12 text-center text-stone-400 text-xs">
+                  <div class="flex flex-col items-center justify-center gap-2">
+                    <div class="w-10 h-10 rounded-full bg-stone-100 flex items-center justify-center text-stone-400">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                      </svg>
+                    </div>
+                    <div class="font-bold text-stone-600">Data tidak ditemukan</div>
+                    <div class="text-[11px] text-stone-400 max-w-sm">
+                      Belum ada tabel database yang terdaftar untuk divisi {{ selectedPic }}. Divisi aktif di database saat ini: Produksi, QC, dan PA.
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+<!-- include: components/tables/table-explorer.html -->
+    </div>
+    </div> <!-- /TAB 3: activeTab === 'pic' -->

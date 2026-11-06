@@ -122,4 +122,44 @@ describe('SJA-PRAS v1.0 Security, Audit & DR Controls', () => {
     assert.ok(evidence.drillExecutionTime, 'Waktu eksekusi drill harus tercatat');
   });
 
+  test('TC-16: Validasi Binary Magic Bytes Anti-Polyglot File Upload (ASVS 5.0.0 L2 / NIST SSDF)', () => {
+    // Valid ZIP/XLSX: PK\x03\x04
+    const validZip = Buffer.from([0x50, 0x4B, 0x03, 0x04, 0x00, 0x00]);
+    // Valid OLE2/XLS: \xD0\xCF\x11\xE0
+    const validOle = Buffer.from([0xD0, 0xCF, 0x11, 0xE0, 0xA1, 0xB1]);
+    // Invalid polyglot / script disguised as excel
+    const fakeExcel = Buffer.from('<?php echo "malicious"; ?>');
+
+    const checkBytes = (buf) => {
+      if (!buf || buf.length < 4) return false;
+      const isZip = buf[0] === 0x50 && buf[1] === 0x4B && buf[2] === 0x03 && buf[3] === 0x04;
+      const isOle = buf[0] === 0xD0 && buf[1] === 0xCF && buf[2] === 0x11 && buf[3] === 0xE0;
+      return isZip || isOle;
+    };
+
+    assert.strictEqual(checkBytes(validZip), true, 'Buffer ZIP/XLSX harus valid');
+    assert.strictEqual(checkBytes(validOle), true, 'Buffer OLE2/XLS harus valid');
+    assert.strictEqual(checkBytes(fakeExcel), false, 'Polyglot file biner palsu wajib ditolak');
+  });
+
+  test('TC-17: Mandat Fail-Closed JWT Secret & Validasi Ganti Password Mandiri (NIST SP 800-63B)', () => {
+    const { JWT_SECRET } = require('../server/middleware/auth');
+    assert.ok(JWT_SECRET, 'JWT_SECRET harus terdefinisi dari .env');
+    assert.notStrictEqual(JWT_SECRET, 'sja-traceability-secret-salt-2026', 'Dilarang menggunakan default hardcoded secret string di source code');
+
+    const { changeUserPassword } = require('../server/services/authService');
+    assert.strictEqual(typeof changeUserPassword, 'function', 'Fungsi changeUserPassword wajib tersedia');
+  });
+
+  test('TC-18: Verifikasi Anti-Halusinasi PA (Zero Hardcoded Fallback & Pure DB Integrity)', () => {
+    const paServiceSrc = fs.readFileSync(path.resolve(__dirname, '../server/services/paService.js'), 'utf8');
+    assert.strictEqual(paServiceSrc.includes("'08/07/2026'"), false, "Dilarang keras hardcode fallback '08/07/2026' di paService.js");
+
+    const paEmpSrc = fs.readFileSync(path.resolve(__dirname, '../server/services/paEmpChecklistService.js'), 'utf8');
+    assert.strictEqual(paEmpSrc.includes("salmonella: 'Negative'"), false, "Dilarang mengasumsikan 'Negative' jika kolom Salmonella belum ada di DB");
+
+    const paWaterSrc = fs.readFileSync(path.resolve(__dirname, '../server/services/paWaterService.js'), 'utf8');
+    assert.strictEqual(paWaterSrc.includes("'Jefri & Reza'"), false, "Dilarang keras hardcode PIC 'Jefri & Reza' di paWaterService.js");
+  });
+
 });

@@ -1,0 +1,323 @@
+  <!-- ── SIDEBAR NAVIGATION (COLLAPSIBLE RAIL WITH INSTANT HOVER TOOLTIPS & ZERO BORDER WHEN COLLAPSED) ── -->
+  <aside
+    :class="{ 'is-collapsed': !sidebarOpen }"
+    class="app-sidebar sidebar-enter-reveal no-print flex-shrink-0 flex flex-col sticky top-0 h-screen select-none z-30"
+    
+  >
+    <!-- Brand / Toggle Header -->
+    <div
+      class="sidebar-brand-header h-16 flex items-center px-4 relative justify-between bg-cyan-700 border-b border-cyan-800/40"
+      :class="{ 'is-floating': !sidebarOpen && isScrolledPastHeader }"
+    >
+      <!-- Logo badge Kapal Api (Tanpa Background Putih, Transparan & Floating Effect) -->
+      <div
+        class="sidebar-floating-logo w-11 h-11 flex items-center justify-center flex-shrink-0 relative cursor-pointer"
+        @click="sidebarOpen = !sidebarOpen"
+        title="Klik untuk Buka/Tutup Sidebar &bull; PT. Santos Jaya Abadi"
+      >
+        <picture class="w-full h-full flex items-center justify-center">
+          <source srcset="images/logo-kapal-api.webp?v=5" type="image/webp">
+          <img
+            src="images/logo-kapal-api.png?v=5"
+            alt="Logo Kapal Api"
+            class="w-full h-full object-contain filter drop-shadow-xs"
+            loading="eager"
+            width="44"
+            height="44"
+          />
+        </picture>
+      </div>
+
+      <!-- Brand text + collapse btn — fade out saat collapse -->
+      <div v-show="sidebarOpen" class="sidebar-brand-text flex-1 ml-2.5 leading-tight">
+        <div class="font-extrabold text-xs text-white tracking-tight">PT. Santos Jaya Abadi</div>
+        <div class="text-[10px] text-cyan-100 font-bold">Traceability Platform</div>
+      </div>
+      <button
+        v-show="sidebarOpen"
+        type="button"
+        @click="sidebarOpen = false"
+        class="sidebar-collapse-btn text-cyan-100 hover:text-white p-1.5 rounded-lg hover:bg-white/10 transition-all cursor-pointer"
+        title="Ciutkan Sidebar"
+      >
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Navigation Menu Items -->
+    <nav
+      id="sidebar-nav-container"
+      :class="sidebarOpen ? 'overflow-y-auto overflow-x-hidden' : 'overflow-visible'"
+      class="relative flex-1 py-4 px-2 space-y-2 bg-transparent"
+    >
+      <!-- KAPSUL MELUNCUR (SLIDING FLOATING PILL) - AKTIF PADA MODE TERBUKA & TERTUTUP -->
+      <div id="sidebar-active-pill" aria-hidden="true"></div>
+
+      <div class="sidebar-section-label px-2 pb-1.5 text-[10px] font-black uppercase tracking-wider text-cyan-100/70">
+        Main Menu
+      </div>
+
+      <!-- Item 1: Dashboard -->
+      <div class="relative group" data-tab="dashboard">
+        <button
+          type="button"
+          @click="activeTab = 'dashboard'"
+          :class="[
+            activeTab === 'dashboard' ? 'active' : '',
+            !sidebarOpen ? 'sidebar-item-collapsed' : ''
+          ]"
+          class="sidebar-item"
+        >
+          <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7" rx="1.5"></rect>
+            <rect x="14" y="3" width="7" height="7" rx="1.5"></rect>
+            <rect x="14" y="14" width="7" height="7" rx="1.5"></rect>
+            <rect x="3" y="14" width="7" height="7" rx="1.5"></rect>
+          </svg>
+          <div class="sidebar-label-text sidebar-item-text flex-1 min-w-0">
+            <span class="truncate font-semibold">Dashboard</span>
+          </div>
+        </button>
+        <div class="sidebar-gemini-tooltip">
+          <div class="font-bold text-xs text-white">Dashboard</div>
+        </div>
+      </div>
+
+      <!-- Item 2: Batch Traceability -->
+      <div class="relative group" data-tab="pipeline">
+        <button
+          type="button"
+          @click="activeTab = 'pipeline'"
+          :class="[
+            activeTab === 'pipeline' ? 'active' : '',
+            !sidebarOpen ? 'sidebar-item-collapsed' : ''
+          ]"
+          class="sidebar-item"
+        >
+          <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+            <circle cx="6" cy="18" r="3"></circle>
+            <circle cx="6" cy="6" r="3"></circle>
+            <circle cx="18" cy="12" r="3"></circle>
+            <path d="M6 9v6"></path>
+            <path d="M9 6h4a5 5 0 0 1 5 5v1"></path>
+          </svg>
+          <div class="sidebar-label-text sidebar-item-text flex-1 min-w-0">
+            <span class="truncate font-semibold">Batch Traceability</span>
+          </div>
+        </button>
+        <div class="sidebar-gemini-tooltip">
+          <div class="font-bold text-xs text-white">Batch Traceability</div>
+        </div>
+      </div>
+
+      <!-- Item 3: Quality Audit Report -->
+      <div class="relative group" data-tab="report">
+        <button
+          type="button"
+          @click="activeTab = 'report'"
+          :class="[
+            activeTab === 'report' ? 'active' : '',
+            !sidebarOpen ? 'sidebar-item-collapsed' : ''
+          ]"
+          class="sidebar-item"
+        >
+          <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <path d="M9 15l2 2 4-4"></path>
+          </svg>
+          <div class="sidebar-label-text sidebar-item-text flex-1 min-w-0">
+            <span class="truncate font-semibold">Quality Audit Report</span>
+          </div>
+        </button>
+        <div class="sidebar-gemini-tooltip">
+          <div class="font-bold text-xs text-white">Quality Audit Report</div>
+        </div>
+      </div>
+
+      <div class="sidebar-section-label pt-3 px-2 pb-1.5 text-[10px] font-black uppercase tracking-wider text-cyan-100/70">
+        Data Management
+      </div>
+
+      <!-- Item 4: Data Ingestion -->
+      <div class="relative group" data-tab="sync">
+        <button
+          type="button"
+          @click="activeTab = 'sync'"
+          :class="[
+            activeTab === 'sync' ? 'active' : '',
+            !sidebarOpen ? 'sidebar-item-collapsed' : ''
+          ]"
+          class="sidebar-item"
+        >
+          <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+            <path d="M20 16.2A4.5 4.5 0 0 0 17.5 8h-1.8A7 7 0 1 0 4 14.9"></path>
+            <line x1="12" y1="12" x2="12" y2="21"></line>
+            <polyline points="8 17 12 21 16 17"></polyline>
+          </svg>
+          <div class="sidebar-label-text sidebar-item-text flex-1 min-w-0">
+            <span class="truncate font-semibold">Data Ingestion</span>
+          </div>
+        </button>
+        <div class="sidebar-gemini-tooltip">
+          <div class="font-bold text-xs text-white">Data Ingestion</div>
+        </div>
+      </div>
+
+      <!-- Item 5: Data Explorer (With PIC Sub-Menu & Collapsed Flyout Popover) -->
+      <div class="relative group" data-tab="pic">
+        <button
+          type="button"
+          @click="toggleDataExplorerMenu()"
+          :class="[
+            activeTab === 'pic' ? 'active' : '',
+            !sidebarOpen ? 'sidebar-item-collapsed' : ''
+          ]"
+          class="sidebar-item"
+        >
+          <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+            <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+            <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
+            <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
+          </svg>
+          <div class="sidebar-label-text sidebar-item-text flex-1 min-w-0">
+            <span class="truncate font-semibold">Data Explorer</span>
+          </div>
+        </button>
+
+        <!-- Sub-menu Accordion (Saat Sidebar Terbuka) -->
+        <div
+          v-if="sidebarOpen"
+          class="sidebar-submenu-wrap pl-6 pr-2 py-1"
+          :class="{ 'is-open': dataExplorerMenuOpen }"
+        >
+          <div id="sidebar-submenu-container" class="relative flex flex-col gap-1 py-1">
+            <!-- SUB-MENU SLIDING PILL -->
+            <div id="submenu-active-pill" aria-hidden="true"></div>
+
+            <button
+              v-for="pic in picList"
+              :key="pic"
+              :data-sub-pic="pic"
+              type="button"
+              @click.stop="selectPicFromSidebar(pic)"
+              :class="activeTab === 'pic' && selectedPic === pic
+                ? 'text-white font-black'
+                : 'text-white/80 hover:text-white font-bold'"
+              class="relative z-10 w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs transition-colors duration-200 text-left cursor-pointer group/sub bg-transparent border-0"
+            >
+              <div class="flex items-center gap-2 min-w-0">
+                <span
+                  class="w-1.5 h-1.5 rounded-full transition-all shrink-0"
+                  :class="activeTab === 'pic' && selectedPic === pic
+                    ? 'bg-white ring-2 ring-white/50 scale-125'
+                    : (getPicTablesCount(pic) > 0 ? 'bg-white/70 group-hover/sub:bg-white' : 'bg-white/30')"
+                ></span>
+                <span class="truncate">{{ pic }}</span>
+              </div>
+              <span
+                class="text-[10px] px-1.5 py-0.5 rounded font-mono font-bold shrink-0"
+                :class="activeTab === 'pic' && selectedPic === pic
+                  ? 'bg-white/20 text-white'
+                  : (getPicTablesCount(pic) > 0 ? 'bg-white/15 text-white' : 'text-cyan-100/60')"
+              >
+                {{ getPicTablesCount(pic) }}
+              </span>
+            </button>
+
+            <!-- Opsi Semua Divisi -->
+            <button
+              type="button"
+              data-sub-pic="Semua"
+              @click.stop="selectPicFromSidebar('Semua')"
+              :class="activeTab === 'pic' && selectedPic === 'Semua'
+                ? 'text-white font-black'
+                : 'text-white/80 hover:text-white font-bold'"
+              class="relative z-10 w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs transition-colors duration-200 text-left cursor-pointer group/sub bg-transparent border-0"
+            >
+              <div class="flex items-center gap-2 min-w-0">
+                <span
+                  class="w-1.5 h-1.5 rounded-full transition-all shrink-0"
+                  :class="activeTab === 'pic' && selectedPic === 'Semua'
+                    ? 'bg-white ring-2 ring-white/50 scale-125'
+                    : 'bg-white/70 group-hover/sub:bg-white'"
+                ></span>
+                <span class="truncate">Semua Divisi</span>
+              </div>
+              <span
+                class="text-[10px] px-1.5 py-0.5 rounded font-mono font-bold shrink-0"
+                :class="activeTab === 'pic' && selectedPic === 'Semua'
+                  ? 'bg-white/20 text-white'
+                  : 'bg-white/15 text-white'"
+              >
+                {{ tables.length }}
+              </span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Tooltip untuk Tombol Utama Data Explorer saat Collapsed -->
+        <div class="sidebar-gemini-tooltip">
+          <div class="font-bold text-xs text-white">Data Explorer</div>
+          <div class="text-[10px] text-stone-300 font-normal">Database Records</div>
+        </div>
+
+        <!-- Mini-Rail PIC Chips dengan Sliding Pill (Saat Sidebar Tertutup / Collapsed) -->
+        <div
+          v-if="!sidebarOpen && dataExplorerMenuOpen"
+          class="flex flex-col items-center pt-2 pb-1 transition-all duration-300"
+        >
+          <div
+            id="mini-rail-chips-container"
+            class="relative flex flex-col items-center gap-1 p-1 bg-cyan-800/80 border border-cyan-600/40 rounded-xl shadow-md"
+          >
+            <!-- MINI SLIDING PILL INDICATOR -->
+            <div id="mini-rail-active-pill" aria-hidden="true"></div>
+
+            <button
+              v-for="item in miniPicList"
+              :key="item.key"
+              :data-mini-pic="item.key"
+              type="button"
+              @click.stop="selectPicFromSidebar(item.key)"
+              :class="activeTab === 'pic' && selectedPic === item.key
+                ? 'text-cyan-900 font-black'
+                : 'text-cyan-100 hover:text-white font-bold'"
+              class="relative z-10 w-[38px] h-[26px] rounded-lg text-[10.5px] tracking-wider flex items-center justify-center font-mono transition-colors duration-250 cursor-pointer select-none bg-transparent border-0"
+            >
+              {{ item.code }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Sidebar Bottom Status & Logout -->
+    <div
+      class="p-3 space-y-2 border-t border-white/15"
+      style="transition: background-color 0.38s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.38s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.38s ease;"
+    >
+<!-- include: components/auth/sidebar-logout.html -->
+
+      <!-- DB Status — full row expands, icon only when collapsed -->
+      <div class="sidebar-db-full flex items-center justify-between text-white/80 font-bold text-[10.5px] px-1">
+        <span>Database:</span>
+        <span class="flex items-center gap-1.5 font-bold" :class="dbConnected ? 'text-emerald-300' : 'text-rose-400'">
+          <span class="relative flex h-2 w-2">
+            <span v-if="dbConnected" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2 w-2" :class="dbConnected ? 'bg-emerald-600' : 'bg-rose-600'"></span>
+          </span>
+          {{ dbConnected ? 'Active' : 'Offline' }}
+        </span>
+      </div>
+      <!-- DB dot icon only when collapsed -->
+      <div class="sidebar-db-icon relative group flex justify-center">
+        <span class="w-2.5 h-2.5 rounded-full inline-block cursor-pointer shadow-xs transition-transform hover:scale-125" :class="dbConnected ? 'bg-emerald-500 ring-2 ring-emerald-500/20' : 'bg-red-500 ring-2 ring-red-500/20'"></span>
+        <div class="sidebar-gemini-tooltip">
+          <div class="font-bold text-xs text-white">Database: {{ dbConnected ? 'Active' : 'Offline' }}</div>
+        </div>
+      </div>
+    </div>
+  </aside>

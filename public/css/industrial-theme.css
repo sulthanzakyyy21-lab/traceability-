@@ -6,17 +6,17 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap');
 
 :root {
-  --coffee-950: #26160c;
-  --coffee-900: #3c2415;
-  --coffee-800: #4a2c1d;
-  --coffee-700: #693e29;
-  --coffee-600: #875034;
-  --coffee-500: #a86543;
-  --coffee-200: #e2cebf;
-  --coffee-100: #f4ede6;
-  --coffee-50:  #fdfaf7;
-  --canvas-bg:   #fbfaf8;
-  --border-subtle: #e7e5e4;
+  --coffee-950: #083344;
+  --coffee-900: #164e63;
+  --coffee-800: #0e7490;
+  --coffee-700: #0891b2;
+  --coffee-600: #06b6d4;
+  --coffee-500: #22d3ee;
+  --coffee-200: #a5f3fc;
+  --coffee-100: #cffafe;
+  --coffee-50:  #ecfeff;
+  --canvas-bg:   #f8fafc;
+  --border-subtle: #e2e8f0;
 }
 
 html {
@@ -98,10 +98,9 @@ body {
 .stagger-4 { animation-delay: 0.32s; }
 
 .reveal-on-scroll {
-  opacity: 0;
-  transform: translateY(16px);
-  transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1), transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
-  will-change: opacity, transform;
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1), transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .reveal-on-scroll.is-revealed {
@@ -183,9 +182,9 @@ body {
   transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .modern-card-interactive:hover {
-  border-color: #875034;
+  border-color: #06b6d4;
   transform: translateY(-2px);
-  box-shadow: 0 10px 25px -4px rgba(74, 44, 29, 0.1);
+  box-shadow: 0 10px 25px -4px rgba(6, 182, 212, 0.15);
 }
 
 /* ── MODERN DATA TABLES ── */
@@ -210,7 +209,7 @@ body {
 
 /* ── PARALLAX AMBIENT DEPTH ── */
 .ambient-pattern {
-  background-image: radial-gradient(rgba(120, 53, 15, 0.035) 1px, transparent 1px);
+  background-image: radial-gradient(rgba(6, 182, 212, 0.06) 1px, transparent 1px);
   background-size: 24px 24px;
 }
 
@@ -220,22 +219,22 @@ body {
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #fbfaf8;
+  background: #e2e8f0;
 }
 ::-webkit-scrollbar-thumb {
-  background: #d6d3d1;
+  background: #94a3b8;
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #a8a29e;
+  background: #0891b2;
 }
 
 /* ── COFFEE ROAST HERO & CLUSTER AMBIENT STYLES ── */
 .bg-coffee-ambient {
-  background-color: #fbfaf8;
+  background-color: #f8fafc;
   background-image: 
-    radial-gradient(at 0% 0%, rgba(120, 53, 15, 0.04) 0px, transparent 50%),
-    radial-gradient(at 100% 100%, rgba(69, 26, 3, 0.05) 0px, transparent 50%);
+    radial-gradient(at 0% 0%, rgba(6, 182, 212, 0.04) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(8, 145, 178, 0.03) 0px, transparent 50%);
 }
 
 /* ── SPRING PHYSICS & 120HZ TRANSITION TOKENS ── */
@@ -245,21 +244,21 @@ body {
 }
 
 .hero-coffee-banner {
-  background: linear-gradient(135deg, rgba(28, 14, 8, 0.94) 0%, rgba(46, 20, 10, 0.88) 50%, rgba(15, 7, 3, 0.96) 100%),
-              url('https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?q=80&w=1600&auto=format&fit=crop');
-  background-size: cover;
-  background-position: center;
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #0f172a !important;
 }
 
 .cluster-coffee-bg {
-  background: linear-gradient(90deg, rgba(30, 14, 7, 0.95) 0%, rgba(58, 28, 14, 0.88) 55%, rgba(20, 10, 5, 0.96) 100%),
-              url('https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?q=80&w=1200&auto=format&fit=crop');
-  background-size: cover;
-  background-position: right center;
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05) !important;
+  color: #0f172a !important;
 }
 
 .flow-ribbon-bg {
-  background: linear-gradient(90deg, rgba(120, 53, 15, 0.08) 0%, rgba(245, 158, 11, 0.05) 35%, rgba(255, 255, 255, 0.8) 75%);
+  background: #ffffff !important;
+  border-bottom: 1px solid #e2e8f0 !important;
 }
 
 /* ── 120HZ FLOATING ICON ANIMATIONS ── */
@@ -409,19 +408,19 @@ body {
    ========================================================================= */
 
 :root {
-  --bg: #faf8f5;
+  --bg: #f8fafc;
   --sf: #ffffff;
-  --tx: #2b2118;
-  --mu: #7a6e63;
-  --bd: #ebe4db;
-  --ac: #4a2c1a;
+  --tx: #0f172a;
+  --mu: #64748b;
+  --bd: #e2e8f0;
+  --ac: #06b6d4;
   --acx: #ffffff;
-  --hl: #f2b81c;
-  --ok: #1f7a4d;
-  --okb: #e6f4ec;
-  --er: #c0392b;
-  --erb: #fbe9e7;
-  --dp: #f1ede7;
+  --hl: #0891b2;
+  --ok: #059669;
+  --okb: #ecfdf5;
+  --er: #dc2626;
+  --erb: #fef2f2;
+  --dp: #f1f5f9;
   color-scheme: light;
 }
 
@@ -444,8 +443,9 @@ body {
 
 /* ── CLEAN DASHBOARD COMPONENTS ── */
 .clean-wrap {
-  max-width: 960px;
-  margin: 0 auto;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
 }
 
 .clean-title {
@@ -605,7 +605,7 @@ body {
   background: var(--ac);
   color: var(--acx);
   border-color: var(--ac);
-  box-shadow: 0 2px 8px rgba(74, 44, 26, 0.2);
+  box-shadow: 0 2px 8px rgba(6, 182, 212, 0.25);
 }
 
 .clean-chip:disabled {
@@ -1165,7 +1165,7 @@ select.clean-select option {
 }
 
 .wo-card.status-completed {
-  border-left: 4px solid #4a2c1d;
+  border-left: 4px solid #06b6d4;
 }
 
 .wo-card.status-draft {
@@ -1185,9 +1185,9 @@ select.clean-select option {
 }
 
 .wo-stepper-tab.active {
-  background: #fdfaf7;
-  color: #4a2c1d;
-  border: 1px solid #e2cebf;
+  background: #ecfeff;
+  color: #0891b2;
+  border: 1px solid #a5f3fc;
 }
 
 .wo-stepper-tab.inactive {
@@ -1208,7 +1208,7 @@ select.clean-select option {
 }
 
 .wo-stepper-tab.active .wo-step-num {
-  background: #4a2c1d;
+  background: #06b6d4;
   color: #ffffff;
 }
 

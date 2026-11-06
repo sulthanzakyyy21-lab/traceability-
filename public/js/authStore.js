@@ -6,11 +6,28 @@
   };
   const { reactive, computed } = Vue;
 
+  function isTokenExpired(token) {
+    if (!token) return true;
+    try {
+      const parts = token.split('.');
+      if (parts.length !== 3) return true;
+      const payload = JSON.parse(atob(parts[1]));
+      return payload.exp ? payload.exp * 1000 <= Date.now() : false;
+    } catch {
+      return true;
+    }
+  }
+
   let _initTok = null, _initUsr = null;
   try {
     const t = typeof localStorage !== 'undefined' && localStorage.getItem('sja_auth_token');
     const u = typeof localStorage !== 'undefined' && localStorage.getItem('sja_auth_user');
-    if (t && u) { _initTok = t; _initUsr = JSON.parse(u); }
+    if (t && u && !isTokenExpired(t)) {
+      _initTok = t; _initUsr = JSON.parse(u);
+    } else if (t) {
+      localStorage.removeItem('sja_auth_token');
+      localStorage.removeItem('sja_auth_user');
+    }
   } catch (_) {}
 
   const authState = reactive({
@@ -19,25 +36,15 @@
     loginModalOpen: false,
     loading: false,
     error: '',
-    usersModalOpen: false,
-    usersList: [],
-    usersLoading: false,
   });
 
   const isAuthenticated = computed(() => !!authState.user && !!authState.token);
   const currentRole = computed(() => authState.user?.role || 'viewer');
   const isAdmin = computed(() => currentRole.value === 'admin');
   const isProduksi = computed(() => currentRole.value === 'produksi');
+  const isPa = computed(() => currentRole.value === 'pa');
   const isQc = computed(() => currentRole.value === 'qc');
   const isViewer = computed(() => currentRole.value === 'viewer');
-
-  const canSyncGsheet = computed(() => isAdmin.value);
-  const canUploadExcel = computed(() => isAdmin.value);
-  const canAddRow = computed(() => isAdmin.value);
-  const canDeleteRow = computed(() => isAdmin.value);
-  const canClearData = computed(() => isAdmin.value);
-  const canManageUsers = computed(() => isAdmin.value);
-  const canDeleteSession = computed(() => isAdmin.value);
 
   function getAuthHeaders() {
     const token = authState.token || localStorage.getItem('sja_auth_token');
@@ -76,7 +83,7 @@
       const savedToken = localStorage.getItem('sja_auth_token');
       const savedUser = localStorage.getItem('sja_auth_user');
 
-      if (savedToken && savedUser) {
+      if (savedToken && savedUser && !isTokenExpired(savedToken)) {
         authState.token = savedToken;
         authState.user = JSON.parse(savedUser);
 
@@ -97,9 +104,8 @@
             logout();
           });
       } else {
-        // Belum login, arahkan ke Halaman Login
-        authState.token = null;
-        authState.user = null;
+        // Belum login atau sesi telah kedaluwarsa (> 5 menit), arahkan ke Halaman Login
+        logout();
       }
     } catch (e) {
       console.warn('[Auth] Gagal inisialisasi sesi:', e);
@@ -152,42 +158,19 @@
     localStorage.removeItem('sja_auth_user');
   }
 
-  async function fetchUsersList() {
-    if (!isAdmin.value) return;
-    authState.usersLoading = true;
-    try {
-      const res = await fetch('/api/auth/users', { headers: getAuthHeaders() });
-      const data = await res.json();
-      if (data.success) {
-        authState.usersList = data.users || [];
-      }
-    } catch (err) {
-      console.error('[Auth] Gagal memuat daftar user:', err);
-    } finally {
-      authState.usersLoading = false;
-    }
-  }
-
   window.sjaAuth = {
     state: authState,
     isAuthenticated,
     currentRole,
     isAdmin,
     isProduksi,
+    isPa,
     isQc,
     isViewer,
-    canSyncGsheet,
-    canUploadExcel,
-    canAddRow,
-    canDeleteRow,
-    canClearData,
-    canManageUsers,
-    canDeleteSession,
     getAuthHeaders,
     initAuth,
     login,
     loginAsGuest,
     logout,
-    fetchUsersList,
   };
 })(window);

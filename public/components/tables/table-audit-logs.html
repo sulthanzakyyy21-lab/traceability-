@@ -1,0 +1,152 @@
+      <!-- ── VIEW MODE 2: TABEL OPERATION LOG RIWAYAT PENELUSURAN ── -->
+      <div v-if="reportViewMode === 'log'" class="space-y-4 no-print slow-smooth-entrance">
+        <!-- KPI Summary Cards -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div class="clean-card p-3 bg-white border border-stone-200 shadow-2xs">
+            <div class="text-[10px] font-bold text-stone-500 uppercase tracking-wide">Total Sesi Log</div>
+            <div class="text-xl font-extrabold text-stone-900 mt-0.5">{{ sessionStats.total }}</div>
+          </div>
+          <div class="clean-card p-3 bg-white border border-stone-200 shadow-2xs">
+            <div class="text-[10px] font-bold text-stone-500 uppercase tracking-wide">Selesai Terverifikasi</div>
+            <div class="text-xl font-extrabold text-stone-900 mt-0.5">{{ sessionStats.completed }}</div>
+          </div>
+          <div class="clean-card p-3 bg-white border border-stone-200 shadow-2xs">
+            <div class="text-[10px] font-bold text-stone-500 uppercase tracking-wide">Sedang Berjalan</div>
+            <div class="text-xl font-extrabold text-stone-900 mt-0.5">{{ sessionStats.running }}</div>
+          </div>
+          <div class="clean-card p-3 bg-white border border-stone-200 shadow-2xs">
+            <div class="text-[10px] font-bold text-stone-500 uppercase tracking-wide">Draft / Menunggu</div>
+            <div class="text-xl font-extrabold text-stone-900 mt-0.5">{{ sessionStats.draft }}</div>
+          </div>
+        </div>
+
+        <!-- Tabel Riwayat Operation Log -->
+        <div class="modern-card p-4 overflow-x-auto shadow-xs">
+          <div class="flex items-center justify-between pb-3 mb-3 border-b border-stone-200">
+            <div>
+              <h3 class="text-xs font-extrabold text-stone-900 uppercase tracking-wide">Daftar Rekaman Operation Log Traceability</h3>
+              <p class="text-[11px] text-stone-500">Histori penelusuran batch dan dokumen F/QC/01.030 yang tersimpan di sistem.</p>
+            </div>
+            <button
+              type="button"
+              @click="openCreateSessionModal"
+              class="px-3.5 py-1.5 bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white border border-cyan-600 shadow-xs text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer btn-action flex items-center gap-1.5"
+            >
+              <span>+ Buat Sesi Baru</span>
+            </button>
+          </div>
+
+          <table class="w-full text-xs text-left">
+            <thead class="bg-stone-100 text-stone-700 text-[10.5px] font-bold uppercase tracking-wider border-b border-stone-200">
+              <tr>
+                <th class="p-3">No. WO</th>
+                <th class="p-3">Tanggal &amp; Waktu</th>
+                <th class="p-3">Target Batch / Bahan</th>
+                <th class="p-3">Arah &amp; Area</th>
+                <th class="p-3">PIC &amp; Approval</th>
+                <th class="p-3">Durasi</th>
+                <th class="p-3">Status</th>
+                <th class="p-3 text-right">Aksi</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-stone-200 text-stone-800">
+              <tr
+                v-for="s in traceabilitySessions"
+                :key="s.id"
+                class="hover:bg-cyan-50/40 transition-colors"
+                :class="activeSessionId === s.id ? 'bg-cyan-50/70 font-semibold' : ''"
+              >
+                <td class="p-3 font-mono font-bold">
+                  <span class="px-2 py-0.5 rounded bg-stone-100 border border-stone-200 text-stone-900">{{ s.code || s.id }}</span>
+                </td>
+                <td class="p-3">
+                  <div>{{ s.tanggalPelaksanaan }}</div>
+                  <div class="text-[10px] text-stone-400 font-mono">{{ s.manualWaktuStart ? (s.manualWaktuStart + ' - ' + s.manualWaktuEnd) : '' }}</div>
+                </td>
+                <td class="p-3">
+                  <div v-if="s.jenis === 'Backward'" class="font-mono font-bold text-cyan-700">
+                    {{ s.noBatch }} <span class="text-[11px] font-normal text-stone-500">(Tower {{ s.tower || '1' }})</span>
+                  </div>
+                  <div v-else class="font-bold text-cyan-700">
+                    {{ s.forward?.namaBahan || '-' }}
+                    <span v-if="s.forward?.supplierBahan" class="text-[11px] font-normal text-stone-500 block">&bull; {{ s.forward.supplierBahan }}</span>
+                  </div>
+                </td>
+                <td class="p-3">
+                  <div>{{ s.area || 'SJA Sukodono' }}</div>
+                  <span
+                    class="inline-block mt-0.5 px-2 py-0.2 text-[9.5px] rounded-full font-bold uppercase"
+                    :class="s.jenis === 'Backward' ? 'bg-blue-100 text-blue-900 border border-blue-200' : 'bg-emerald-100 text-emerald-900 border border-emerald-200'"
+                  >
+                    {{ s.jenis }}
+                  </span>
+                </td>
+                <td class="p-3 text-[11px]">
+                  <div><span class="text-stone-400">PIC:</span> <strong>{{ s.picPelaksana }}</strong></div>
+                  <div><span class="text-stone-400">FSTL:</span> {{ s.fstl }}</div>
+                </td>
+                <td class="p-3 font-mono text-[11px]">
+                  {{ s.manualTotalWaktu || formatElapsedDuration(s.timer?.elapsedSeconds || 0) || '-' }}
+                </td>
+                <td class="p-3">
+                  <span
+                    v-if="s.status === 'completed'"
+                    class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-cyan-50 text-cyan-800 border border-cyan-200"
+                  >
+                    ✓ Selesai
+                  </span>
+                  <span
+                    v-else-if="s.status === 'running'"
+                    class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-900 border border-emerald-300"
+                  >
+                    ● Berjalan
+                  </span>
+                  <span
+                    v-else
+                    class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-stone-100 text-stone-600 border border-stone-200"
+                  >
+                    Draft
+                  </span>
+                </td>
+                <td class="p-3 text-right">
+                  <div class="inline-flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      @click="openSessionReport(s)"
+                      class="px-2.5 py-1 bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white border border-cyan-600 shadow-xs rounded-lg text-xs font-semibold cursor-pointer shadow-2xs"
+                      title="Buka Dokumen Form F/QC/01.030 untuk sesi ini"
+                    >
+                      Buka Dokumen
+                    </button>
+                    <button
+                      type="button"
+                      @click="openSessionPipeline(s)"
+                      class="clean-btn g text-xs py-1 px-2 hover:bg-stone-100"
+                      title="Buka alur visual pipeline"
+                    >
+                      Visual
+                    </button>
+                    <button
+                      type="button"
+                      @click="openEditSessionModal(s)"
+                      class="clean-btn g text-xs py-1 px-2 hover:bg-stone-100"
+                      title="Ubah informasi sesi"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      v-if="authRole === 'admin'"
+                      type="button"
+                      @click="deleteSession(s.id)"
+                      class="clean-btn g text-xs py-1 px-2 hover:bg-red-50 text-stone-400 hover:text-red-700"
+                      title="Hapus sesi (Khusus Super Admin)"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>

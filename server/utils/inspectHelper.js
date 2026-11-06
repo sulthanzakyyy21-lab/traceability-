@@ -90,7 +90,7 @@ function findSheetAndColMapping(workbook, tableName, expectedCols, targetSheetNa
 }
 
 function inspectExcelWorkbook(buffer, pic, tower) {
-  const workbook = xlsx.read(buffer, { type: 'buffer', sheetRows: 40, cellDates: true, cellNF: false, cellText: false });
+  const workbook = xlsx.read(buffer, { type: 'buffer', sheetRows: 40, cellDates: true, cellNF: true, cellText: true });
   const candidates = Object.values(TABLE_METADATA);
   const activePic = pic && pic !== 'Semua' ? String(pic).toLowerCase() : null;
   const activeTower = tower && tower !== 'Semua' && tower !== 'Non-Tower' && tower !== 'Non-Tower / Semua' ? String(tower).toLowerCase() : null;

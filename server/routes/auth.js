@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { z } = require('zod');
-const { loginUser, getUserProfile, listAllUsers, createNewUser } = require('../services/authService');
+const { loginUser, getUserProfile, listAllUsers, createNewUser, changeUserPassword } = require('../services/authService');
 const { verifyToken, requireRole } = require('../middleware/auth');
 const { validatePasswordPolicy } = require('../utils/passwordPolicy');
 const { loginRateLimiter, recordLoginFailure, resetLoginFailure } = require('../middleware/loginRateLimiter');
@@ -9,6 +9,11 @@ const { loginRateLimiter, recordLoginFailure, resetLoginFailure } = require('../
 const loginSchema = z.object({
   username: z.string().min(1, 'Username wajib diisi').max(50),
   password: z.string().min(1, 'Password wajib diisi').max(128),
+});
+
+const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1, 'Kata sandi saat ini wajib diisi'),
+  newPassword: z.string().min(8, 'Kata sandi baru minimal 8 karakter'),
 });
 
 const createUserSchema = z.object({
@@ -58,7 +63,8 @@ router.get('/me', verifyToken, async (req, res) => {
     }
     return res.json({ success: true, user: profile });
   } catch (err) {
-    return res.status(500).json({ success: false, message: err.message });
+    console.error('[Auth me error]:', err);
+    return res.status(500).json({ success: false, message: 'Terjadi kesalahan internal pada server.' });
   }
 });
 
@@ -66,12 +72,26 @@ router.post('/logout', (req, res) => {
   return res.json({ success: true, message: 'Logout berhasil.' });
 });
 
+router.put('/change-password', verifyToken, async (req, res) => {
+  try {
+    const parse = changePasswordSchema.safeParse(req.body);
+    if (!parse.success) {
+      return res.status(400).json({ success: false, message: parse.error.issues[0]?.message || 'Data tidak valid.' });
+    }
+    const result = await changeUserPassword(req.user.id, parse.data.currentPassword, parse.data.newPassword);
+    return res.json(result);
+  } catch (err) {
+    return res.status(400).json({ success: false, message: err.message });
+  }
+});
+
 router.get('/users', verifyToken, requireRole('admin'), async (req, res) => {
   try {
     const users = await listAllUsers();
     return res.json({ success: true, users });
   } catch (err) {
-    return res.status(500).json({ success: false, message: err.message });
+    console.error('[Auth users error]:', err);
+    return res.status(500).json({ success: false, message: 'Terjadi kesalahan internal pada server.' });
   }
 });
 

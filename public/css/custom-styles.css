@@ -2,12 +2,14 @@
       --app-zoom: 1;
     }
 
-    html {
+    html:not(.logged-in) {
       min-height: 100%;
-      background-color: #efe9e1;
+      background-color: #efe9e1 !important;
     }
+
     html.logged-in {
-      background-color: #fbfaf8;
+      min-height: 100%;
+      background-color: #f8fafc !important;
     }
 
     /* ── PREVENT FLASH OF UNCOMPILED TEMPLATE / MODALS BEFORE VUE MOUNTS ── */
@@ -23,16 +25,22 @@
       font-family: 'Times New Roman', Times, serif !important;
     }
 
-    body {
+    body:not(.logged-in) {
       min-height: 100%;
       margin: 0;
-      background-color: #efe9e1;
+      background-color: #efe9e1 !important;
       color: #1c1917;
       font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
       line-height: 1.4;
     }
+
     body.logged-in {
-      background-color: #fbfaf8;
+      min-height: 100%;
+      margin: 0;
+      background-color: #f8fafc !important;
+      color: #0f172a;
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      line-height: 1.4;
     }
 
     /* Kompensasi tinggi layar penuh untuk elemen saat zoom aktif agar tidak kepotong di bawah */
@@ -114,7 +122,7 @@
       table-layout: fixed;
     }
     .flow-table th {
-      background: #0f172a;
+      background: #0e7490;
       color: #ffffff;
       font-size: 11px;
       font-weight: bold;
@@ -191,7 +199,7 @@
     .doc-cell {
       vertical-align: middle !important;
       background: #ffffff;
-      font-size: 10.5px;
+      font-size: 11.5px;
       line-height: 1.35;
       padding: 6px 8px !important;
     }
@@ -280,18 +288,18 @@
       width: max-content;
       min-width: 100%;
       border-collapse: collapse;
-      font-size: 9.5px;
+      font-size: 11px;
       line-height: 1.25;
       background: #ffffff;
       border: 1px solid #cbd5e1;
     }
     .param-green-th {
-      background: #1d4ed8 !important; /* Professional Industrial Blue (Tailwind blue-700) */
+      background: linear-gradient(135deg, #0891b2 0%, #0e7490 100%) !important;
       color: #ffffff !important;
-      padding: 5px 8px;
+      padding: 6px 8px;
       font-weight: bold;
-      font-size: 9.5px;
-      border: 1px solid #1e40af;
+      font-size: 11px;
+      border: 1px solid #0891b2;
       text-align: center;
       vertical-align: middle;
       white-space: nowrap !important;
@@ -300,64 +308,172 @@
     .param-th-no {
       width: 28px;
       min-width: 28px;
-      background: #1e3a8a !important; /* Deep Navy Blue */
+      background: #0e7490 !important;
       color: #ffffff !important;
-      font-size: 9.5px;
+      font-size: 11px;
       text-align: center;
-      border: 1px solid #1e40af;
+      border: 1px solid #0891b2;
       white-space: nowrap !important;
     }
     .param-td-no {
       text-align: center;
       font-weight: bold;
-      background: #f8fafc;
-      border: 1px solid #cbd5e1 !important;
+      background: #f0fdfa;
+      border: 1px solid #cffafe !important;
       padding: 3px 6px;
-      font-size: 9.5px;
+      font-size: 11px;
       white-space: nowrap !important;
-      color: #1e3a8a;
+      color: #0891b2;
     }
     .param-tr:nth-child(even) {
       background: #f8fafc;
     }
     .param-tr:hover {
-      background: #eff6ff !important;
+      background: #ecfeff !important;
     }
     .param-td {
-      border: 1px solid #cbd5e1 !important;
+      border: 1px solid #e2e8f0 !important;
       padding: 3.5px 8px;
       color: #0f172a;
       text-align: center;
-      font-size: 9.5px;
+      font-size: 11px;
       white-space: nowrap !important;
     }
 
     /* ── 120 FPS ULTRA-SMOOTH HARDWARE-ACCELERATED SIDEBAR & INSTANT TOOLTIP ── */
     .app-sidebar {
-      width: 256px;
+      width: 232px;
       will-change: width;
       transform: translateZ(0);
       backface-visibility: hidden;
       perspective: 1000px;
-      background: linear-gradient(180deg, #22130c 0%, #27160e 50%, #1c0f09 100%);
-      border-right: 1px solid #3d2419;
-      box-shadow: 4px 0 25px -4px rgba(0, 0, 0, 0.35);
-      transition:
-        width 0.45s cubic-bezier(0.16, 1, 0.3, 1),
-        background-color 0.38s cubic-bezier(0.16, 1, 0.3, 1),
-        border-color 0.38s cubic-bezier(0.16, 1, 0.3, 1),
-        box-shadow 0.38s cubic-bezier(0.16, 1, 0.3, 1);
+      background: #0e7490;
+      border-right: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 2px 0 16px rgba(0, 0, 0, 0.1);
+      transition: width 0.32s cubic-bezier(0.16, 1, 0.3, 1);
       overflow: hidden;
+      flex-shrink: 0;
     }
     .app-sidebar.is-collapsed {
-      width: 64px;
-      background: transparent !important;
-      border-right: none !important;
-      box-shadow: none !important;
+      width: 56px !important;
+      background: #0e7490 !important;
+      border-right: 1px solid rgba(255, 255, 255, 0.15) !important;
+      box-shadow: 2px 0 16px rgba(0, 0, 0, 0.1) !important;
       overflow: visible !important;
+      position: sticky !important;
+      top: 0 !important;
+      height: 100vh !important;
+      z-index: 30 !important;
+      flex-shrink: 0 !important;
     }
     .app-sidebar.is-collapsed nav {
       overflow: visible !important;
+    }
+    /* ── Sidebar Brand Header: Transisi Super Mulus & Adaptif Scroll ── */
+    .sidebar-brand-header {
+      background: #0e7490 !important;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
+      height: 56px !important;
+    }
+    .app-sidebar.is-collapsed .sidebar-brand-header {
+      background: #0e7490 !important;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      width: 56px !important;
+      height: 56px !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      box-shadow: none !important;
+    }
+    .app-sidebar.is-collapsed .sidebar-brand-header.is-floating {
+      background-color: #0e7490 !important;
+      border-bottom-color: rgba(255, 255, 255, 0.12) !important;
+    }
+
+    .app-sidebar.is-collapsed .sidebar-floating-logo {
+      width: 44px !important;
+      height: 44px !important;
+      margin: 0 auto !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+    }
+    .sidebar-floating-logo picture {
+      display: flex !important;
+      width: 100% !important;
+      height: 100% !important;
+      align-items: center !important;
+      justify-content: center !important;
+    }
+    .sidebar-floating-logo img {
+      display: block !important;
+      max-width: 100% !important;
+      max-height: 100% !important;
+      object-fit: contain !important;
+      margin: 0 auto !important;
+    }
+
+    /* ── GENTLE FLOATING SHIP ANIMATION (COMPOSITOR-ONLY, 100% LOW-SPEC FRIENDLY) ── */
+    @keyframes shipGentleFloat {
+      0% {
+        transform: translate3d(0, 0, 0) rotate(0deg);
+      }
+      25% {
+        transform: translate3d(0, -3px, 0) rotate(-1.5deg);
+      }
+      50% {
+        transform: translate3d(0, -1px, 0) rotate(0.8deg);
+      }
+      75% {
+        transform: translate3d(0, -3.5px, 0) rotate(1.8deg);
+      }
+      100% {
+        transform: translate3d(0, 0, 0) rotate(0deg);
+      }
+    }
+
+    .sidebar-floating-logo {
+      will-change: transform;
+      transition:
+        transform 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+        filter 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Animasi ayunan kapal hanya berjalan saat sidebar ditutup DAN mengambang bebas (is-floating) */
+    .app-sidebar.is-collapsed .sidebar-brand-header.is-floating .sidebar-floating-logo {
+      animation: shipGentleFloat 5.5s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+    }
+
+    .app-sidebar.is-collapsed .sidebar-floating-logo:hover {
+      animation-play-state: paused;
+      transform: scale(1.1) rotate(0deg) !important;
+      filter: drop-shadow(0 4px 12px rgba(211, 172, 131, 0.45));
+    }
+
+    /* ── SOLID OPAQUE STICKY HEADER: Zero Transparency ── */
+    #app-topbar {
+      position: sticky !important;
+      top: 0 !important;
+      z-index: 40 !important;
+      background: #ffffff !important;
+      border-bottom: 1px solid #e2e8f0 !important;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05) !important;
+      height: 56px !important;
+      transition: box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+    #app-topbar.is-scrolled {
+      height: 56px !important;
+      background: #ffffff !important;
+      box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.08) !important;
+      border-bottom-color: #cbd5e1 !important;
+    }
+
+        @media (prefers-reduced-motion: reduce) {
+      .app-sidebar.is-collapsed .sidebar-brand-header.is-floating .sidebar-floating-logo {
+        animation: none !important;
+      }
     }
 
     /* ── Sidebar inner content: fade-slide saat expand/collapse ── */
@@ -410,9 +526,11 @@
       white-space: nowrap;
     }
     .app-sidebar.is-collapsed .sidebar-brand-text {
+      display: none !important;
       max-width: 0 !important;
       opacity: 0 !important;
       margin: 0 !important;
+      padding: 0 !important;
     }
     /* Collapse toggle arrow */
     .sidebar-collapse-btn {
@@ -425,8 +543,11 @@
         opacity 0.22s ease;
     }
     .app-sidebar.is-collapsed .sidebar-collapse-btn {
+      display: none !important;
       max-width: 0 !important;
       opacity: 0 !important;
+      margin: 0 !important;
+      padding: 0 !important;
     }
     /* Hamburger open button in collapsed mode */
     .sidebar-expand-btn {
@@ -496,19 +617,16 @@
     #sidebar-active-pill {
       position: absolute;
       top: 0;
-      border-radius: 12px;
-      background: linear-gradient(135deg, rgba(74, 44, 29, 0.96) 0%, rgba(45, 26, 18, 0.98) 100%);
-      border: 1px solid rgba(245, 158, 11, 0.38);
-      box-shadow: 
-        0 8px 20px -3px rgba(0, 0, 0, 0.45),
-        0 0 16px rgba(245, 158, 11, 0.18),
-        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+      left: 0;
+      margin: 0;
+      border-radius: 9px;
+      background: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.9);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
       transition: 
-        transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
-        width 0.28s cubic-bezier(0.16, 1, 0.3, 1),
-        height 0.28s cubic-bezier(0.16, 1, 0.3, 1),
-        left 0.28s cubic-bezier(0.16, 1, 0.3, 1),
-        margin 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+        transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+        width 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+        height 0.25s cubic-bezier(0.16, 1, 0.3, 1),
         opacity 0.2s ease;
       pointer-events: none;
       z-index: 1;
@@ -521,28 +639,28 @@
       left: 0;
       top: 20%;
       bottom: 20%;
-      width: 3.5px;
-      background: linear-gradient(180deg, #fbbf24 0%, #d97706 100%);
+      width: 4px;
+      background: #0891b2;
       border-radius: 0 4px 4px 0;
-      box-shadow: 0 0 10px rgba(251, 191, 36, 0.9);
+      box-shadow: 0 0 8px rgba(8, 145, 178, 0.5);
     }
     .app-sidebar.is-collapsed #sidebar-active-pill::before {
       display: none;
     }
 
-    /* ── SIDEBAR MENU ITEMS ── */
+    /* ── SIDEBAR MENU ITEMS (LIGHT INDUSTRIAL WARM BROWN #CEC4B4 PALETTE) ── */
     .sidebar-item {
       display: flex;
       align-items: center;
-      gap: 10px;
-      padding: 0 12px;
-      min-height: 48px;
-      height: 48px;
-      border-radius: 12px;
-      font-size: 11.5px;
+      gap: 9px;
+      padding: 0 10px;
+      min-height: 38px;
+      height: 38px;
+      border-radius: 9px;
+      font-size: 12px;
       font-weight: 600;
       cursor: pointer;
-      color: #bda89b;
+      color: rgba(255, 255, 255, 0.88);
       text-align: left;
       width: 100%;
       border: 1px solid transparent;
@@ -550,107 +668,140 @@
       z-index: 2;
       background: transparent;
       box-sizing: border-box;
-      transition: color 0.22s ease;
+      transition: color 0.18s ease, background-color 0.18s ease;
     }
     .sidebar-item svg {
       width: 17px;
       height: 17px;
       flex-shrink: 0;
+      color: #ffffff;
+      stroke: #ffffff;
       transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), color 0.22s ease, filter 0.22s ease, stroke 0.22s ease;
     }
     .sidebar-item .sidebar-item-text {
       transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .sidebar-item .sidebar-subtext {
-      color: #9c8577;
+      color: rgba(255, 255, 255, 0.7);
+      font-weight: 500;
       transition: color 0.22s ease;
     }
 
-    /* Hover State (Saat Sidebar Terbuka): Putih Bersih (#ffffff) + Geser Kanan 6px + Amber Glow */
-    .app-sidebar:not(.is-collapsed) .sidebar-item:hover {
-      color: #ffffff !important;
-      text-shadow: 0 0 14px rgba(245, 158, 11, 0.48);
-    }
-    .app-sidebar:not(.is-collapsed) .sidebar-item:hover svg,
-    .app-sidebar:not(.is-collapsed) .sidebar-item:hover .sidebar-item-text {
-      transform: translateX(6px);
-    }
+    /* Hover State untuk Menu TIDAK Aktif (:not(.active)): Light Crema Overlay + Geser Kanan 4px */
     .app-sidebar:not(.is-collapsed) .sidebar-item:not(.active):hover {
-      background: radial-gradient(circle at 25% 50%, rgba(245, 158, 11, 0.12) 0%, rgba(245, 158, 11, 0.02) 60%, transparent 100%);
+      color: #ffffff !important;
+      background: rgba(255, 255, 255, 0.15);
+      border-color: rgba(255, 255, 255, 0.25);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
       border-radius: 12px;
     }
-    .app-sidebar:not(.is-collapsed) .sidebar-item:hover .sidebar-subtext {
-      color: #f3e8e2 !important;
+    .app-sidebar:not(.is-collapsed) .sidebar-item:not(.active):hover svg,
+    .app-sidebar:not(.is-collapsed) .sidebar-item:not(.active):hover .sidebar-item-text {
+      transform: translateX(4px);
     }
-    .app-sidebar:not(.is-collapsed) .sidebar-item:hover svg {
+    .app-sidebar:not(.is-collapsed) .sidebar-item:not(.active):hover .sidebar-subtext {
+      color: rgba(255, 255, 255, 0.95) !important;
+      font-weight: 600;
+    }
+    .app-sidebar:not(.is-collapsed) .sidebar-item:not(.active):hover svg {
       color: #ffffff !important;
       stroke: #ffffff !important;
-      filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.65));
+      filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.5));
     }
 
-    /* Active State (Kapsul Aktif Menyediakan Background Mulus) */
-    .sidebar-item.active {
+    /* Active State (Di atas White Pill: Teks Cyan-800 Gelap, Subtext Cyan-600, Icon Cyan-800) */
+    .sidebar-item.active,
+    .sidebar-item.active:hover {
       background: transparent !important;
-      color: #ffffff !important;
       box-shadow: none !important;
     }
-    .app-sidebar:not(.is-collapsed) .sidebar-item.active {
-      text-shadow: 0 0 14px rgba(245, 158, 11, 0.48);
+    .app-sidebar:not(.is-collapsed) .sidebar-item.active,
+    .app-sidebar:not(.is-collapsed) .sidebar-item.active:hover {
+      color: #0e7490 !important;
+      font-weight: 800 !important;
+      text-shadow: none !important;
     }
-    .app-sidebar:not(.is-collapsed) .sidebar-item.active .sidebar-subtext {
-      color: #ebd9ce !important;
+    .app-sidebar:not(.is-collapsed) .sidebar-item.active .sidebar-item-text > div:first-child {
+      color: #0e7490 !important;
+      font-weight: 800 !important;
     }
-    .app-sidebar:not(.is-collapsed) .sidebar-item.active svg {
-      color: #ffffff !important;
-      stroke: #ffffff !important;
-      filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.65));
+    .app-sidebar:not(.is-collapsed) .sidebar-item.active .sidebar-subtext,
+    .app-sidebar:not(.is-collapsed) .sidebar-item.active:hover .sidebar-subtext {
+      color: #0891b2 !important;
+      font-weight: 700 !important;
+    }
+    .app-sidebar:not(.is-collapsed) .sidebar-item.active svg,
+    .app-sidebar:not(.is-collapsed) .sidebar-item.active:hover svg {
+      color: #0e7490 !important;
+      stroke: #0e7490 !important;
+      filter: none !important;
     }
 
     /* ── COLLAPSED ITEMS (KETIKA SIDEBAR DITUTUP: TETAP TRANSPARAN & INTERAKTIF) ── */
     .sidebar-item-collapsed {
-      width: 42px !important;
-      height: 42px !important;
-      min-height: 42px !important;
+      width: 38px !important;
+      height: 38px !important;
+      min-height: 38px !important;
       padding: 0 !important;
       margin: 0 auto !important;
+      display: flex !important;
+      align-items: center !important;
       justify-content: center !important;
-      border-radius: 12px !important;
+      gap: 0 !important;
+      border-radius: 9px !important;
       border: none !important;
       background: transparent !important;
-      color: #57534e !important;
+      color: #ffffff !important;
       position: relative;
       z-index: 2;
       box-sizing: border-box;
-      transition: color 0.2s ease, background-color 0.2s ease;
+      transition: color 0.18s ease, background-color 0.18s ease;
+    }
+    .app-sidebar.is-collapsed .sidebar-item-collapsed .sidebar-label-text {
+      display: none !important;
+      max-width: 0 !important;
+      opacity: 0 !important;
+      margin: 0 !important;
     }
     .sidebar-item-collapsed svg {
       width: 18px !important;
       height: 18px !important;
-      transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s ease, filter 0.2s ease;
+      margin: 0 auto !important;
+      display: block !important;
+      flex-shrink: 0 !important;
+      color: #ffffff !important;
+      stroke: #ffffff !important;
+      transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .app-sidebar.is-collapsed .sidebar-item-collapsed:not(.active):hover {
-      background: rgba(74, 44, 29, 0.12) !important;
-      color: #22130c !important;
-      box-shadow: 0 0 12px rgba(245, 158, 11, 0.2) !important;
+      background: rgba(255, 255, 255, 0.15) !important;
+      color: #ffffff !important;
     }
     .app-sidebar.is-collapsed .sidebar-item-collapsed:not(.active):hover svg {
       transform: scale(1.15) !important;
-      color: #22130c !important;
-      stroke: #22130c !important;
-      filter: drop-shadow(0 0 6px rgba(245, 158, 11, 0.4)) !important;
+      color: #0891b2 !important;
+      stroke: #0891b2 !important;
+      filter: drop-shadow(0 0 6px rgba(8, 145, 178, 0.4)) !important;
     }
     .app-sidebar.is-collapsed .sidebar-item-collapsed.active {
-      background: transparent !important;
-      color: #ffffff !important;
-      box-shadow: none !important;
-    }
-    .app-sidebar.is-collapsed .sidebar-item-collapsed.active:hover svg {
-      transform: scale(1.15) !important;
+      background: #ffffff !important;
+      color: #0e7490 !important;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12) !important;
+      border-radius: 9px !important;
     }
     .app-sidebar.is-collapsed .sidebar-item-collapsed.active svg {
-      stroke: #ffffff !important;
+      color: #0e7490 !important;
+      stroke: #0e7490 !important;
+      filter: none !important;
+    }
+    .app-sidebar.is-collapsed .sidebar-item-collapsed.active:hover {
+      background: #0891b2 !important;
+    }
+    .app-sidebar.is-collapsed .sidebar-item-collapsed.active:hover svg {
+      transform: scale(1.05) !important;
       color: #ffffff !important;
-      filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.75)) !important;
+      stroke: #ffffff !important;
+      filter: none !important;
     }
 
     /* ── ZERO-DELAY INSTANT GEMINI TOOLTIP (TAMPIL LANGSUNG TANPA DELAY) ── */
@@ -675,6 +826,11 @@
     }
     .app-sidebar.is-collapsed .sidebar-gemini-tooltip {
       display: block;
+      background: #0e7490;
+      border: 1px solid rgba(14, 116, 144, 0.3);
+    }
+    .app-sidebar.is-collapsed .sidebar-gemini-tooltip::before {
+      border-right-color: #0e7490;
     }
     .sidebar-gemini-tooltip::before {
       content: '';
@@ -745,11 +901,11 @@
       height: 26px;
       margin-left: -19px;
       border-radius: 8px;
-      background: linear-gradient(135deg, #22130c 0%, #361b0f 100%);
-      border: 1px solid #f59e0b;
+      background: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.9);
       box-shadow: 
-        0 4px 12px rgba(34, 19, 12, 0.5),
-        0 0 10px rgba(245, 158, 11, 0.4);
+        0 4px 12px rgba(0, 0, 0, 0.2),
+        0 0 10px rgba(255, 255, 255, 0.5);
       transition: 
         transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
         opacity 0.2s ease;
@@ -769,9 +925,9 @@
       right: 6px;
       height: 32px;
       border-radius: 8px;
-      background: linear-gradient(135deg, rgba(74, 44, 29, 0.92) 0%, rgba(45, 26, 18, 0.98) 100%);
-      border: 1px solid rgba(245, 158, 11, 0.45);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35), 0 0 12px rgba(245, 158, 11, 0.2);
+      background: rgba(255, 255, 255, 0.22);
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
       transition: 
         transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
         height 0.25s cubic-bezier(0.16, 1, 0.3, 1),
@@ -787,9 +943,9 @@
       top: 20%;
       bottom: 20%;
       width: 3px;
-      background: linear-gradient(180deg, #fbbf24 0%, #d97706 100%);
+      background: #ffffff;
       border-radius: 0 3px 3px 0;
-      box-shadow: 0 0 8px rgba(251, 191, 36, 0.8);
+      box-shadow: 0 0 8px rgba(255, 255, 255, 0.9);
     }
 
     /* ── SUB-MENU ACCORDION (SAAT SIDEBAR TERBUKA) ── */
@@ -815,73 +971,241 @@
       position: absolute;
       top: 0;
       left: 0;
-      border-radius: 12px;
-      background: linear-gradient(135deg, #22130c 0%, #3a1e12 55%, #25140d 100%);
-      border: 1px solid rgba(245, 158, 11, 0.55);
-      box-shadow: 
-        0 8px 24px -2px rgba(34, 19, 12, 0.5),
-        0 0 16px rgba(245, 158, 11, 0.22),
-        inset 0 1px 0 rgba(255, 255, 255, 0.15);
-      transition: 
-        transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
-        width 0.35s cubic-bezier(0.16, 1, 0.3, 1),
-        height 0.35s cubic-bezier(0.16, 1, 0.3, 1),
-        opacity 0.2s ease;
+      border-radius: 16px;
       pointer-events: none;
-      z-index: 1;
+      z-index: 10;
+      border: 2.5px solid #0891b2;
+      background: rgba(6, 182, 212, 0.05);
+      box-shadow: 
+        0 0 0 1px rgba(8, 145, 178, 0.2),
+        0 8px 24px -4px rgba(8, 145, 178, 0.35);
+      transition: 
+        transform 0.32s cubic-bezier(0.16, 1, 0.3, 1),
+        width 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+        height 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+        opacity 0.2s ease;
       will-change: transform, width, height;
       box-sizing: border-box;
       opacity: 0;
     }
-    #flow-stage-active-pill::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 20%;
-      right: 20%;
-      height: 3px;
-      background: linear-gradient(90deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
-      border-radius: 0 0 3px 3px;
-      box-shadow: 0 0 8px rgba(251, 191, 36, 0.85);
-    }
+    #flow-stage-active-pill::before { display: none !important; }
 
     .flow-stage-card {
       position: relative;
       z-index: 2;
       transition: 
-        transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
-        box-shadow 0.28s cubic-bezier(0.16, 1, 0.3, 1),
-        border-color 0.22s ease,
-        background-color 0.22s ease;
+        transform 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+        box-shadow 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+        border-color 0.2s ease,
+        background-color 0.2s ease;
     }
     .flow-stage-card:not(.is-active) {
-      background: rgba(255, 255, 255, 0.85);
-      border: 1px solid rgba(229, 231, 235, 0.95);
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
     }
     .flow-stage-card:not(.is-active):hover {
-      transform: translateY(-3px) scale(1.02);
-      border-color: rgba(245, 158, 11, 0.6);
-      background: #ffffff;
-      box-shadow: 
-        0 8px 18px -2px rgba(34, 19, 12, 0.1),
-        0 0 12px rgba(245, 158, 11, 0.2);
-    }
-    .flow-stage-card:not(.is-active):hover .cluster-stage-icon {
-      transform: scale(1.15);
-      color: #d97706;
-      filter: drop-shadow(0 0 6px rgba(245, 158, 11, 0.55));
+      transform: translateY(-2px);
+      border-color: #06b6d4;
+      background: #f8fafc;
+      box-shadow: 0 4px 12px -2px rgba(6, 182, 212, 0.12);
     }
     .flow-stage-card.is-active {
-      background: transparent !important;
+      background: #ffffff;
       border-color: transparent !important;
+      box-shadow: none !important;
     }
-    .flow-stage-card.is-active .cluster-stage-icon {
-      transform: scale(1.06);
-      filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.65));
+
+    /* ── INDUSTRIAL PRECISION PARAMETER & METRIC CARDS ── */
+    .dynamic-param-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(min(100%, 180px), 1fr));
+      gap: 0.625rem;
+    }
+    .dynamic-qc-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(min(100%, 120px), 1fr));
+      gap: 0.625rem;
+    }
+    .param-metric-card {
+      background-color: #ffffff;
+      border: 1px solid #d6d3d1; /* stone-300 */
+      border-radius: 0.75rem; /* rounded-xl */
+      padding: 0.625rem 0.75rem;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      min-width: 0;
+      overflow: hidden;
+      word-break: break-word;
+      overflow-wrap: break-word;
+    }
+    .param-metric-card:hover {
+      border-color: #a8a29e; /* stone-400 */
+      box-shadow: 0 3px 6px -1px rgba(0, 0, 0, 0.06), 0 2px 4px -2px rgba(0, 0, 0, 0.04);
+    }
+    .param-metric-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: #44403c; /* stone-700 */
+      line-height: 1.3;
+      word-break: break-word;
+      overflow-wrap: break-word;
+      white-space: normal;
+    }
+    .cuptest-metric-card {
+      background: #ffffff !important;
+      border: 1px solid #e2e8f0 !important;
+      border-radius: 0.75rem;
+      padding: 0.625rem 0.75rem;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      min-width: 0;
+      overflow: hidden;
+      word-break: break-word;
+      overflow-wrap: break-word;
+    }
+    .cuptest-metric-card:hover {
+      border-color: #f59e0b; /* amber-500 */
+      box-shadow: 0 3px 6px -1px rgba(245, 158, 11, 0.12);
     }
 
     .main-content-wrap {
       will-change: width;
+      min-width: 0;
+      flex: 1 1 0%;
+    }
+
+    /* ==========================================================================
+       STAGGERED SMOOTH REVEAL — OPTIMIZED FOR LOW-END PC (60 FPS GPU COMPOSITED)
+       Kurva: cubic-bezier(0.16, 1, 0.3, 1) | Tanpa Filter Blur
+       ========================================================================== */
+
+    /* 1. Keyframe untuk Kontainer Utama (Header, Banner, KPI, Section) */
+    @keyframes smoothRevealContainer {
+      0% {
+        opacity: 0;
+        transform: translate3d(0, 24px, 0) scale(0.995);
+      }
+      100% {
+        opacity: 1;
+        transform: translate3d(0, 0, 0) scale(1);
+      }
+    }
+
+    /* 2. Keyframe untuk Item Berurutan (Kartu Simpul & Baris Tabel) */
+    @keyframes smoothCascadeItem {
+      0% {
+        opacity: 0;
+        transform: translate3d(0, 16px, 0);
+      }
+      100% {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+      }
+    }
+
+    /* 3. Keyframe saat Konten Berganti / Klik Menu (Re-Entrance) */
+    @keyframes smoothContentSwitch {
+      0% {
+        opacity: 0;
+        transform: translate3d(0, 14px, 0);
+      }
+      100% {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+      }
+    }
+
+    /* 4. Keyframe Kemunculan Sidebar dari Sisi Kiri */
+    @keyframes smoothSidebarReveal {
+      0% {
+        opacity: 0;
+        transform: translate3d(-20px, 0, 0);
+      }
+      100% {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+      }
+    }
+
+    /* Class Kontainer Utama (Aman dari Blank Screen: Default Opacity 1) */
+    .luxury-reveal {
+      opacity: 1;
+      animation: smoothRevealContainer 0.72s cubic-bezier(0.16, 1, 0.3, 1) both;
+      backface-visibility: hidden;
+      will-change: transform, opacity;
+    }
+
+    /* Urutan Jeda Kontainer (Stagger Delay) */
+    .delay-1 { animation-delay: 0.04s; }
+    .delay-2 { animation-delay: 0.14s; }
+    .delay-3 { animation-delay: 0.22s; }
+    .delay-4 { animation-delay: 0.30s; }
+
+    /* Class untuk Kartu atau Baris Tabel (Aman dari Blank Screen: Default Opacity 1) */
+    .cascade-item {
+      opacity: 1;
+      animation: smoothCascadeItem 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+      backface-visibility: hidden;
+      will-change: transform, opacity;
+    }
+
+    /* Stagger Helpers untuk Grid/List Items (Hingga 12 Item Pertama) */
+    .cascade-item:nth-child(1)  { animation-delay: 0.045s; }
+    .cascade-item:nth-child(2)  { animation-delay: 0.090s; }
+    .cascade-item:nth-child(3)  { animation-delay: 0.135s; }
+    .cascade-item:nth-child(4)  { animation-delay: 0.180s; }
+    .cascade-item:nth-child(5)  { animation-delay: 0.225s; }
+    .cascade-item:nth-child(6)  { animation-delay: 0.270s; }
+    .cascade-item:nth-child(7)  { animation-delay: 0.315s; }
+    .cascade-item:nth-child(8)  { animation-delay: 0.360s; }
+    .cascade-item:nth-child(9)  { animation-delay: 0.405s; }
+    .cascade-item:nth-child(10) { animation-delay: 0.450s; }
+    .cascade-item:nth-child(11) { animation-delay: 0.495s; }
+    .cascade-item:nth-child(12) { animation-delay: 0.540s; }
+
+    /* Class untuk Sidebar Entrance */
+    .sidebar-enter-reveal {
+      animation: smoothSidebarReveal 0.65s cubic-bezier(0.16, 1, 0.3, 1) both;
+      will-change: transform, opacity;
+    }
+
+    /* Class untuk Refresh Isi Konten saat Klik Tab/Sub-menu */
+    .panel-content-refresh {
+      animation: smoothContentSwitch 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      will-change: transform, opacity;
+    }
+
+    /* ── PORTAL AUTH CROSSFADE (SMOOTH & LIGHTWEIGHT) ── */
+    .portal-crossfade-enter-active {
+      transition: opacity 0.52s cubic-bezier(0.16, 1, 0.3, 1), transform 0.52s cubic-bezier(0.16, 1, 0.3, 1);
+      will-change: opacity, transform;
+    }
+    .portal-crossfade-leave-active {
+      transition: opacity 0.32s cubic-bezier(0.16, 1, 0.3, 1), transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+      will-change: opacity, transform;
+    }
+    .portal-crossfade-enter-from {
+      opacity: 0;
+      transform: translate3d(0, 18px, 0);
+    }
+    .portal-crossfade-leave-to {
+      opacity: 0;
+      transform: translate3d(0, -12px, 0) scale(0.99);
+    }
+
+    /* Pengaman Otomatis jika PC User Mengaktifkan Mode Hemat Daya / Reduced Motion */
+    @media (prefers-reduced-motion: reduce) {
+      .luxury-reveal,
+      .cascade-item,
+      .panel-content-refresh,
+      .sidebar-enter-reveal,
+      .portal-crossfade-enter-active,
+      .portal-crossfade-leave-active {
+        animation: none !important;
+        opacity: 1 !important;
+        transform: none !important;
+        transition: none !important;
+      }
     }
 
     /* Print helper class */
@@ -891,31 +1215,62 @@
 
     /* Print styles */
     @media print {
+      *, *::before, *::after {
+        animation: none !important;
+        transition: none !important;
+        transform: none !important;
+        box-shadow: none !important;
+        text-shadow: none !important;
+      }
       html, body {
         zoom: 1 !important;
         background: #ffffff !important;
+        color: #000000 !important;
         padding: 0 !important;
         margin: 0 !important;
+        height: auto !important;
+        min-height: 100% !important;
+        overflow: visible !important;
       }
-      .no-print, .app-sidebar, header {
+      .no-print, .app-sidebar, header, nav, .fixed {
         display: none !important;
       }
       .print-only {
         display: inline !important;
       }
-      #app {
+      #app, .main-content-wrap, main {
         display: block !important;
-      }
-      .main-content-wrap {
-        margin: 0 !important;
-        padding: 0 !important;
+        height: auto !important;
+        min-height: 0 !important;
+        max-height: none !important;
+        overflow: visible !important;
+        position: static !important;
         width: 100% !important;
         max-width: 100% !important;
-      }
-      main {
-        padding: 0 !important;
         margin: 0 !important;
-        max-width: 100% !important;
+        padding: 0 !important;
+      }
+      .min-h-screen, .h-screen {
+        min-height: auto !important;
+        height: auto !important;
+      }
+      .slow-smooth-entrance,
+      .luxury-reveal,
+      .cascade-item,
+      .panel-content-refresh,
+      .sidebar-enter-reveal {
+        animation: none !important;
+        opacity: 1 !important;
+        transform: none !important;
+      }
+      /* Pastikan form audit tampil dan tidak terpotong */
+      div[v-show="reportViewMode === 'document'"],
+      #form-document {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        height: auto !important;
+        overflow: visible !important;
       }
       #form-document {
         box-shadow: none !important;
@@ -1065,8 +1420,8 @@
     }
     .floating-input:focus {
       background-color: #ffffff;
-      border-color: #4a2c1d;
-      box-shadow: 0 0 0 3px rgba(74, 44, 29, 0.15);
+      border-color: #06b6d4;
+      box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.15);
     }
     .floating-input:focus ~ .floating-label,
     .floating-input:not(:placeholder-shown) ~ .floating-label {
@@ -1080,10 +1435,10 @@
       box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
     }
     .floating-input:focus ~ .floating-label {
-      color: #4a2c1d;
+      color: #0891b2;
     }
     .floating-input:focus ~ .floating-icon {
-      color: #4a2c1d;
+      color: #0891b2;
     }
     .floating-label {
       position: absolute;

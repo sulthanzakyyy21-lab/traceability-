@@ -84,8 +84,9 @@ async function getPaFlow(batch, tahun, tower, extractionDate, packingDate, dryer
   const { getEvaporatorCipChecklist } = require('./paEvaporatorCipService');
   const { getFinalTankCipChecklist } = require('./paFinalTankCipService');
   const { getEmpInternalChecklist, getEmpExternalChecklist } = require('./paEmpChecklistService');
+  const { getAbeChecklist } = require('./paAbeChecklistService');
   const extCutoff = getCutoff(extractionDate);
-  const waterTable = await getWaterProcessTable(tower, extCutoff);
+  const waterTable = await getWaterProcessTable(tower, extCutoff, extractionDate);
   const extCipTable = await getSessionCipRows(tower, ['ekstrak', 'c01', 'flash tank', 'kolom c03', 'tank system', 'aroma', 'reboiler', 'hydrolis'], extCutoff, ['selang biru']);
   const dryerCipTable = await getSessionCipRows(tower, ['dryer', 'sfb', 'chamber', 'feed tank dryer', 'feed line'], extCutoff);
   const reworkCipTable = await getSessionCipRows(tower, ['rework'], extCutoff);
@@ -97,15 +98,16 @@ async function getPaFlow(batch, tahun, tower, extractionDate, packingDate, dryer
   const ftCipChecklist = await getFinalTankCipChecklist(tower, extractionDate);
   const empInternalChecklist = await getEmpInternalChecklist(tower, packingDate || cutoff);
   const empExternalChecklist = await getEmpExternalChecklist(tower, packingDate || cutoff);
+  const abeChecklist = await getAbeChecklist(tower, packingDate || cutoff);
 
   const evapSummary = {
     tanggal: (evapCipChecklist?.latestCipDate && evapCipChecklist.latestCipDate !== '-') ? evapCipChecklist.latestCipDate : (cipEvap?.tanggal || '-'),
-    konsentrasi_lye: '3%', rinse: 'OK', pic: '-'
+    konsentrasi_lye: '-', rinse: (evapCipChecklist?.items?.length > 0 || cipEvap) ? 'OK' : '-', pic: '-'
   };
 
   const finalTankSummary = {
     tanggal: (ftCipChecklist?.latestCipDate && ftCipChecklist.latestCipDate !== '-') ? ftCipChecklist.latestCipDate : (cipFinalTank?.tanggal || '-'),
-    konsentrasi_lye: '3%', rinse: 'OK', swab: 'OK', pic: '-'
+    konsentrasi_lye: '-', rinse: (ftCipChecklist?.items?.length > 0 || cipFinalTank) ? 'OK' : '-', swab: cipFinalTank?.swab ? String(cipFinalTank.swab) : (ftCipChecklist?.items?.length ? 'OK' : '-'), pic: '-'
   };
 
   const copSummary = {
@@ -115,16 +117,16 @@ async function getPaFlow(batch, tahun, tower, extractionDate, packingDate, dryer
   };
 
   const empSummary = {
-    internal_tanggal: empInternalChecklist?.sessionDate || (empDate || '-'),
+    internal_tanggal: empInternalChecklist?.sessionDate || (empDate || 'Data tidak ditemukan di database'),
     internal_hasil: empInternalChecklist?.items?.length > 0 ? 'OK' : 'Data tidak ditemukan di database',
-    external_tanggal: empExternalChecklist?.sessionDate || '08/07/2026',
-    external_hasil: empExternalChecklist?.items?.length > 0 ? 'OK (Salmonella: Negative, S.Aureus: Negative)' : 'Data tidak ditemukan di database',
+    external_tanggal: empExternalChecklist?.sessionDate || 'Data tidak ditemukan di database',
+    external_hasil: empExternalChecklist?.items?.length > 0 ? 'Titik sampling terverifikasi di DB' : 'Data tidak ditemukan di database',
     pic: 'Data tidak ditemukan di database'
   };
 
   const abeSummary = {
-    tanggal: '-',
-    hasil: '-',
+    tanggal: abeChecklist?.sessionDate || (abeDate || 'Data tidak ditemukan di database'),
+    hasil: abeChecklist?.items?.length > 0 ? 'Sesuai Standar (≤1000 CFU/m³)' : 'Data tidak ditemukan di database',
     pic: 'Data tidak ditemukan di database'
   };
 
@@ -142,7 +144,8 @@ async function getPaFlow(batch, tahun, tower, extractionDate, packingDate, dryer
     packing_cop_checklist: packingCopChecklist,
     emp_internal_checklist: empInternalChecklist,
     emp_external_checklist: empExternalChecklist,
-    env_swab_date: empDate, air_bacteria_date: null,
+    abe_checklist: abeChecklist,
+    env_swab_date: empDate, air_bacteria_date: abeChecklist?.sessionDate || abeDate || null,
   };
 }
 

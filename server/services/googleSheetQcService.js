@@ -33,7 +33,7 @@ async function syncTowerTables(towerKey, customSheetId, hashCache = {}, force = 
     return { tower: towerKey, sheetId: targetId, results, imported: 0, duplicates: 0 };
   }
 
-  const wb = xlsx.read(buffer, { type: 'buffer', cellDates: true, cellNF: false, cellText: false });
+  const wb = xlsx.read(buffer, { type: 'buffer', cellDates: true, cellNF: true, cellText: true });
   hashCache[targetId] = bufHash;
 
   const results = [];

@@ -71,14 +71,15 @@ async function queryQcTable(tableName, batch, noBatchFull, customCol = null) {
     const fullStr = noBatchFull ? String(noBatchFull).trim() : bStr;
     const pad3 = String(batch).padStart(3, '0');
     const yrSuffix = noBatchFull && noBatchFull.includes('/') ? noBatchFull.split('/')[1] : '26';
-    const aBatch = `A${pad3}/${yrSuffix}`;
+    const pfx = tableName.endsWith('_t2') ? 'B' : 'A';
+    const tBatch = `${pfx}${pad3}/${yrSuffix}`;
     const candidates = [...new Set([
       fullStr,
-      aBatch,
-      `A${bStr}/${yrSuffix}`,
-      `A ${pad3}/${yrSuffix}`,
-      `A${bStr}`,
-      `A${pad3}`,
+      tBatch,
+      `${pfx}${bStr}/${yrSuffix}`,
+      `${pfx} ${pad3}/${yrSuffix}`,
+      `${pfx}${bStr}`,
+      `${pfx}${pad3}`,
       bStr,
       pad3,
       `${bStr}/${yrSuffix}`,
@@ -97,7 +98,7 @@ async function queryQcTable(tableName, batch, noBatchFull, customCol = null) {
     let [rows] = await pool.query(sql, params);
 
     if (rows.length === 0) {
-      const likePats = [`%${aBatch}%`, `%${pad3}/${yrSuffix}%`, `%${bStr}/${yrSuffix}%`];
+      const likePats = [`%${tBatch}%`, `%${pad3}/${yrSuffix}%`, `%${bStr}/${yrSuffix}%`];
       const likeClause = likePats.map(() => (customCol ? `\`${customCol}\` LIKE ? OR \`Batch\` LIKE ?` : `\`Batch\` LIKE ?`)).join(' OR ');
       const likeParams = customCol ? likePats.flatMap(p => [p, p]) : likePats;
       [rows] = await pool.query(`SELECT * FROM \`${tableName}\` WHERE ${likeClause} ORDER BY id ASC`, likeParams);

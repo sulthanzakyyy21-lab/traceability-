@@ -1,0 +1,17 @@
+    <!-- ── TACTILE TOAST NOTIFICATION (COPY TO CLIPBOARD FEEDBACK) ── -->
+    <transition
+      enter-active-class="transition duration-150 ease-out"
+      enter-from-class="transform translate-y-2 opacity-0"
+      enter-to-class="transform translate-y-0 opacity-100"
+      leave-active-class="transition duration-150 ease-in"
+      leave-from-class="transform translate-y-0 opacity-100"
+      leave-to-class="transform translate-y-2 opacity-0"
+    >
+      <div
+        v-if="copiedToast"
+        class="fixed bottom-5 right-5 z-50 flex items-center gap-2 bg-[#1c1917] text-white px-3.5 py-2.5 rounded-xl shadow-2xl border border-white/20 text-xs font-semibold backdrop-blur-md"
+      >
+        <svg class="w-4 h-4 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        <span>Tersalin: <strong class="font-mono text-white">{{ copiedToast }}</strong></span>
+      </div>
+    </transition>

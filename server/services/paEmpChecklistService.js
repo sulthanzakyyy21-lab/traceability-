@@ -120,9 +120,9 @@ async function getEmpExternalChecklist(tower, targetDate) {
       area: r.Area || 'Packing',
       zona: r['Jenis Uji'] || '-',
       tanggalUji: sessionDate,
-      salmonella: 'Negative',
-      sAureus: 'Negative',
-      status: 'OK'
+      salmonella: '-',
+      sAureus: '-',
+      status: 'Titik DB OK'
     }));
 
     return {
@@ -130,6 +130,7 @@ async function getEmpExternalChecklist(tower, targetDate) {
       plantName: isT2 ? 'Plant 2' : 'Plant 1',
       tableName: tbl,
       refForm: 'Form Patogen Eksternal',
+      pathogenNotice: 'Kolom Salmonella & S.Aureus belum tersedia di tabel database MySQL ' + tbl + '; nilai parameter ditandai (-).',
       sessionDate,
       sessionDateIndo,
       totalItems: items.length,

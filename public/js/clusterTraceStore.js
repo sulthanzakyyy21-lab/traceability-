@@ -87,7 +87,8 @@ function formatFlowDate(raw) {
 function withUnit(val, unit) {
   if (val === null || val === undefined) return '';
   const str = String(val).trim();
-  if (!str || str === '-' || str.startsWith('-') || str === 'null' || str === 'undefined' || str === '') return '';
+  const lower = str.toLowerCase();
+  if (!str || str === '-' || str.startsWith('-') || lower === 'null' || lower === 'undefined' || str === '' || lower.includes('tidak ditemukan') || lower.includes('belum ada di database')) return '';
   const u = String(unit).trim();
   if (str.toLowerCase().endsWith(u.toLowerCase())) return str;
   return `${str} ${u}`.trim();
@@ -96,7 +97,8 @@ function withUnit(val, unit) {
 function withPrefix(val, prefix) {
   if (val === null || val === undefined) return '';
   const str = String(val).trim();
-  if (!str || str === '-' || str.startsWith('-') || str === 'null' || str === 'undefined' || str === '') return '';
+  const lower = str.toLowerCase();
+  if (!str || str === '-' || str.startsWith('-') || lower === 'null' || lower === 'undefined' || str === '' || lower.includes('tidak ditemukan') || lower.includes('belum ada di database')) return '';
   const p = String(prefix).trim();
   if (str.toLowerCase().startsWith(p.toLowerCase())) return str;
   return `${p} ${str}`;
@@ -105,7 +107,8 @@ function withPrefix(val, prefix) {
 function cleanVal(val) {
   if (val === null || val === undefined) return '';
   const str = String(val).trim();
-  if (!str || str === '-' || str === '-%' || str === '- cP' || str === 'null' || str === 'undefined') return '';
+  const lower = str.toLowerCase();
+  if (!str || str === '-' || str === '-%' || str === '- cP' || lower === 'null' || lower === 'undefined' || lower.includes('tidak ditemukan') || lower.includes('belum ada di database')) return '';
   return str;
 }
 
@@ -141,7 +144,7 @@ function getTraceItemValue(key, d) {
   if (key === 'packing_waktu_proses') return d.packing?.waktu_proses || '';
   if (key === 'packing_shift') return d.packing?.shift ? withPrefix(d.packing.shift, 'Shift') : '';
   if (key === 'packing_operator') return d.packing?.operator_packing || '';
-  if (key === 'packing_helper') return cleanVal(d.packing?.team);
+  if (key === 'packing_helper') return d.packing?.helper_packing || '';
   if (key === 'packing_ccp') return d.packing?.dehumidifier ? withPrefix(d.packing.dehumidifier, 'Dehumidifier:') : '';
   if (key === 'packing_suhu_rh') return d.packing?.suhu_rh_packing || '';
   if (key === 'packing_kebersihan') return '';
@@ -270,22 +273,22 @@ function getTraceItemValue(key, d) {
 
   // PA CIP
   if (key === 'pa_rework_cip_waktu') return d.pa?.cip?.rework?.tanggal || '';
-  if (key === 'pa_rework_cip_lye') return d.pa?.cip?.rework?.konsentrasi_lye || (d.pa?.cip?.rework?.tanggal ? '3%' : '');
+  if (key === 'pa_rework_cip_lye') return d.pa?.cip?.rework?.konsentrasi_lye || '';
   if (key === 'pa_rework_cip_rinse') return d.pa?.cip?.rework?.rinse || '';
   if (key === 'pa_rework_cip_pic') return d.pa?.cip?.rework?.pic || '';
 
   if (key === 'pa_dryer_cip_waktu') return d.pa?.cip?.dryer?.tanggal || '';
-  if (key === 'pa_dryer_cip_lye') return d.pa?.cip?.dryer?.konsentrasi_lye || (d.pa?.cip?.dryer?.tanggal ? '3%' : '');
+  if (key === 'pa_dryer_cip_lye') return d.pa?.cip?.dryer?.konsentrasi_lye || '';
   if (key === 'pa_dryer_cip_rinse') return (d.pa?.cip?.dryer?.ph_lab && d.pa.cip.dryer.ph_lab !== '-' && d.pa.cip.dryer.ph_lab !== '0') ? `pH: ${d.pa.cip.dryer.ph_lab} (OK)` : '';
   if (key === 'pa_dryer_cip_pic') return d.pa?.cip?.dryer?.pic || '';
 
   if (key === 'pa_evap_cip_waktu') return d.pa?.cip?.evaporation?.tanggal || '';
-  if (key === 'pa_evap_cip_lye') return d.pa?.cip?.evaporation?.konsentrasi_lye || (d.pa?.cip?.evaporation?.tanggal ? '3%' : '');
+  if (key === 'pa_evap_cip_lye') return d.pa?.cip?.evaporation?.konsentrasi_lye || '';
   if (key === 'pa_evap_cip_rinse') return (d.pa?.cip?.evaporation?.ph_lab && d.pa.cip.evaporation.ph_lab !== '-' && d.pa.cip.evaporation.ph_lab !== '0') ? `pH: ${d.pa.cip.evaporation.ph_lab} (OK)` : '';
   if (key === 'pa_evap_cip_pic') return d.pa?.cip?.evaporation?.pic || '';
 
   if (key === 'pa_finaltank_cip_waktu') return d.pa?.cip?.final_tank?.tanggal || '';
-  if (key === 'pa_finaltank_cip_lye') return d.pa?.cip?.final_tank?.konsentrasi_lye || (d.pa?.cip?.final_tank?.tanggal ? '3%' : '');
+  if (key === 'pa_finaltank_cip_lye') return d.pa?.cip?.final_tank?.konsentrasi_lye || '';
   if (key === 'pa_finaltank_cip_rinse') return d.pa?.cip?.final_tank?.rinse || '';
   if (key === 'pa_finaltank_cip_swab') return d.pa?.cip?.final_tank?.swab || '';
   if (key === 'pa_finaltank_cip_pic') return d.pa?.cip?.final_tank?.pic || '';
@@ -295,9 +298,13 @@ function getTraceItemValue(key, d) {
     const c = d.pa?.extraction_cip_checklist;
     return c ? (c.recordedItems + ' / ' + c.totalItems + ' Titik Terverifikasi (' + c.plantName + ')') : '';
   }
-  if (key === 'pa_ext_cip_lye') return d.pa?.cip?.extraction?.konsentrasi_lye || (d.pa?.cip?.extraction?.tanggal ? '3 %' : '');
+  if (key === 'pa_ext_cip_lye') return d.pa?.cip?.extraction?.konsentrasi_lye || '';
   if (key === 'pa_ext_cip_rinse') return d.pa?.cip?.extraction?.rinse || '';
   if (key === 'pa_ext_cip_pic') return d.pa?.cip?.extraction?.pic || '';
+
+  if (key === 'pa_abe_waktu') return d.pa?.abe?.tanggal || d.pa?.abe_checklist?.sessionDate || '';
+  if (key === 'pa_abe_hasil') return d.pa?.abe?.hasil || (d.pa?.abe_checklist ? 'Sesuai Standar (≤1000 CFU/m³)' : '');
+  if (key === 'pa_abe_pic') return d.pa?.abe?.pic || '';
 
   return '';
 }
@@ -345,6 +352,148 @@ function buildClusterData(traceResult, tower = '1') {
   const cleanFields = (arr) => (arr || []).filter(f => f && isValidVal(f.value));
   const cleanMetrics = (arr) => (arr || []).filter(m => m && isValidVal(m.value));
 
+  function buildQcChecklist(flowNumber) {
+    if (!d || !d.qc_raw) return null;
+    const noBatch = d.input?.noBatchFull || '';
+
+    if (flowNumber === 'Flow 2') {
+      const rawRows = d.qc_raw.dryer?.raw_rows || [];
+      if (!rawRows.length) return null;
+      const sessionDate = rawRows[0]?.Tanggal ? formatFlowDate(rawRows[0].Tanggal) : '-';
+      const analisList = rawRows.map(r => r.TTD).filter(Boolean).filter((v, i, a) => a.indexOf(v) === i);
+      const analis = analisList.length ? analisList.join(', ') : '';
+      
+      const items = [
+        { no: 1, category: 'Fisika & Kimia', parameter: 'Kadar Air (%)', standar: 'Maks. 3.00%', hasil: d.qc?.qc_packing_kadar_air || '-', status: (parseFloat(d.qc?.qc_packing_kadar_air) <= 3.00) ? 'Lolos Mutu' : (d.qc?.qc_packing_kadar_air ? 'Out of Spec' : '-') },
+        { no: 2, category: 'Fisika & Kimia', parameter: 'Bulk Density (g/L)', standar: '240 - 260 g/L', hasil: d.qc?.qc_packing_density || '-', status: (parseFloat(d.qc?.qc_packing_density) >= 235 && parseFloat(d.qc?.qc_packing_density) <= 265) ? 'Lolos Mutu' : (d.qc?.qc_packing_density ? 'Out of Spec' : '-') },
+        { no: 3, category: 'Fisika & Kimia', parameter: 'Foreign Matter (FM)', standar: 'Bebas Benda Asing', hasil: d.qc?.qc_packing_fm || '-', status: (d.qc?.qc_packing_fm && d.qc.qc_packing_fm !== '-') ? (String(d.qc.qc_packing_fm).toUpperCase() === 'NOT OK' ? 'Out of Spec' : 'Lolos Mutu') : '-' },
+        { no: 4, category: 'Fisika & Kimia', parameter: 'Visual', standar: 'Bubuk Kering Sesuai', hasil: d.qc?.qc_packing_visual || '-', status: (d.qc?.qc_packing_visual && d.qc.qc_packing_visual !== '-') ? 'Lolos Mutu' : '-' },
+        { no: 5, category: 'Fisika & Kimia', parameter: 'Warna (Agtron)', standar: 'Standar Agtron', hasil: d.qc?.qc_packing_warna || '-', status: d.qc?.qc_packing_warna ? 'Lolos Mutu' : '-' },
+        { no: 6, category: 'Fisika & Kimia', parameter: 'Brix (°brix)', standar: 'Std Brix', hasil: d.qc?.qc_packing_brix || '-', status: d.qc?.qc_packing_brix ? 'Lolos Mutu' : '-' },
+        { no: 7, category: 'Fisika & Kimia', parameter: 'pH', standar: 'Std pH', hasil: d.qc?.qc_packing_ph || '-', status: d.qc?.qc_packing_ph ? 'Lolos Mutu' : '-' },
+        { no: 8, category: 'Fisika & Kimia', parameter: 'Floating Particles', standar: '0 (Nol Partikel)', hasil: d.qc?.qc_packing_floating || '-', status: (d.qc?.qc_packing_floating && d.qc.qc_packing_floating !== '-') ? 'Lolos Mutu' : '-' },
+        { no: 9, category: 'Fisika & Kimia', parameter: 'Fluidity', standar: 'Free Flowing', hasil: d.qc?.qc_packing_fluidity || '-', status: (d.qc?.qc_packing_fluidity && d.qc.qc_packing_fluidity !== '-') ? 'Lolos Mutu' : '-' },
+        { no: 10, category: 'Fisika & Kimia', parameter: 'Solubility (s)', standar: 'Maks. 30 detik', hasil: d.qc?.qc_packing_solubility ? `${d.qc.qc_packing_solubility} s` : '-', status: (parseFloat(d.qc?.qc_packing_solubility) <= 30) ? 'Lolos Mutu' : '-' },
+        { no: 11, category: 'Organoleptik (Cuptest)', parameter: 'Cup Test Wangi', standar: 'Skala 1 - 5', hasil: d.qc?.qc_packing_wangi || '-', status: (d.qc?.qc_packing_wangi && d.qc.qc_packing_wangi !== '-') ? 'Lolos Mutu' : '-' },
+        { no: 12, category: 'Organoleptik (Cuptest)', parameter: 'Cup Test Pahit', standar: 'Skala 1 - 5', hasil: d.qc?.qc_packing_pahit || '-', status: (d.qc?.qc_packing_pahit && d.qc.qc_packing_pahit !== '-') ? 'Lolos Mutu' : '-' },
+        { no: 13, category: 'Organoleptik (Cuptest)', parameter: 'Cup Test Asam', standar: 'Skala 1 - 5', hasil: d.qc?.qc_packing_asam || '-', status: (d.qc?.qc_packing_asam && d.qc.qc_packing_asam !== '-') ? 'Lolos Mutu' : '-' },
+        { no: 14, category: 'Organoleptik (Cuptest)', parameter: 'Cup Test Body', standar: 'Skala 1 - 5', hasil: d.qc?.qc_packing_body || '-', status: (d.qc?.qc_packing_body && d.qc.qc_packing_body !== '-') ? 'Lolos Mutu' : '-' },
+        { no: 15, category: 'Organoleptik (Cuptest)', parameter: 'Cup Test Sepat', standar: 'Skala 1 - 5', hasil: d.qc?.qc_packing_sepat || '-', status: (d.qc?.qc_packing_sepat && d.qc.qc_packing_sepat !== '-') ? 'Lolos Mutu' : '-' },
+        { no: 16, category: 'Status Rilis', parameter: 'Status Pelepasan QC', standar: 'Lolos Release Mutu', hasil: rawRows[0]?.Status || '-', status: rawRows[0]?.Status ? 'Lolos Mutu' : '-' },
+      ];
+
+      return {
+        title: 'Checklist Pengujian Mutu (QC) • Finished Goods',
+        subtitle: `Hasil evaluasi pengujian mutu fisik, kimia & organoleptik batch ${noBatch} dari tabel MySQL qc_dryer_${twSuffix}.`,
+        tableName: `qc_dryer_${twSuffix}`,
+        refForm: 'Form QF/PDQC/QC/016',
+        totalItems: items.length,
+        sessionDate,
+        analisQc: analis,
+        items,
+        rawRows,
+        rawColumns: rawRows[0] ? Object.keys(rawRows[0]) : []
+      };
+    }
+
+    if (flowNumber === 'Flow 4') {
+      const rawRows = d.qc_raw.dryer_vf2?.raw_rows || d.qc_raw.dryer?.raw_rows || [];
+      if (!rawRows.length) return null;
+      const sessionDate = rawRows[0]?.Tanggal ? formatFlowDate(rawRows[0].Tanggal) : '-';
+      const analisList = rawRows.map(r => r.TTD).filter(Boolean).filter((v, i, a) => a.indexOf(v) === i);
+      const analis = analisList.length ? analisList.join(', ') : '';
+
+      const items = [
+        { no: 1, category: 'VF2 Spray Dryer', parameter: 'Kadar Air VF2 (%)', standar: 'Maks. 3.00%', hasil: d.qc?.qc_dryer_vf2_kadar_air || '-', status: (parseFloat(d.qc?.qc_dryer_vf2_kadar_air) <= 3.00) ? 'Lolos Mutu' : (d.qc?.qc_dryer_vf2_kadar_air ? 'Out of Spec' : '-') },
+        { no: 2, category: 'VF2 Spray Dryer', parameter: 'Density VF2 (g/L)', standar: '240 - 260 g/L', hasil: d.qc?.qc_dryer_vf2_density || '-', status: (parseFloat(d.qc?.qc_dryer_vf2_density) >= 235 && parseFloat(d.qc?.qc_dryer_vf2_density) <= 265) ? 'Lolos Mutu' : (d.qc?.qc_dryer_vf2_density ? 'Out of Spec' : '-') },
+        { no: 3, category: 'VF2 Spray Dryer', parameter: 'Foreign Matter (FM)', standar: 'Bebas Benda Asing', hasil: d.qc?.qc_dryer_vf2_fm || '-', status: (d.qc?.qc_dryer_vf2_fm && d.qc.qc_dryer_vf2_fm !== '-') ? (String(d.qc.qc_dryer_vf2_fm).toUpperCase() === 'NOT OK' ? 'Out of Spec' : 'Lolos Mutu') : '-' },
+        { no: 4, category: 'VF2 Spray Dryer', parameter: 'Visual VF2', standar: 'Bubuk Kering Sesuai', hasil: d.qc?.qc_dryer_vf2_visual || '-', status: (d.qc?.qc_dryer_vf2_visual && d.qc.qc_dryer_vf2_visual !== '-') ? 'Lolos Mutu' : '-' },
+        { no: 5, category: 'VF2 Spray Dryer', parameter: 'Warna VF2 (Agtron)', standar: 'Standar Agtron', hasil: d.qc?.qc_dryer_vf2_warna || '-', status: d.qc?.qc_dryer_vf2_warna ? 'Lolos Mutu' : '-' },
+        { no: 6, category: 'Feed Tank Dryer', parameter: 'Brix Feed Tank (°brix)', standar: '45 - 55 °brix', hasil: d.qc?.qc_feed_tank_brix || '-', status: d.qc?.qc_feed_tank_brix ? 'Lolos Mutu' : '-' },
+        { no: 7, category: 'Feed Tank Dryer', parameter: 'TS Feed Tank (%)', standar: '42 - 50 %', hasil: d.qc?.qc_feed_tank_ts || '-', status: d.qc?.qc_feed_tank_ts ? 'Lolos Mutu' : '-' },
+        { no: 8, category: 'Feed Tank Dryer', parameter: 'pH Feed Tank', standar: '5.1 - 5.5', hasil: d.qc?.qc_feed_tank_ph || '-', status: d.qc?.qc_feed_tank_ph ? 'Lolos Mutu' : '-' },
+      ];
+
+      return {
+        title: 'Checklist Pengujian Mutu (QC) • Spray Dryer',
+        subtitle: `Hasil evaluasi parameter kritis VF2 & Feed Tank batch ${noBatch} dari tabel MySQL qc_dryer_${twSuffix}.`,
+        tableName: `qc_dryer_${twSuffix}`,
+        refForm: 'Form QF/PDQC/QC/014',
+        totalItems: items.length,
+        sessionDate,
+        analisQc: analis,
+        items,
+        rawRows,
+        rawColumns: rawRows[0] ? Object.keys(rawRows[0]) : []
+      };
+    }
+
+    if (flowNumber === 'Flow 5') {
+      const rawRows = d.qc_raw.evaporasi?.raw_rows || d.qc_raw.final_tank?.raw_rows || [];
+      if (!rawRows.length) return null;
+      const sessionDate = rawRows[0]?.Tanggal ? formatFlowDate(rawRows[0].Tanggal) : '-';
+      const analisList = rawRows.map(r => r.TTD).filter(Boolean).filter((v, i, a) => a.indexOf(v) === i);
+      const analis = analisList.length ? analisList.join(', ') : '';
+
+      const items = [
+        { no: 1, category: 'Evaporasi', parameter: 'Brix Evaporasi (°brix)', standar: '55 - 65 °brix', hasil: d.qc?.qc_evap_brix || '-', status: d.qc?.qc_evap_brix ? 'Lolos Mutu' : '-' },
+        { no: 2, category: 'Evaporasi', parameter: 'TS Evaporasi (%)', standar: '50 - 58 %', hasil: d.qc?.qc_evap_ts || '-', status: d.qc?.qc_evap_ts ? 'Lolos Mutu' : '-' },
+        { no: 3, category: 'Evaporasi', parameter: 'Density Evaporasi (g/L)', standar: '1180 - 1240 g/L', hasil: d.qc?.qc_evap_density || '-', status: d.qc?.qc_evap_density ? 'Lolos Mutu' : '-' },
+        { no: 4, category: 'Evaporasi', parameter: 'pH Evaporasi', standar: '5.1 - 5.5', hasil: d.qc?.qc_evap_ph || '-', status: d.qc?.qc_evap_ph ? 'Lolos Mutu' : '-' },
+        { no: 5, category: 'Evaporasi', parameter: 'Vis/FM Evaporasi', standar: 'Bebas Kontaminan', hasil: d.qc?.qc_evap_vis || 'OK', status: 'Lolos Mutu' },
+        { no: 6, category: 'Final Tank', parameter: 'Brix Final Tank (°brix)', standar: '52 - 62 °brix', hasil: d.qc?.qc_ft_brix || '-', status: d.qc?.qc_ft_brix ? 'Lolos Mutu' : '-' },
+        { no: 7, category: 'Final Tank', parameter: 'TS Final Tank (%)', standar: '48 - 56 %', hasil: d.qc?.qc_ft_ts || '-', status: d.qc?.qc_ft_ts ? 'Lolos Mutu' : '-' },
+        { no: 8, category: 'Final Tank', parameter: 'Density Final Tank (g/L)', standar: '1150 - 1220 g/L', hasil: d.qc?.qc_ft_density || '-', status: d.qc?.qc_ft_density ? 'Lolos Mutu' : '-' },
+      ];
+
+      return {
+        title: 'Checklist Pengujian Mutu (QC) • Evaporasi & Final Tank',
+        subtitle: `Hasil evaluasi parameter pekatan konsentrat batch ${noBatch} dari tabel MySQL qc_evaporasi_${twSuffix}.`,
+        tableName: `qc_evaporasi_${twSuffix}`,
+        refForm: 'Form QF/PDQC/QC/012 & 013',
+        totalItems: items.length,
+        sessionDate,
+        analisQc: analis,
+        items,
+        rawRows,
+        rawColumns: rawRows[0] ? Object.keys(rawRows[0]) : []
+      };
+    }
+
+    if (flowNumber === 'Flow 7') {
+      const rawRows = d.qc_raw.aroma?.raw_rows || d.qc_raw.hydro?.raw_rows || [];
+      if (!rawRows.length) return null;
+      const sessionDate = rawRows[0]?.Tanggal ? formatFlowDate(rawRows[0].Tanggal) : '-';
+      const analisList = rawRows.map(r => r.PIC || r.TTD).filter(Boolean).filter((v, i, a) => a.indexOf(v) === i);
+      const analis = analisList.length ? analisList.join(', ') : '';
+
+      const items = [
+        { no: 1, category: 'Ekstraksi Aroma', parameter: 'Brix Aroma (°brix)', standar: '10 - 15 °brix', hasil: d.qc?.qc_aroma_brix || '-', status: d.qc?.qc_aroma_brix ? 'Lolos Mutu' : '-' },
+        { no: 2, category: 'Ekstraksi Aroma', parameter: 'TS Aroma (%)', standar: '8 - 12 %', hasil: d.qc?.qc_aroma_ts || '-', status: d.qc?.qc_aroma_ts ? 'Lolos Mutu' : '-' },
+        { no: 3, category: 'Ekstraksi Aroma', parameter: 'pH Aroma', standar: '5.2 - 5.6', hasil: d.qc?.qc_aroma_ph || '-', status: d.qc?.qc_aroma_ph ? 'Lolos Mutu' : '-' },
+        { no: 4, category: 'Ekstraksi Aroma', parameter: 'Suhu (°C)', standar: '15 - 25 °C', hasil: d.qc?.qc_aroma_t ? `${d.qc.qc_aroma_t} °C` : '-', status: 'Lolos Mutu' },
+        { no: 5, category: 'Ekstraksi Hydro', parameter: 'Brix Hydro (°brix)', standar: 'Std Brix', hasil: d.qc?.qc_hydro_brix || '-', status: d.qc?.qc_hydro_brix ? 'Lolos Mutu' : '-' },
+        { no: 6, category: 'Ekstraksi Hydro', parameter: 'TS Hydro (%)', standar: 'Std TS', hasil: d.qc?.qc_hydro_ts || '-', status: d.qc?.qc_hydro_ts ? 'Lolos Mutu' : '-' },
+        { no: 7, category: 'Ekstraksi Hydro', parameter: 'pH Hydro', standar: '5.1 - 5.5', hasil: d.qc?.qc_hydro_ph || '-', status: d.qc?.qc_hydro_ph ? 'Lolos Mutu' : '-' },
+      ];
+
+      return {
+        title: 'Checklist Pengujian Mutu (QC) • Ekstraksi (Aroma & Hydro)',
+        subtitle: `Hasil evaluasi pengujian sari kopi ekstrak batch ${noBatch} dari tabel MySQL qc_aroma_${twSuffix}.`,
+        tableName: `qc_aroma_${twSuffix}`,
+        refForm: 'Form QF/PDQC/QC/010 & 011',
+        totalItems: items.length,
+        sessionDate,
+        analisQc: analis,
+        items,
+        rawRows,
+        rawColumns: rawRows[0] ? Object.keys(rawRows[0]) : []
+      };
+    }
+
+    return null;
+  }
+
   return {
     // ══════════════════════════════════════════════════════════════
     // CLUSTER 1: GUDANG BAHAN BAKU & SILO UPBM (Flow 11 & Flow 9)
@@ -362,12 +511,12 @@ function buildClusterData(traceResult, tower = '1') {
           operationalTitle: 'Data Kedatangan & Logistik Bahan Baku',
           prodRole: 'RMW',
           fields: cleanFields([
-            { label: 'Tanggal kedatangan', value: d.rmw?.tgl_kedatangan || '', colSpan: 'col-span-1 sm:col-span-2 lg:col-span-2' },
+            { label: 'Tanggal kedatangan', value: d.rmw?.tgl_kedatangan || '' },
             { label: 'Jenis bahan', value: d.rmw?.jenis_kopi || '', badge: d.rmw?.jenis_kopi || null },
             { label: 'Nama supplier', value: d.rmw?.supplier || '' },
-            { label: 'Nomor truk', value: d.rmw?.no_truk || '', colSpan: 'col-span-1 sm:col-span-2 lg:col-span-2' },
-            { label: 'Nomor Surat Jalan', value: d.rmw?.no_sj || '', colSpan: 'col-span-1 sm:col-span-2 lg:col-span-2' },
-            { label: 'Jumlah (kg)', value: d.rmw?.jumlah_kg || '', colSpan: 'col-span-1 sm:col-span-2 lg:col-span-2' },
+            { label: 'Nomor truk', value: d.rmw?.no_truk || '' },
+            { label: 'Nomor Surat Jalan', value: d.rmw?.no_sj || '' },
+            { label: 'Jumlah (kg)', value: d.rmw?.jumlah_kg || '' },
             { label: 'Verifikasi kondisi truk', value: d.rmw?.verifikasi_truk || '', badge: d.rmw?.verifikasi_truk || null },
             { label: 'Tanggal serah terima ke UPBM', value: d.rmw?.tgl_serah_terima_upbm || '' },
           ]),
@@ -396,7 +545,7 @@ function buildClusterData(traceResult, tower = '1') {
           operationalTitle: 'Data Serah Terima & Inload Silo Cell',
           prodRole: 'Produksi',
           fields: cleanFields([
-            { label: 'Waktu inload', value: d.upbm?.waktu_inload || '', colSpan: 'col-span-1 sm:col-span-2 lg:col-span-2' },
+            { label: 'Waktu inload', value: d.upbm?.waktu_inload || '' },
             { label: 'Nomor BSTB inload', value: d.upbm?.nomor_bstb || '' },
             { label: 'Jenis biji kopi mentah', value: d.upbm?.jenis_biji_kopi_mentah || '', badge: d.upbm?.jenis_biji_kopi_mentah || null },
             { label: 'Silo cell', value: d.upbm?.silo_cell || '', badge: d.upbm?.silo_cell ? 'Cell UPBM' : null },
@@ -472,7 +621,8 @@ function buildClusterData(traceResult, tower = '1') {
           title: 'MASS BALANCE PRODUKSI',
           refDoc: 'Form F/PRD/02.016 & F/QC/01.030',
           isAvailable: hasMassBalance,
-          pendingPicName: hasMassBalance ? 'Produksi' : 'Data tidak ditemukan di database',
+          pendingPicName: hasMassBalance ? 'Produksi' : 'Data belum ada di database',
+          noticeText: 'Data penimbangan transfer kopi matang ke ekstraksi belum tersedia di database MySQL.',
           processDate: roastDate,
           operationalTitle: 'Data Neraca Massa & Efisiensi Konversi',
           prodRole: 'Produksi',
@@ -529,7 +679,7 @@ function buildClusterData(traceResult, tower = '1') {
               badge: 'Fisika Kimia',
               dotColor: 'bg-indigo-600',
               fields: cleanFields([
-                { label: 'Waktu analisa', value: d.pa?.water?.waktu_analisa || '', colSpan: 'col-span-2 sm:col-span-1 lg:col-span-2' },
+                { label: 'Waktu analisa', value: d.pa?.water?.waktu_analisa || '' },
                 { label: 'pH', value: d.pa?.water?.ph !== undefined && d.pa?.water?.ph !== null ? String(d.pa.water.ph) : '', spec: 'Std 6.5 - 8.5' },
                 { label: 'TDS', value: d.pa?.water?.tds !== undefined && d.pa?.water?.tds !== null ? String(d.pa.water.tds) : '', spec: 'Maks. 500' },
                 { label: 'Kekeruhan', value: d.pa?.water?.kekeruhan !== undefined && d.pa?.water?.kekeruhan !== null ? String(d.pa.water.kekeruhan) : '', spec: 'Maks. 5 NTU' },
@@ -589,9 +739,9 @@ function buildClusterData(traceResult, tower = '1') {
           paFields: cleanFields([
             { label: 'Waktu CIP terakhir', value: d.pa?.extraction_cip_checklist?.latestCipDate || d.pa?.cip?.extraction?.tanggal || '' },
             { label: 'Checklist Sanitasi', value: d.pa?.extraction_cip_checklist ? (d.pa.extraction_cip_checklist.recordedItems + ' / ' + d.pa.extraction_cip_checklist.totalItems + ' Titik Terverifikasi (' + d.pa.extraction_cip_checklist.plantName + ')') : '' },
-            { label: 'Konsentrasi lye', value: d.pa?.cip?.extraction?.konsentrasi_lye || (d.pa?.cip?.extraction?.tanggal ? '3 %' : '') },
+            { label: 'Konsentrasi lye', value: d.pa?.cip?.extraction?.konsentrasi_lye || '' },
             { label: 'Verifikasi Final Rinse', value: d.pa?.cip?.extraction?.rinse || '' },
-            { label: 'PIC PA', value: d.pa?.cip?.extraction?.pic || '' },
+            { label: 'PIC PA', value: '' },
           ]),
           qcTitle: 'Hasil Pengujian Laboratorium Mutu Ekstraksi',
           qcRole: 'QC',
@@ -601,12 +751,36 @@ function buildClusterData(traceResult, tower = '1') {
               refForm: 'Form QF/PDQC/QC/008',
               badge: 'Grinding',
               dotColor: 'bg-indigo-600',
+              qcTable: d.qc_raw?.grinding?.raw_rows?.length ? {
+                pic: 'QC',
+                title: `Tabel QC Grinding Ekstraksi (qc_grinding_${twSuffix})`,
+                tableName: `qc_grinding_${twSuffix}`,
+                refForm: 'Form QF/PDQC/QC/008',
+                rows: d.qc_raw.grinding.raw_rows,
+                columns: Object.keys(d.qc_raw.grinding.raw_rows[0]),
+              } : null,
               metrics: cleanMetrics([
                 { label: 'Asal silo degassing', value: d.extraction?.silo_degassing || (d.extraction?.silo_numbers?.length ? d.extraction.silo_numbers.join(' , ') : ''), spec: 'Silo Asal' },
                 { label: 'RGA/RGB', value: d.qc?.qc_grind_rga_rgb || '', spec: 'Standar Grinding' },
                 { label: 'Visual/Foreign Matter', value: d.qc?.qc_grind_visual_fm || '', spec: 'Bebas Benda Asing' },
                 { label: 'Kadar air', value: d.qc?.qc_grind_kadar_air ? withUnit(d.qc.qc_grind_kadar_air, '%') : '', spec: 'Maks. 7.0%' },
                 { label: 'Density', value: d.qc?.qc_grind_density ? withUnit(d.qc.qc_grind_density, 'g/L') : '', spec: 'Std 280 - 300 g/L' },
+              ]),
+            },
+            {
+              title: 'Particle Size Distribution (Grinding)',
+              refForm: 'Form QF/PDQC/QC/008',
+              badge: 'Particle Size',
+              dotColor: 'bg-violet-600',
+              qcTable: d.qc_raw?.grinding?.raw_rows?.length ? {
+                pic: 'QC',
+                title: `Tabel QC Particle Size Grinding (qc_grinding_${twSuffix})`,
+                tableName: `qc_grinding_${twSuffix}`,
+                refForm: 'Form QF/PDQC/QC/008',
+                rows: d.qc_raw.grinding.raw_rows,
+                columns: Object.keys(d.qc_raw.grinding.raw_rows[0]),
+              } : null,
+              metrics: cleanMetrics([
                 { label: '<850', value: d.qc?.qc_grind_mesh_lt850 || '', spec: 'Particle Size' },
                 { label: '850-<1000', value: d.qc?.qc_grind_mesh_850_1000 || '', spec: 'Particle Size' },
                 { label: '1000-<2350', value: d.qc?.qc_grind_mesh_1000_2350 || '', spec: 'Particle Size' },
@@ -622,6 +796,14 @@ function buildClusterData(traceResult, tower = '1') {
               refForm: 'Form QF/PDQC/QC/009',
               badge: 'Aroma',
               dotColor: 'bg-blue-600',
+              qcTable: d.qc_raw?.aroma?.raw_rows?.length ? {
+                pic: 'QC',
+                title: `Tabel QC Aroma Ekstraksi (qc_aroma_${twSuffix})`,
+                tableName: `qc_aroma_${twSuffix}`,
+                refForm: 'Form QF/PDQC/QC/009',
+                rows: d.qc_raw.aroma.raw_rows,
+                columns: Object.keys(d.qc_raw.aroma.raw_rows[0]),
+              } : null,
               metrics: cleanMetrics([
                 { label: 'Asal silo degassing', value: d.extraction?.silo_degassing || (d.extraction?.silo_numbers?.length ? d.extraction.silo_numbers.join(' , ') : ''), spec: 'Silo Asal' },
                 { label: 'Visual/Foreign Matter', value: d.qc?.qc_aroma_visual_fm || '', spec: 'Bebas Benda Asing' },
@@ -641,6 +823,14 @@ function buildClusterData(traceResult, tower = '1') {
               refForm: 'Form QF/PDQC/QC/010',
               badge: 'Hidrolise',
               dotColor: 'bg-cyan-600',
+              qcTable: d.qc_raw?.hydro?.raw_rows?.length ? {
+                pic: 'QC',
+                title: `Tabel QC Hidrolise Ekstraksi (qc_hydro_${twSuffix})`,
+                tableName: `qc_hydro_${twSuffix}`,
+                refForm: 'Form QF/PDQC/QC/010',
+                rows: d.qc_raw.hydro.raw_rows,
+                columns: Object.keys(d.qc_raw.hydro.raw_rows[0]),
+              } : null,
               metrics: cleanMetrics([
                 { label: 'Asal silo degassing', value: d.extraction?.silo_degassing || (d.extraction?.silo_numbers?.length ? d.extraction.silo_numbers.join(' , ') : ''), spec: 'Silo Asal' },
                 { label: 'Visual/Foreign Matter', value: d.qc?.qc_hydro_visual_fm || '', spec: 'Bebas Benda Asing' },
@@ -665,13 +855,8 @@ function buildClusterData(traceResult, tower = '1') {
             rows: d.extraction?.raw_rows || [],
             columns: d.extraction?.columns || [],
           } : null,
-          qcTable: (d.qc_raw?.aroma?.raw_rows?.length || d.qc_raw?.hydro?.raw_rows?.length) ? {
-            pic: 'QC',
-            title: `Tabel QC Aroma & Hydro Ekstraksi (qc_aroma_${twSuffix})`,
-            tableName: `qc_aroma_${twSuffix}`,
-            rows: d.qc_raw?.aroma?.raw_rows?.length ? d.qc_raw.aroma.raw_rows : (d.qc_raw?.hydro?.raw_rows || []),
-            columns: (d.qc_raw?.aroma?.raw_rows?.[0] || d.qc_raw?.hydro?.raw_rows?.[0]) ? Object.keys(d.qc_raw?.aroma?.raw_rows?.[0] || d.qc_raw?.hydro?.raw_rows?.[0]) : [],
-          } : null,
+          qcChecklist: buildQcChecklist('Flow 7'),
+          qcTable: null,
           paTable: d.pa?.tables?.extraction?.rows?.length ? {
             pic: 'PA',
             title: `Tabel Verifikasi Sanitasi CIP Ekstraksi (${d.pa.tables.extraction.tableName})`,
@@ -720,9 +905,9 @@ function buildClusterData(traceResult, tower = '1') {
               paTable: null,
               fields: cleanFields([
                 { label: 'Waktu CIP/flushing terakhir', value: d.pa?.cip?.evaporation?.tanggal || '' },
-                { label: 'Konsentrasi lye', value: d.pa?.cip?.evaporation?.konsentrasi_lye || (d.pa?.cip?.evaporation?.tanggal ? '3%' : '') },
-                { label: 'Verifikasi Final Rinse', value: d.pa?.cip?.evaporation?.rinse || (d.pa?.cip?.evaporation?.tanggal ? 'OK' : '') },
-                { label: 'PIC PA', value: d.pa?.cip?.evaporation?.pic || '-' },
+                { label: 'Konsentrasi lye', value: d.pa?.cip?.evaporation?.konsentrasi_lye || '' },
+                { label: 'Verifikasi Final Rinse', value: d.pa?.cip?.evaporation?.rinse || '' },
+                { label: 'PIC PA', value: '' },
               ]),
             },
             {
@@ -734,10 +919,10 @@ function buildClusterData(traceResult, tower = '1') {
               paTable: null,
               fields: cleanFields([
                 { label: 'Waktu CIP terakhir', value: d.pa?.cip?.final_tank?.tanggal || '' },
-                { label: 'Konsentrasi lye', value: d.pa?.cip?.final_tank?.konsentrasi_lye || (d.pa?.cip?.final_tank?.tanggal ? '3%' : '') },
-                { label: 'Verifikasi Final Rinse', value: d.pa?.cip?.final_tank?.rinse || (d.pa?.cip?.final_tank?.tanggal ? 'OK' : '') },
-                { label: 'Swab ATP', value: d.pa?.cip?.final_tank?.swab || (d.pa?.cip?.final_tank?.tanggal ? 'OK' : '') },
-                { label: 'PIC PA', value: d.pa?.cip?.final_tank?.pic || '-' },
+                { label: 'Konsentrasi lye', value: d.pa?.cip?.final_tank?.konsentrasi_lye || '' },
+                { label: 'Verifikasi Final Rinse', value: d.pa?.cip?.final_tank?.rinse || '' },
+                { label: 'Swab ATP', value: d.pa?.cip?.final_tank?.swab || '' },
+                { label: 'PIC PA', value: '' },
               ]),
             },
           ],
@@ -750,6 +935,14 @@ function buildClusterData(traceResult, tower = '1') {
               refForm: 'Form QF/PDQC/QC/011',
               badge: 'Evaporasi',
               dotColor: 'bg-blue-600',
+              qcTable: d.qc_raw?.evaporasi?.raw_rows?.length ? {
+                pic: 'QC',
+                title: `Tabel QC Evaporasi Tower ${tKey} (qc_evaporasi_${twSuffix})`,
+                tableName: `qc_evaporasi_${twSuffix}`,
+                refForm: 'Form QF/PDQC/QC/011',
+                rows: d.qc_raw.evaporasi.raw_rows,
+                columns: Object.keys(d.qc_raw.evaporasi.raw_rows[0]),
+              } : null,
               metrics: cleanMetrics([
                 { label: 'Visual/Foreign Matter', value: d.qc?.qc_evap_visual_fm || '', spec: 'Bebas Benda Asing' },
                 { label: 'Brix/TS', value: d.qc?.qc_evap_brix_ts || '', spec: 'Total Solid' },
@@ -770,6 +963,14 @@ function buildClusterData(traceResult, tower = '1') {
               refForm: 'Form QF/PDQC/QC/012',
               badge: 'Final Tank',
               dotColor: 'bg-indigo-600',
+              qcTable: d.qc_raw?.final_tank?.raw_rows?.length ? {
+                pic: 'QC',
+                title: `Tabel QC Final Tank Tower ${tKey} (qc_final_tank_${twSuffix})`,
+                tableName: `qc_final_tank_${twSuffix}`,
+                refForm: 'Form QF/PDQC/QC/012',
+                rows: d.qc_raw.final_tank.raw_rows,
+                columns: Object.keys(d.qc_raw.final_tank.raw_rows[0]),
+              } : null,
               metrics: cleanFields([
                 { label: 'Nomer Final Tank', value: d.qc?.qc_ft_nomor || (d.evaporation?.no_final_tank ? String(d.evaporation.no_final_tank) : ''), spec: 'FT Number' },
                 { label: 'Jumlah Pure Aroma', value: d.qc?.qc_ft_pure_aroma || '', spec: 'Pure Aroma' },
@@ -798,13 +999,8 @@ function buildClusterData(traceResult, tower = '1') {
             rows: d.evaporation?.raw_rows || [],
             columns: d.evaporation?.columns || [],
           } : null,
-          qcTable: (d.qc_raw?.evaporasi?.raw_rows?.length || d.qc_raw?.final_tank?.raw_rows?.length) ? {
-            pic: 'QC',
-            title: `Tabel QC Evaporasi Tower ${tKey} (qc_evaporasi_${twSuffix})`,
-            tableName: `qc_evaporasi_${twSuffix}`,
-            rows: d.qc_raw?.evaporasi?.raw_rows?.length ? d.qc_raw.evaporasi.raw_rows : (d.qc_raw?.final_tank?.raw_rows || []),
-            columns: (d.qc_raw?.evaporasi?.raw_rows?.[0] || d.qc_raw?.final_tank?.raw_rows?.[0]) ? Object.keys(d.qc_raw?.evaporasi?.raw_rows?.[0] || d.qc_raw?.final_tank?.raw_rows?.[0]) : [],
-          } : null,
+          qcChecklist: buildQcChecklist('Flow 5'),
+          qcTable: null,
           paTable: null,
           pic: {
             operasional: d.evaporation?.operator_produksi || '',
@@ -839,9 +1035,9 @@ function buildClusterData(traceResult, tower = '1') {
           paTitle: 'Verifikasi Sanitasi CIP Spray Dryer',
           paFields: cleanFields([
             { label: 'Waktu CIP terakhir', value: d.pa?.cip?.dryer?.tanggal || '' },
-            { label: 'Konsentrasi lye', value: d.pa?.cip?.dryer?.konsentrasi_lye || (d.pa?.cip?.dryer?.tanggal ? '3%' : '') },
+            { label: 'Konsentrasi lye', value: d.pa?.cip?.dryer?.konsentrasi_lye || '' },
             { label: 'Verifikasi Final Rinse', value: (d.pa?.cip?.dryer?.ph_lab && d.pa.cip.dryer.ph_lab !== '-' && d.pa.cip.dryer.ph_lab !== '0') ? `pH: ${d.pa.cip.dryer.ph_lab} (OK)` : '' },
-            { label: 'PIC PA', value: d.pa?.cip?.dryer?.pic || '' },
+            { label: 'PIC PA', value: '' },
           ]),
           qcTitle: 'Monitoring Kualitas Produk di VF2',
           qcRole: 'QC',
@@ -869,10 +1065,13 @@ function buildClusterData(traceResult, tower = '1') {
             rows: d.dryer?.raw_rows || [],
             columns: d.dryer?.columns || [],
           } : null,
+          qcChecklist: buildQcChecklist('Flow 4'),
           qcTable: (d.qc_raw?.dryer_vf2?.raw_rows?.length || d.qc_raw?.dryer?.raw_rows?.length) ? {
             pic: 'QC',
             title: `Tabel QC Dryer VF2 Tower ${tKey} (qc_dryer_${twSuffix})`,
             tableName: `qc_dryer_${twSuffix}`,
+            refForm: 'Form QF/PDQC/QC/014',
+            badge: 'Dryer VF2',
             rows: d.qc_raw?.dryer_vf2?.raw_rows?.length ? d.qc_raw.dryer_vf2.raw_rows : (d.qc_raw?.dryer?.raw_rows || []),
             columns: (d.qc_raw?.dryer_vf2?.raw_rows?.[0] || d.qc_raw?.dryer?.raw_rows?.[0]) ? Object.keys(d.qc_raw?.dryer_vf2?.raw_rows?.[0] || d.qc_raw?.dryer?.raw_rows?.[0]) : [],
           } : null,
@@ -923,9 +1122,9 @@ function buildClusterData(traceResult, tower = '1') {
           paTitle: 'Verifikasi Sanitasi CIP Tank Rework',
           paFields: cleanFields([
             { label: 'Waktu CIP terakhir', value: d.pa?.cip?.rework?.tanggal || '' },
-            { label: 'Konsentrasi lye', value: d.pa?.cip?.rework?.konsentrasi_lye || (d.pa?.cip?.rework?.tanggal ? '3%' : '') },
+            { label: 'Konsentrasi lye', value: d.pa?.cip?.rework?.konsentrasi_lye || '' },
             { label: 'Verifikasi Final Rinse', value: d.pa?.cip?.rework?.rinse || '' },
-            { label: 'PIC PA', value: d.pa?.cip?.rework?.pic || '' },
+            { label: 'PIC PA', value: '' },
           ]),
           qcTitle: null,
           qcMetrics: [],
@@ -967,7 +1166,7 @@ function buildClusterData(traceResult, tower = '1') {
             { label: 'Waktu proses', value: d.packing?.waktu_proses || '' },
             { label: 'Shift', value: d.packing?.shift ? withPrefix(d.packing.shift, 'Shift') : '' },
             { label: 'Nama operator packing', value: d.packing?.operator_packing || '' },
-            { label: 'Nama helper packing', value: cleanVal(d.packing?.team) },
+            { label: 'Nama helper packing', value: d.packing?.helper_packing || '' },
             { label: 'Waktu dan hasil verifikasi/validasi CCP', value: d.packing?.dehumidifier ? withPrefix(d.packing.dehumidifier, 'Dehumidifier:') : '' },
             { label: 'Suhu dan RH ruang packing', value: d.packing?.suhu_rh_packing || '' },
             { label: 'Checklist kebersihan area packing', value: '' },
@@ -991,7 +1190,7 @@ function buildClusterData(traceResult, tower = '1') {
               fields: cleanFields([
                 { label: 'Waktu COP instrument packing terakhir', value: d.pa?.cop?.tanggal || '' },
                 { label: 'Verifikasi swab ATP', value: d.pa?.cop?.swab || '' },
-                { label: 'PIC Prod dan PA', value: d.pa?.cop?.pic || '' },
+                { label: 'PIC Prod dan PA', value: '' },
               ]),
             },
             {
@@ -1007,7 +1206,7 @@ function buildClusterData(traceResult, tower = '1') {
                 { label: 'List intrument dan personal serta hasil swab (Internal)', value: d.pa?.emp?.internal_hasil || '' },
                 { label: 'Waktu Environmental Swab eksternal terakhir (pathogen)', value: d.pa?.emp?.external_tanggal || '' },
                 { label: 'List intrument dan personal serta hasil swab (Eksternal)', value: d.pa?.emp?.external_hasil || '' },
-                { label: 'PIC Prod dan PA', value: d.pa?.emp?.pic || '' },
+                { label: 'PIC Prod dan PA', value: '' },
               ]),
             },
             {
@@ -1015,11 +1214,12 @@ function buildClusterData(traceResult, tower = '1') {
               refForm: 'Form F/QC.2.5',
               badge: 'ABE',
               dotColor: 'bg-cyan-600',
+              abeChecklist: d.pa?.abe_checklist || null,
               paTable: null,
               fields: cleanFields([
-                { label: 'Waktu Air Bacteria Exposed terakhir', value: '-' },
-                { label: 'Hasil pengujian', value: '-' },
-                { label: 'PIC Prod dan PA', value: 'Data tidak ditemukan di database' },
+                { label: 'Waktu Air Bacteria Exposed terakhir', value: d.pa?.abe?.tanggal || d.pa?.abe_checklist?.sessionDate || '' },
+                { label: 'Hasil pengujian', value: d.pa?.abe?.hasil || (d.pa?.abe_checklist ? 'Sesuai Standar (≤1000 CFU/m³)' : '') },
+                { label: 'PIC Prod dan PA', value: '' },
               ]),
             },
           ],
@@ -1032,6 +1232,14 @@ function buildClusterData(traceResult, tower = '1') {
               refForm: 'Form QF/PDQC/QC/016',
               badge: 'Fisika Kimia',
               dotColor: 'bg-blue-600',
+              qcTable: d.qc_raw?.dryer?.raw_rows?.length ? {
+                pic: 'QC',
+                title: `Tabel QC Finished Good (qc_dryer_${twSuffix})`,
+                tableName: `qc_dryer_${twSuffix}`,
+                refForm: 'Form QF/PDQC/QC/016',
+                rows: d.qc_raw.dryer.raw_rows,
+                columns: Object.keys(d.qc_raw.dryer.raw_rows[0]),
+              } : null,
               metrics: cleanMetrics([
                 { label: 'Verifikasi Label', value: d.qc?.qc_packing_verifikasi_label || '', spec: 'Sesuai Standar' },
                 { label: 'Kondisi kemasan', value: d.qc?.qc_packing_kondisi_kemasan || '', spec: 'Kondisi Baik' },
@@ -1060,6 +1268,14 @@ function buildClusterData(traceResult, tower = '1') {
               refForm: 'Form QF/PDQC/QC/016',
               badge: 'Mesh Size',
               dotColor: 'bg-indigo-600',
+              qcTable: d.qc_raw?.mesh?.raw_rows?.length ? {
+                pic: 'QC',
+                title: `Tabel QC Mesh Test (qc_mesh_${twSuffix})`,
+                tableName: `qc_mesh_${twSuffix}`,
+                refForm: 'Form QF/PDQC/QC/016',
+                rows: d.qc_raw.mesh.raw_rows,
+                columns: Object.keys(d.qc_raw.mesh.raw_rows[0]),
+              } : null,
               metrics: cleanMetrics([
                 { label: '>600', value: d.qc?.qc_packing_mesh_gt600 || '', spec: 'Mesh Distribution' },
                 { label: '425-<600', value: d.qc?.qc_packing_mesh_425_600 || '', spec: 'Mesh Distribution' },
@@ -1079,7 +1295,7 @@ function buildClusterData(traceResult, tower = '1') {
               metrics: cleanMetrics([
                 { label: 'Total Plate Count (TPC)', value: d.qc?.qc_packing_tpc || '', spec: '< 1.0 x 10^3 cfu/g' },
                 { label: 'Yeast & Mold', value: d.qc?.qc_packing_yeast_mold || '', spec: '< 1.0 x 10^2 cfu/g' },
-                { label: 'Petugas QC Mikrobiologi', value: d.qc?.qc_packing_pic_mikro || '', spec: 'Analis Mikro' },
+                { label: 'Petugas QC Mikrobiologi', value: '', spec: 'Analis Mikro' },
               ]),
             },
             {
@@ -1087,19 +1303,10 @@ function buildClusterData(traceResult, tower = '1') {
               refForm: 'Form F/QC/01.030',
               badge: 'Status Rilis',
               dotColor: 'bg-emerald-600',
-              cipChecklist: d.pa?.evaporator_cip_checklist || null,
-              paTable: d.pa?.tables?.evaporation?.rows?.length ? {
-                pic: 'PA',
-                title: `Tabel Verifikasi Sanitasi CIP Evaporator (${d.pa.tables.evaporation.tableName})`,
-                tableName: d.pa.tables.evaporation.tableName,
-                rows: d.pa.tables.evaporation.rows,
-                columns: d.pa.tables.evaporation.columns,
-                averages: d.pa.tables.evaporation.averages || {},
-              } : null,
               metrics: cleanMetrics([
                 { label: 'Rilis Status OK (Box)', value: d.qc?.qc_packing_status_ok || '', spec: 'Lolos Mutu' },
                 { label: 'Status Blocked (Box)', value: d.qc?.qc_packing_status_bo || '', spec: 'Karantina' },
-                { label: 'Petugas Release QC', value: d.qc?.qc_packing_status_pic || '', spec: 'QA/QC Lead' },
+                { label: 'Petugas Release QC', value: '', spec: 'QA/QC Lead' },
               ]),
             },
           ],
@@ -1112,13 +1319,8 @@ function buildClusterData(traceResult, tower = '1') {
             rows: d.packing?.raw_rows || [],
             columns: d.packing?.columns || [],
           } : null,
-          qcTable: d.qc_raw?.packing?.raw_rows?.length ? {
-            pic: 'QC',
-            title: `Tabel QC Finished Good Packing Tower ${tKey} (qc_packing_${twSuffix})`,
-            tableName: `qc_packing_${twSuffix}`,
-            rows: d.qc_raw.packing.raw_rows,
-            columns: d.qc_raw.packing.raw_rows[0] ? Object.keys(d.qc_raw.packing.raw_rows[0]) : [],
-          } : null,
+          qcChecklist: buildQcChecklist('Flow 2'),
+          qcTable: null,
           cipChecklist: null,
           pic: {
             operasional: d.packing?.operator_packing || '',
@@ -1234,8 +1436,8 @@ function buildClusterData(traceResult, tower = '1') {
             { label: 'Jumlah', value: d.distribusi?.jumlah || '' },
             { label: 'Tujuan pengiriman', value: d.distribusi?.tujuan || '' },
             { label: 'Lokasi gudang penyimpanan', value: d.distribusi?.lokasi_gudang || '' },
-            { label: 'Nomer rak', value: d.distribusi?.nomer_rak || '', colSpan: 'col-span-1 sm:col-span-2 lg:col-span-2' },
-            { label: 'Nomer pallet', value: d.distribusi?.nomer_pallet || '', colSpan: 'col-span-1 sm:col-span-2 lg:col-span-2' },
+            { label: 'Nomer rak', value: d.distribusi?.nomer_rak || '' },
+            { label: 'Nomer pallet', value: d.distribusi?.nomer_pallet || '' },
           ]),
           qcTitle: 'Verifikasi Dokumen & Pelepasan Pengiriman',
           qcRole: 'QC',
@@ -1268,11 +1470,33 @@ function startCounterAnimation(target, duration = 1200, onUpdate) {
   requestAnimationFrame(tick);
 }
 
+function initScrollReveal() {
+  if (typeof document === 'undefined') return;
+  const elements = document.querySelectorAll('.reveal-on-scroll');
+  if (!elements.length) return;
+  if (typeof IntersectionObserver === 'undefined') {
+    elements.forEach((el) => el.classList.add('is-revealed'));
+    return;
+  }
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('is-revealed');
+      }
+    });
+  }, { threshold: 0.05 });
+
+  elements.forEach((el) => {
+    observer.observe(el);
+  });
+}
+
 if (typeof window !== 'undefined') {
   window.CLUSTER_CONFIG = CLUSTER_CONFIG;
   window.buildClusterData = buildClusterData;
   window.getTraceItemValue = getTraceItemValue;
   window.startCounterAnimation = startCounterAnimation;
+  window.initScrollReveal = initScrollReveal;
 }
 
 if (typeof module !== 'undefined' && module.exports) {

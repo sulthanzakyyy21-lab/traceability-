@@ -32,6 +32,12 @@ yarn-error.log*
 Thumbs.db
 .DS_Store
 
+# Python artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
 # IDE / Editor
 .vscode/
 .idea/

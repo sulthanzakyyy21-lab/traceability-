@@ -1,13 +1,15 @@
-// Service Worker: PT. Santos Jaya Abadi Traceability Platform (SJA-PWA v3.0)
-const CACHE_NAME = 'sja-traceability-v3';
+// Service Worker: PT. Santos Jaya Abadi Traceability Platform (SJA-PWA v8.6)
+const CACHE_NAME = 'sja-traceability-v8.6';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
+  '/css/industrial-theme.css?v=8.6',
+  '/css/custom-styles.css?v=8.6',
   '/images/coffee-beans-bg.jpg',
-  '/flowSections.js?v=4',
-  '/js/authStore.js?v=4',
-  '/js/pipelineData.js?v=4',
-  '/js/clusterTraceStore.js?v=4'
+  '/flowSections.js?v=8.6',
+  '/js/authStore.js?v=8.6',
+  '/js/clusterTraceStore.js?v=8.6',
+  '/js/app-main.js?v=8.6'
 ];
 
 self.addEventListener('install', (event) => {

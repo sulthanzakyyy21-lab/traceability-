@@ -1,0 +1,445 @@
+      <!-- Live Data Viewer Panel -->
+      <div v-if="picFilteredTables.length > 0" id="live-data-viewer" class="modern-card border border-stone-200/90 rounded-2xl shadow-sm overflow-hidden slow-smooth-entrance stagger-3 scroll-mt-6">
+        <!-- Panel Header -->
+        <div class="bg-stone-50/80 border-b border-stone-200 text-stone-900 px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div class="flex items-center gap-2.5">
+            <span class="w-3 h-3 bg-emerald-500 rounded-full inline-block shadow-xs"></span>
+            <div>
+              <div class="font-bold text-xs uppercase tracking-wide flex items-center gap-2 flex-wrap">
+                <transition name="table-title-crossfade" mode="out-in">
+                  <span :key="picSelectedTable" class="text-stone-900 font-extrabold inline-block">
+                    {{ getTableLabelByKey(picSelectedTable) }}
+                  </span>
+                </transition>
+                <span class="bg-white text-stone-700 font-mono text-[10px] px-2.5 py-0.5 rounded-full border border-stone-200/90 shadow-2xs">
+                  {{ picTableColumns.length }} kolom &bull; {{ Number(picTotalRows).toLocaleString() }} total baris
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2">
+            <!-- 1. Date Range Picker Terpadu (Single Date & Rentang Tanggal) - Diterapkan di SEMUA Tabel Database Explorer -->
+            <div class="relative flex items-center" id="pic-date-range-container">
+              <button
+                type="button"
+                @click="dateRangeDropdownOpen = !dateRangeDropdownOpen"
+                class="bg-white hover:bg-stone-50 border border-stone-200 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/20 rounded-xl px-3 py-1.5 text-xs font-semibold text-stone-800 transition-all cursor-pointer shadow-2xs outline-none flex items-center gap-2"
+                :class="{ 'border-cyan-500 ring-1 ring-cyan-500/30 bg-cyan-50/40': picFilterStartDate || picFilterEndDate }"
+                title="Pilih Rentang Tanggal (Date Range Picker)"
+              >
+                <svg class="w-3.5 h-3.5 text-stone-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+                <span v-if="picDateRangeDisplay" class="font-mono font-bold text-stone-900">{{ picDateRangeDisplay }}</span>
+                <span v-else class="text-stone-400 font-normal">Pilih Rentang Tanggal</span>
+                <span
+                  v-if="picFilterStartDate || picFilterEndDate"
+                  @click.stop="clearDateRange"
+                  class="ml-1 p-0.5 rounded-full hover:bg-stone-200 text-stone-400 hover:text-stone-700 transition-colors cursor-pointer"
+                  title="Hapus filter rentang tanggal"
+                >
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                  </svg>
+                </span>
+              </button>
+
+              <!-- Calendar Dropdown Popover (Reference Image Design) -->
+              <div
+                v-if="dateRangeDropdownOpen"
+                class="absolute top-full left-0 mt-2 z-50 bg-white rounded-2xl shadow-xl border border-stone-200 p-4 w-72 sm:w-80 select-none"
+              >
+                <!-- Header: Month/Year & Navigation Controls -->
+                <div class="flex items-center justify-between mb-3 px-1">
+                  <span class="font-bold text-stone-900 text-sm">{{ rangeMonthYearLabel }}</span>
+                  <div class="flex items-center border border-stone-200 rounded-full px-1 py-0.5 bg-stone-50/70">
+                    <button
+                      type="button"
+                      @click.stop="prevRangeMonth"
+                      class="w-6 h-6 rounded-full hover:bg-stone-200 flex items-center justify-center text-stone-600 transition-colors cursor-pointer"
+                      title="Bulan Sebelumnya"
+                    >
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <polyline points="15 18 9 12 15 6"></polyline>
+                      </svg>
+                    </button>
+                    <span class="w-px h-3.5 bg-stone-200 mx-0.5"></span>
+                    <button
+                      type="button"
+                      @click.stop="nextRangeMonth"
+                      class="w-6 h-6 rounded-full hover:bg-stone-200 flex items-center justify-center text-stone-600 transition-colors cursor-pointer"
+                      title="Bulan Berikutnya"
+                    >
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <polyline points="9 18 15 12 9 6"></polyline>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Weekday Headers -->
+                <div class="grid grid-cols-7 gap-1 text-center mb-1 text-[11px] font-semibold text-stone-400">
+                  <span>Min</span><span>Sen</span><span>Sel</span><span>Rab</span><span>Kam</span><span>Jum</span><span>Sab</span>
+                </div>
+
+                <!-- Days Grid -->
+                <div class="grid grid-cols-7 text-center text-xs">
+                  <template v-for="(dayObj, dIdx) in rangeCalendarDays" :key="dIdx">
+                    <div v-if="!dayObj.day" class="h-8"></div>
+                    <div
+                      v-else
+                      class="h-8 flex items-center justify-center relative cursor-pointer group"
+                      @click.stop="selectRangeDay(dayObj)"
+                    >
+                      <!-- Connecting Range Band -->
+                      <div v-if="dayObj.inRange" class="absolute inset-0 bg-cyan-100/70"></div>
+                      <div v-if="dayObj.isStart && picFilterEndDate" class="absolute top-0 bottom-0 right-0 w-1/2 bg-cyan-100/70"></div>
+                      <div v-if="dayObj.isEnd && picFilterStartDate" class="absolute top-0 bottom-0 left-0 w-1/2 bg-cyan-100/70"></div>
+
+                      <!-- Circular Day Indicator -->
+                      <span
+                        class="w-7 h-7 rounded-full flex items-center justify-center transition-all relative z-10"
+                        :class="{
+                          'bg-cyan-500 text-white font-bold shadow-xs': dayObj.isStart || dayObj.isEnd,
+                          'text-stone-800 font-medium group-hover:bg-stone-100': !dayObj.isStart && !dayObj.isEnd && !dayObj.inRange,
+                          'text-cyan-900 font-semibold': dayObj.inRange,
+                          'ring-1 ring-stone-300': dayObj.isToday && !dayObj.isStart && !dayObj.isEnd
+                        }"
+                      >
+                        {{ dayObj.day }}
+                      </span>
+                    </div>
+                  </template>
+                </div>
+
+                <!-- Footer Quick Presets -->
+                <div class="mt-3 pt-3 border-t border-stone-100 flex flex-wrap items-center justify-between gap-1 text-[11px]">
+                  <div class="flex items-center gap-1 text-stone-500">
+                    <button type="button" @click.stop="applyRangePreset('7days')" class="px-2 py-0.5 rounded-md hover:bg-stone-100 font-medium cursor-pointer">7 Hari</button>
+                    <button type="button" @click.stop="applyRangePreset('30days')" class="px-2 py-0.5 rounded-md hover:bg-stone-100 font-medium cursor-pointer">30 Hari</button>
+                    <button type="button" @click.stop="applyRangePreset('thisMonth')" class="px-2 py-0.5 rounded-md hover:bg-stone-100 font-medium cursor-pointer">Bulan Ini</button>
+                  </div>
+                  <button type="button" @click.stop="applyRangePreset('clear')" class="px-2 py-0.5 rounded-md text-stone-400 hover:text-stone-700 hover:bg-stone-100 font-medium cursor-pointer">Reset</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- 2. Filter Tahun (Aktif jika Date Range kosong) -->
+            <div v-if="!picFilterDate && !picFilterStartDate && !picFilterEndDate" class="relative">
+              <select
+                v-model="picFilterYear"
+                @change="searchPicTable"
+                class="appearance-none bg-white hover:bg-stone-50 border border-stone-200 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/20 rounded-xl pl-3 pr-7 py-1.5 text-xs font-bold text-stone-800 transition-all cursor-pointer shadow-2xs"
+                title="Pilih Tahun Rekaman"
+              >
+                <option value="2026">Thn 2026</option>
+                <option value="2025">Thn 2025</option>
+                <option value="2024">Thn 2024</option>
+                <option value="">Semua Thn</option>
+              </select>
+              <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-1.5 text-stone-400">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </div>
+
+            <!-- 3. Search Input Terpadu dengan Interactive Autocomplete Combobox (100% Clickable & Auto-Filter) -->
+            <div class="relative w-48 sm:w-64" id="pic-search-combobox">
+              <div class="relative flex items-center">
+                <input
+                  v-model="picSearchQuery"
+                  @focus="onSearchFocus"
+                  @input="onSearchInput"
+                  @blur="onSearchBlur"
+                  @keydown.enter.prevent="searchPicTable(); searchDropdownOpen = false;"
+                  @keydown.down.prevent="searchDropdownOpen = true"
+                  type="text"
+                  :placeholder="picSearchPlaceholder"
+                  class="w-full bg-white border border-stone-200 text-stone-900 placeholder-stone-400 text-xs rounded-xl pl-3 pr-8 py-1.5 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/20 shadow-2xs transition-colors font-medium"
+                  :title="picSearchPlaceholder"
+                  autocomplete="off"
+                />
+                <!-- Dropdown indicator toggle button -->
+                <button
+                  v-if="tableEquipments && tableEquipments.length > 0"
+                  type="button"
+                  tabindex="-1"
+                  @mousedown.prevent="toggleSearchDropdown"
+                  class="absolute right-1 top-1/2 -translate-y-1/2 p-1 text-stone-400 hover:text-stone-700 transition-colors cursor-pointer"
+                  title="Tampilkan daftar pilihan"
+                >
+                  <svg class="w-3.5 h-3.5 transition-transform duration-200" :class="{ 'rotate-180': searchDropdownOpen }" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg>
+                </button>
+              </div>
+
+              <!-- Interactive Custom Dropdown Menu (100% Clickable & Auto-Searches) -->
+              <div
+                v-show="searchDropdownOpen && filteredTableEquipments.length > 0"
+                @mousedown.prevent
+                class="absolute left-0 right-0 top-full mt-1.5 bg-white border border-stone-200 rounded-xl shadow-xl z-50 max-h-60 overflow-y-auto py-1"
+                style="min-width: 220px;"
+              >
+                <div class="px-3 py-1 text-[10px] font-bold text-stone-400 uppercase tracking-wider border-b border-stone-100 flex items-center justify-between">
+                  <span>{{ tableEquipmentCol || 'Daftar Pilihan' }}</span>
+                  <span class="font-mono text-stone-500">{{ filteredTableEquipments.length }} opsi</span>
+                </div>
+                <button
+                  v-for="eq in filteredTableEquipments"
+                  :key="eq"
+                  type="button"
+                  @mousedown.prevent="selectSearchSuggestion(eq)"
+                  @click="selectSearchSuggestion(eq)"
+                  class="w-full text-left px-3 py-1.5 text-xs text-stone-800 hover:bg-cyan-50 hover:text-cyan-700 font-medium hover:font-bold transition-colors flex items-center justify-between group cursor-pointer"
+                >
+                  <span class="truncate">{{ eq }}</span>
+                  <svg class="w-3 h-3 text-cyan-600 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <button
+              @click="searchPicTable"
+              class="px-3 py-1.5 bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white border border-cyan-600 shadow-xs text-xs font-bold rounded-xl transition-all cursor-pointer btn-action shadow-2xs flex items-center gap-1.5"
+            >
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              <span>Cari</span>
+            </button>
+
+            <button
+              v-if="picSearchQuery || picFilterDate || picFilterStartDate || picFilterEndDate || picFilterBean || picFilterYear !== '2026' || (isRoastingTable && picFilterMonth)"
+              @click="resetPicFilters"
+              class="px-2.5 py-1.5 bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-bold rounded-xl transition-colors cursor-pointer"
+              title="Reset filter &amp; pencarian"
+            >
+              ✕
+            </button>
+
+            <button
+              v-if="authRole === 'admin'"
+              @click="clearTable(picSelectedTable)"
+              :disabled="picTotalRows === 0"
+              class="px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200/90 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs btn-action shrink-0 disabled:opacity-40 disabled:cursor-not-allowed"
+              :title="'Hapus seluruh data pada tabel ' + getTableLabelByKey(picSelectedTable) + ' (Khusus Super Admin)'"
+            >
+              <svg class="w-3.5 h-3.5 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              </svg>
+              <span>Hapus Semua Data Tabel</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Table Container -->
+        <div class="relative p-4 bg-slate-50 overflow-hidden">
+          <!-- Sleek Top Progress Bar during loading -->
+          <div v-show="picTableLoading" class="absolute top-0 left-0 right-0 h-1 bg-cyan-100 overflow-hidden z-20">
+            <div class="h-full bg-gradient-to-r from-cyan-400 via-cyan-500 to-cyan-400 animate-table-progress"></div>
+          </div>
+
+          <!-- Error Alert -->
+          <div v-if="picTableError" class="p-6 text-center bg-red-50 text-red-900 rounded-xl border border-red-200 text-xs">
+            <div class="font-bold text-sm mb-1">Terjadi Kesalahan</div>
+            <div>{{ picTableError }}</div>
+          </div>
+
+          <!-- Initial Loading (Hanya jika belum ada rekaman sama sekali) -->
+          <div v-else-if="picTableLoading && picTableRows.length === 0" class="p-12 text-center bg-white rounded-xl border border-stone-200 shadow-2xs">
+            <svg class="spin h-7 w-7 text-coffee-800 mx-auto mb-2" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+            </svg>
+            <div class="text-xs font-bold text-stone-800">Memuat data dari database MySQL...</div>
+          </div>
+
+          <!-- Table Content (Tetap render saat loading dengan smooth cubic-bezier opacity transition) -->
+          <div
+            v-else-if="picTableRows.length > 0"
+            :class="picTableLoading ? 'opacity-40 pointer-events-none scale-[0.998]' : 'opacity-100 scale-100'"
+            class="rounded-xl border border-stone-200/90 bg-white shadow-2xs overflow-x-auto max-h-[560px] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
+          >
+            <table class="param-stacked-table mb-0 w-full text-xs">
+              <thead class="sticky top-0 z-10">
+                <tr>
+                  <th class="param-th-no">No</th>
+                  <th v-for="col in picTableColumns" :key="col" class="param-green-th" :title="col">
+                    {{ formatColHeader(col) }}
+                  </th>
+                  <th v-if="authRole === 'admin'" class="param-green-th text-center w-20" title="Aksi Hapus Rekaman (Khusus Super Admin)">Aksi</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(row, rIdx) in picTableRows" :key="row.id || rIdx" class="param-tr">
+                  <td class="param-td-no">{{ (picPage - 1) * picLimit + rIdx + 1 }}</td>
+                  <td v-for="col in picTableColumns" :key="col" class="param-td">
+                    {{ formatParamCell(row[col], col) }}
+                  </td>
+                  <td v-if="authRole === 'admin'" class="param-td text-center whitespace-nowrap">
+                    <button
+                      v-if="row.id"
+                      type="button"
+                      @click="deleteTableRow(picSelectedTable, row)"
+                      class="px-2 py-0.5 bg-stone-100 hover:bg-rose-50 text-stone-500 hover:text-rose-700 rounded-md text-[11px] font-semibold transition-colors cursor-pointer inline-flex items-center gap-1"
+                      title="Hapus baris rekaman ini (Khusus Super Admin)"
+                    >
+                      <svg class="w-3 h-3 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                      </svg>
+                      <span>Hapus</span>
+                    </button>
+                    <span v-else class="text-stone-300 text-[10px]">-</span>
+                  </td>
+                </tr>
+              </tbody>
+              <!-- Baris Kalkulasi Ala Spreadsheet di Footer Data Explorer -->
+              <tfoot>
+                <tr class="bg-blue-50/90 font-bold border-t-2 border-blue-300 text-blue-950">
+                  <td class="param-td-no text-center p-1 bg-blue-100/90 whitespace-nowrap">
+                    <select
+                      v-model="explorerCalcMode"
+                      class="text-[10px] font-bold font-sans bg-white text-blue-950 border border-blue-300 rounded px-1.5 py-0.5 cursor-pointer shadow-2xs focus:outline-none focus:ring-1 focus:ring-blue-500 uppercase tracking-wider"
+                      title="Pilih fitur kalkulasi spreadsheet per kolom"
+                    >
+                      <option value="none">Off</option>
+                      <option value="sum">Jumlah (Sum)</option>
+                      <option value="avg">Rata-rata (Avg)</option>
+                      <option value="min">Min</option>
+                      <option value="max">Maks</option>
+                      <option value="count">Cell Berisi</option>
+                      <option value="count_num">Cell Angka</option>
+                    </select>
+                  </td>
+                  <td v-for="col in picTableColumns" :key="col" class="param-td font-semibold text-[11px]">
+                    <template v-if="explorerCalcMode !== 'none'">
+                      <span v-if="explorerCalculations[col] !== undefined && explorerCalculations[col] !== '-'" class="inline-flex items-center gap-1 font-mono font-bold text-blue-950 bg-blue-100 px-1.5 py-0.5 rounded shadow-2xs">
+                        <span class="text-[9px] font-normal text-blue-700">{{ getCalcModeLabel(explorerCalcMode) }}:</span>
+                        <span>{{ explorerCalculations[col] }}</span>
+                      </span>
+                      <span v-else class="text-slate-400 font-normal text-[10px]">-</span>
+                    </template>
+                    <template v-else>
+                      <span class="text-slate-300 font-normal text-[10px]">-</span>
+                    </template>
+                  </td>
+                  <td v-if="authRole === 'admin'" class="param-td text-center text-slate-300">-</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+
+          <div v-else class="p-12 text-center bg-white rounded-2xl border border-stone-200/90 shadow-2xs text-xs text-stone-500 table-fade-entrance">
+            <div class="w-12 h-12 rounded-2xl bg-white/10 border border-cyan-200 flex items-center justify-center text-cyan-600 mx-auto mb-3.5 shadow-xs">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                <circle cx="12" cy="11" r="2"></circle>
+              </svg>
+            </div>
+            <div class="text-sm font-extrabold text-stone-800 tracking-tight mb-1">Belum Ada Rekaman Data Terverifikasi</div>
+            <div class="text-stone-500 max-w-md mx-auto text-xs leading-relaxed mb-3.5">
+              <span v-if="picSearchQuery">Tidak ditemukan rekaman yang cocok dengan kriteria pencarian "{{ picSearchQuery }}" pada tabel {{ getTableLabelByKey(picSelectedTable) }}.</span>
+              <span v-else>Data tidak ditemukan pada tabel {{ getTableLabelByKey(picSelectedTable) }}. Seluruh rekaman disajikan murni dari database MySQL (db_traceability_sja) tanpa data tiruan.</span>
+            </div>
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10.5px] font-bold bg-stone-100 text-stone-600 border border-stone-200">
+              <span class="w-1.5 h-1.5 rounded-full bg-stone-400"></span>
+              Status: 0 Rekaman Tercatat &bull; Nihil Parameter
+            </span>
+          </div>
+
+          <!-- Pagination Footer -->
+          <div
+            v-if="picTableRows.length > 0"
+            :class="picTableLoading ? 'opacity-40 pointer-events-none' : 'opacity-100'"
+            class="mt-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs bg-white border border-stone-200/90 rounded-xl p-3 shadow-2xs transition-opacity duration-300"
+          >
+            <div class="text-stone-600">
+              Menampilkan <span class="font-bold text-stone-900">{{ picTableRows.length }}</span> dari total <span class="font-bold text-stone-900">{{ Number(picTotalRows).toLocaleString() }}</span> baris data
+            </div>
+
+            <div class="flex items-center gap-3">
+              <div class="flex items-center gap-1.5">
+                <span class="text-stone-500 text-[11px]">Baris per hal:</span>
+                <select
+                  v-model.number="picLimit"
+                  @change="loadPicTable(picSelectedTable, 1)"
+                  class="border border-stone-200 rounded-lg px-2 py-1 text-xs bg-white text-stone-800 focus:outline-none focus:border-coffee-700"
+                >
+                  <option :value="10">10</option>
+                  <option :value="25">25</option>
+                  <option :value="50">50</option>
+                  <option :value="100">100</option>
+                </select>
+              </div>
+
+              <div class="flex flex-wrap items-center gap-1.5">
+                <button
+                  :disabled="picPage <= 1"
+                  @click="goToPicPage(1)"
+                  class="px-2.5 py-1 border border-stone-200 rounded-lg hover:bg-stone-50 disabled:opacity-30 disabled:cursor-not-allowed font-semibold text-xs transition-colors cursor-pointer text-stone-700 shadow-2xs"
+                  title="Ke Halaman Pertama (Hal 1)"
+                >
+                  ⏮ Awal
+                </button>
+                <button
+                  :disabled="picPage <= 1"
+                  @click="goToPicPage(picPage - 1)"
+                  class="px-2.5 py-1 border border-stone-200 rounded-lg hover:bg-stone-50 disabled:opacity-30 disabled:cursor-not-allowed font-semibold text-xs transition-colors cursor-pointer text-stone-700 shadow-2xs"
+                  title="Halaman Sebelumnya"
+                >
+                  ◀ Sebelumnya
+                </button>
+
+                <div class="flex items-center gap-1 bg-stone-50 border border-stone-200/90 rounded-lg px-2 py-0.5">
+                  <span class="text-stone-500 text-[11px] font-medium">Hal</span>
+                  <input
+                    type="number"
+                    min="1"
+                    :max="picTotalPages"
+                    v-model.number="pageJumpInput"
+                    @keydown.enter.prevent="jumpToPicPage"
+                    @keyup.enter.prevent="jumpToPicPage"
+                    class="w-12 text-center font-bold text-xs bg-white border border-stone-300 rounded px-1 py-0.5 text-stone-900 focus:outline-none focus:border-cyan-500 shadow-2xs"
+                    placeholder="1"
+                    title="Ketik nomor halaman lalu tekan Enter"
+                  />
+                  <span class="text-stone-600 text-[11px] font-bold">/ {{ picTotalPages }}</span>
+                  <button
+                    type="button"
+                    @click="jumpToPicPage"
+                    class="px-1.5 py-0.5 bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white border border-cyan-600 shadow-xs rounded text-[10px] font-bold transition-all cursor-pointer shadow-2xs"
+                    title="Lompat ke halaman yang diketik"
+                  >
+                    Go
+                  </button>
+                </div>
+
+                <button
+                  :disabled="picPage >= picTotalPages"
+                  @click="goToPicPage(picPage + 1)"
+                  class="px-2.5 py-1 border border-stone-200 rounded-lg hover:bg-stone-50 disabled:opacity-30 disabled:cursor-not-allowed font-semibold text-xs transition-colors cursor-pointer text-stone-700 shadow-2xs"
+                  title="Halaman Berikutnya"
+                >
+                  Berikutnya ▶
+                </button>
+                <button
+                  :disabled="picPage >= picTotalPages"
+                  @click="goToPicPage(picTotalPages)"
+                  class="px-2.5 py-1 border border-stone-200 rounded-lg hover:bg-stone-50 disabled:opacity-30 disabled:cursor-not-allowed font-semibold text-xs transition-colors cursor-pointer text-stone-700 shadow-2xs"
+                  title="Lompat ke Halaman Terakhir"
+                >
+                  Terakhir ⏭
+                </button>
+              </div>
+            </div>
+        </div>
+      </div>

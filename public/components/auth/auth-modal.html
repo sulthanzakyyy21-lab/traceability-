@@ -1,0 +1,139 @@
+    <!-- ── AUTHENTICATION / LOGIN MODAL (GLASSMORPHISM & MICRO-INTERACTIONS) ── -->
+    <div
+      v-if="loginModalOpen"
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md no-print"
+      @click.self="loginModalOpen = false"
+    >
+      <div class="glass-login-card rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+        <!-- Modal Header -->
+        <div class="p-5 bg-stone-50/70 border-b border-stone-200/80 flex items-center justify-between">
+          <div class="flex items-center gap-2.5">
+            <div class="w-11 h-11 flex items-center justify-center shrink-0">
+              <picture>
+                <source srcset="images/logo-kapal-api.webp?v=5" type="image/webp">
+                <img
+                  src="images/logo-kapal-api.png?v=5"
+                  alt="Logo Kapal Api"
+                  class="w-full h-full object-contain filter drop-shadow-xs"
+                  width="44"
+                  height="44"
+                />
+              </picture>
+            </div>
+            <div>
+              <h3 class="font-extrabold text-stone-900 text-sm">Autentikasi Pengguna</h3>
+              <p class="text-[11px] text-stone-500">Sistem Traceability PT. Santos Jaya Abadi</p>
+            </div>
+          </div>
+          <button
+            @click="loginModalOpen = false"
+            class="text-stone-400 hover:text-stone-700 p-1.5 rounded-lg hover:bg-stone-200/60 transition-colors cursor-pointer"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Modal Body -->
+        <form @submit.prevent="submitLogin" class="p-5 space-y-4">
+          <div class="space-y-3.5">
+            <!-- Floating Label: Modal Username -->
+            <div class="floating-group">
+              <input
+                id="modal-login-username"
+                ref="modalUsernameRef"
+                v-model="loginForm.username"
+                type="text"
+                required
+                autocomplete="username"
+                placeholder=" "
+                class="floating-input w-full pl-10 pr-4 pt-4 pb-2 bg-stone-50/80 hover:bg-stone-50 focus:bg-white border border-stone-300 focus:border-cyan-500 rounded-xl text-xs font-semibold text-stone-900 placeholder-transparent focus:outline-none focus:ring-2 focus:ring-cyan-500/20 transition-all shadow-2xs"
+              />
+              <label for="modal-login-username" class="floating-label">Username Pengguna</label>
+              <svg class="floating-icon w-4 h-4 text-stone-400 absolute left-3.5 top-3.5 transition-colors pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+            </div>
+
+            <!-- Floating Label: Modal Password -->
+            <div class="floating-group">
+              <input
+                id="modal-login-password"
+                v-model="loginForm.password"
+                :type="showModalPassword ? 'text' : 'password'"
+                required
+                autocomplete="current-password"
+                placeholder=" "
+                class="floating-input w-full pl-10 pr-11 pt-4 pb-2 bg-stone-50/80 hover:bg-stone-50 focus:bg-white border border-stone-300 focus:border-cyan-500 rounded-xl text-xs font-semibold text-stone-900 placeholder-transparent focus:outline-none focus:ring-2 focus:ring-cyan-500/20 transition-all shadow-2xs"
+              />
+              <label for="modal-login-password" class="floating-label">Kata Sandi (Password)</label>
+              <svg class="floating-icon w-4 h-4 text-stone-400 absolute left-3.5 top-3.5 transition-colors pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+              <!-- Interactive Password Peek Toggle -->
+              <button
+                type="button"
+                @click="showModalPassword = !showModalPassword"
+                class="absolute right-3 top-2.5 p-1 text-stone-400 hover:text-stone-700 rounded-lg hover:bg-stone-200/50 transition-colors cursor-pointer"
+                :title="showModalPassword ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi'"
+                tabindex="-1"
+              >
+                <svg v-if="!showModalPassword" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+                <svg v-else class="w-4 h-4 text-cyan-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                  <line x1="1" y1="1" x2="23" y2="23"></line>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div v-if="loginError" class="p-2.5 rounded-lg bg-red-50 border border-red-200 text-red-700 text-xs">
+            {{ loginError }}
+          </div>
+
+          <div class="pt-2 flex items-center justify-end gap-2">
+            <button
+              type="button"
+              @click="loginModalOpen = false"
+              class="px-4 py-2 border border-stone-300 hover:bg-stone-50 text-stone-700 rounded-xl text-xs font-medium cursor-pointer"
+            >
+              Batal
+            </button>
+            <button
+              type="submit"
+              :disabled="loginState !== 'idle'"
+              class="px-5 py-2 text-white rounded-xl text-xs font-bold shadow-xs transition-all flex items-center gap-1.5"
+              :class="{
+                'bg-cyan-500 hover:bg-cyan-600 cursor-pointer': loginState === 'idle',
+                'bg-cyan-500/90 cursor-wait': loginState === 'loading',
+                'bg-emerald-700 hover:bg-emerald-700 cursor-default scale-[1.01]': loginState === 'success'
+              }"
+            >
+              <div v-if="loginState === 'idle'" class="flex items-center gap-1.5">
+                <span>Masuk ke Sistem</span>
+              </div>
+              <div v-else-if="loginState === 'loading'" class="flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5 spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10" stroke-width="4" stroke="currentColor" class="opacity-25"></circle>
+                  <path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" class="opacity-75"></path>
+                </svg>
+                <span>Memverifikasi...</span>
+              </div>
+              <div v-else-if="loginState === 'success'" class="flex items-center gap-1.5 animate-scale-in">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <span>Terverifikasi!</span>
+              </div>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>

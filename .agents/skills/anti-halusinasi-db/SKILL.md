@@ -5,7 +5,7 @@ description: Mandat mutlak pengambilan data traceability PT. Santos Jaya Abadi w
 
 # Mandat Integritas Data & Anti-Halusinasi Database
 
-## 1. Single Source of Truth: Database MySQL (`db_traceability_sja`)
+## 1. Single Source of Truth: Database MySQL (`db_traceability_sja`) 
 Sistem Traceability PT. Santos Jaya Abadi HANYA memiliki 3 domain data dan PIC yang tercatat di database:
 1. **Produksi**:
    - `packing_tower_1`, `packing_tower_2`
@@ -29,6 +29,7 @@ Database MySQL saat ini **TIDAK MEMILIKI TABEL** untuk:
 - **Flow 1: DISTRIBUSI / FGW** (Gudang Jadi: Nomor Truk, No SJ, Tujuan, No Rak, No Pallet, PIC FGW)
 - **Flow 3: REWORK Produksi** (Pengerjaan Ulang produksi tidak tercatat tabelnya di DB)
 - **Flow 9: UPBM Inload** (Serah terima Silo Cell / BSTB belum memiliki tabel di DB)
+- **Flow 10: MASS BALANCE PRODUKSI** (Data penimbangan timbangan transfer kopi matang dari silo degassing ke percolator ekstraksi belum ada di DB; nilai yield transfer & rasio IC dikosongkan)
 - **Flow 11: INCOMING BAHAN / RMW** (Kedatangan armada truk kopi mentah & QC incoming biji kopi)
 - **Flow 12: INCOMING BAHAN KEMAS** (Kedatangan Karton Box, Plastik PE & QC Kemasan)
 - **Material Tambahan**: Gas CO2 Supplier (Dryer) dan Antifoam (Extraction) tidak ada tabelnya di DB.

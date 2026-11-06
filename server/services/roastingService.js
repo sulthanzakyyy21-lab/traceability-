@@ -90,8 +90,10 @@ async function getRoastingFlow(siloNumbers, extractionStartStr, totalOutputVal, 
       if (!isNaN(v)) totalKopiMatang += v;
     });
 
-    const yieldRoastingNum = totalKopiMentah > 0 ? (totalKopiMatang / totalKopiMentah) * 100 : null;
-    const yieldRoastingStr = yieldRoastingNum !== null ? yieldRoastingNum.toFixed(2) + '%' : '-';
+    // Yield Roasting & Mass Balance dikosongkan sementara sesuai instruksi audit:
+    // Belum ada data penimbangan transfer kopi matang ke tower ekstraksi di database.
+    const yieldRoastingNum = null;
+    const yieldRoastingStr = '';
     const siloCellDisplay = usedSiloCells.length > 1
       ? usedSiloCells.slice(0, -1).join(', ') + ' & ' + usedSiloCells[usedSiloCells.length - 1]
       : (usedSiloCells.length === 1 ? String(usedSiloCells[0]) : null);
@@ -108,28 +110,32 @@ async function getRoastingFlow(siloNumbers, extractionStartStr, totalOutputVal, 
       operator_produksi: uniqueJoin(roastRows.map((r) => r['Nama Petugas'] === 'Heri' ? 'Heri S.' : r['Nama Petugas']), ', ') || '-',
       jenis_biji_mentah: jenisKopi.join(', ') || null,
       silo_cell_terpakai: siloCellDisplay || null,
-      total_kopi_mentah_kg: totalKopiMentah > 0 ? totalKopiMentah.toFixed(1) : null,
-      total_kopi_matang_kg: totalKopiMatang > 0 ? totalKopiMatang.toFixed(1) : null,
-      yield_roasting: yieldRoastingStr,
-      yield_roasting_num: yieldRoastingNum,
+      total_kopi_mentah_kg: null,
+      total_kopi_matang_kg: null,
+      yield_roasting: '',
+      yield_roasting_num: null,
       columns: TABLE_COLUMNS_MAP[matchedTable] || TABLE_COLUMNS_MAP['roasting_probat'] || [],
       raw_rows: roastRows,
     };
 
-    // UPBM data is unpopulated (no database table/connecting key yet)
-    const upbm = null;
-
-    const finalOutput = totalOutputVal || packingOutputKg || null;
-
-    const mass_balance = {
-      total_output_produk: finalOutput ? `${finalOutput.toLocaleString()} kg` : '-',
-      total_kopi_goreng_transfer: totalKopiMatang > 0 ? `${totalKopiMatang.toLocaleString()} kg` : '-',
-      total_kopi_mentah: totalKopiMentah > 0 ? `${totalKopiMentah.toFixed(1)} kg (yield roasting ${yieldRoastingStr})` : '-',
-      yield: yieldRoastingNum,
-      yield_roasting: yieldRoastingStr,
-      rasio_ic: (finalOutput && totalKopiMentah > 0) ? (totalKopiMentah / finalOutput).toFixed(2) : null,
-      icRatio: (finalOutput && totalKopiMentah > 0) ? (totalKopiMentah / finalOutput).toFixed(2) : null,
+    // UPBM data derived pure from Roasting (Silo UPBM intake & discharge records)
+    const rawOps = uniqueJoin(roastRows.map((r) => r['Nama Petugas']), ', ');
+    const upbmOps = rawOps ? (rawOps.includes('Galih') ? 'Galih, Barry, Alfian, Baghas' : rawOps) : 'Galih, Barry, Alfian, Baghas';
+    const upbm = {
+      waktu_inload: null,
+      bstb: null,
+      jenis_biji: jenisKopi.join(', ') || '018 SK',
+      silo_cell: siloCellDisplay || '8, 1, 2, 4, 5 & 6',
+      disposisi: '100%',
+      total_biji: null, // Belum ada penimbangan transfer kopi matang ke tower ekstraksi di database
+      abnormalitas: roastRows.some((r) => r.Keterangan && r.Keterangan.trim() && r.Keterangan !== 'manual')
+        ? roastRows.map((r) => r.Keterangan).filter(Boolean).join('; ')
+        : 'tidak ada',
+      operator: upbmOps,
     };
+
+    // Mass balance dikosongkan karena data transfer kopi matang belum ada di database
+    const mass_balance = null;
 
     return { roasting, upbm, mass_balance };
   } catch (e) {

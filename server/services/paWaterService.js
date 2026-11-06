@@ -42,8 +42,13 @@ async function getWaterProcessFlow(tower, targetDate) {
     if (dailyRows.length === 0 && weeklyRows.length === 0) return null;
     const weeklyRow = weeklyRows[0] || dailyRows[0] || {};
 
+    const validDaily = dailyRows.length > 8
+      ? dailyRows.filter(r => String(r['Tanggal & Waktu'] || '').slice(11, 16) >= '02:00')
+      : dailyRows;
+    const activeDaily = validDaily.length > 0 ? validDaily : dailyRows;
+
     let phSum = 0, phCount = 0, tdsSum = 0, tdsCount = 0, kekeruhanSum = 0, kekeruhanCount = 0;
-    dailyRows.forEach(r => {
+    activeDaily.forEach(r => {
       const p = parseFloat(String(r.pH || '').replace(',', '.'));
       const t = parseFloat(String(r.TDS || '').replace(',', '.'));
       const k = parseFloat(String(r.Kekeruhan || '').replace(',', '.'));
@@ -59,7 +64,7 @@ async function getWaterProcessFlow(tower, targetDate) {
       : (weeklyRow.Kekeruhan || '0');
 
     const weeklyDate = formatDmy(weeklyRow['Tanggal & Waktu']);
-    const dailyDate = formatDmy(dailyRows[0]?.['Tanggal & Waktu']);
+    const dailyDate = formatDmy(activeDaily[0]?.['Tanggal & Waktu']);
     const sampleDate = (weeklyDate && dailyDate && weeklyDate !== dailyDate)
       ? `${weeklyDate} dan ${dailyDate}`
       : (dailyDate || weeklyDate || '-');
@@ -79,7 +84,7 @@ async function getWaterProcessFlow(tower, targetDate) {
       aluminium: parseNum(weeklyRow.Aluminium),
       e_coli: !weeklyRow['E. Coli'] || weeklyRow['E. Coli'] === '0' ? 'Negatif' : String(weeklyRow['E. Coli']),
       total_coliform: !weeklyRow['Total Coliform'] || weeklyRow['Total Coliform'] === '0' ? 'Negatif' : String(weeklyRow['Total Coliform']),
-      pic_pa: 'Jefri & Reza',
+      pic_pa: 'Data tidak ditemukan',
     };
   } catch (err) {
     console.error('getWaterProcessFlow error:', err.message);

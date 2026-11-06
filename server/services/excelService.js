@@ -36,6 +36,9 @@ function isMeaningfulRow(rowVals) {
 
 function excelCellToString(cell) {
   if (!cell) return null;
+  if (cell.v instanceof Date) {
+    return excelValueToString(cell.v);
+  }
   if (cell.w && typeof cell.w === 'string' && cell.w.trim() !== '') {
     const w = cell.w.trim();
     if (w === '1/0/00' || w === '0/0/00' || w.includes('/00/') || w.startsWith('0000-00-00')) {
@@ -55,7 +58,7 @@ async function bulkInsertExcelData(tableName, bufferOrWorkbook, customSheetName)
   const columns = TABLE_COLUMNS_MAP[tableName];
   const workbook = bufferOrWorkbook && bufferOrWorkbook.SheetNames
     ? bufferOrWorkbook
-    : xlsx.read(bufferOrWorkbook, { type: 'buffer', cellDates: true, cellNF: false, cellText: false });
+    : xlsx.read(bufferOrWorkbook, { type: 'buffer', cellDates: true, cellNF: true, cellText: true });
   const { sheet, headerRow, colMapping } = findSheetAndColMapping(workbook, tableName, columns, customSheetName);
 
   if (!sheet || !sheet['!ref']) {

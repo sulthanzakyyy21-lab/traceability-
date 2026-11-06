@@ -32,19 +32,19 @@ function formatQcTrace(qcFlow, packingFlow, roastingFlow) {
 
   // ── 2. PACKING: Analisa Kualitas Finished Goods ──
   if (allDryerRows.length > 0) {
-    qcMap['qc_packing_verifikasi_label'] = 'OK';
-    qcMap['qc_packing_kondisi_kemasan'] = 'OK';
+    qcMap['qc_packing_verifikasi_label'] = '-';
+    qcMap['qc_packing_kondisi_kemasan'] = '-';
     const ka = avg(allDryerRows, 'Kadar Air (%)');
     qcMap['qc_packing_kadar_air'] = ka !== '-' ? `${ka}%` : '-';
     const dens = avg(allDryerRows, 'Density (g/L)');
     qcMap['qc_packing_density'] = dens !== '-' ? `${dens} g/L` : '-';
-    qcMap['qc_packing_fm'] = allDryerRows.some((r) => String(r['FM']).toUpperCase() === 'NOT OK') ? 'Not OK' : 'Tidak ada';
-    qcMap['qc_packing_visual'] = getUniqueVal(allDryerRows, 'Vis') || 'OK';
+    qcMap['qc_packing_fm'] = getUniqueVal(allDryerRows, 'FM') || '-';
+    qcMap['qc_packing_visual'] = getUniqueVal(allDryerRows, 'Vis') || '-';
     qcMap['qc_packing_warna'] = avg(allDryerRows, 'Warna');
     qcMap['qc_packing_brix'] = avg(allDryerRows, 'Brix (°brix)');
     qcMap['qc_packing_ph'] = avg(allDryerRows, 'pH', 3);
     qcMap['qc_packing_floating'] = avg(allDryerRows, 'Floating Particles', 0);
-    qcMap['qc_packing_fluidity'] = getUniqueVal(allDryerRows, 'Fluidity') || 'Free Flowing';
+    qcMap['qc_packing_fluidity'] = getUniqueVal(allDryerRows, 'Fluidity') || '-';
     qcMap['qc_packing_solubility'] = avg(allDryerRows, 'Solubility (s)');
     qcMap['qc_packing_wangi'] = avg(allDryerRows, 'Cup Test Wangi', 1);
     qcMap['qc_packing_pahit'] = avg(allDryerRows, 'Cup Test Pahit', 1);
@@ -79,7 +79,7 @@ function formatQcTrace(qcFlow, packingFlow, roastingFlow) {
   // ── 3. EVAPORATION: Evaporasi & Final Tank ──
   const evapRows = qcFlow.evaporasi?.raw_rows || [];
   if (evapRows.length > 0) {
-    qcMap['qc_evap_visual_fm'] = 'OK / Tidak Ada';
+    qcMap['qc_evap_visual_fm'] = getUniqueVal(evapRows, 'Vis/FM') || '-';
     const brix = avg(evapRows, 'Brix (°brix)');
     const ts = avg(evapRows, 'TS (%)');
     qcMap['qc_evap_brix_ts'] = ts !== '-' ? `${brix} / ${ts}` : brix;
@@ -98,7 +98,7 @@ function formatQcTrace(qcFlow, packingFlow, roastingFlow) {
     qcMap['qc_ft_nomor'] = getUniqueVal(ftRows, 'Final Tank');
     qcMap['qc_ft_pure_aroma'] = avg(ftRows, 'Pure Aroma (kg)', 0);
     qcMap['qc_ft_level'] = ftRows[0]?.['Level'] ? `${ftRows[0]['Level']}%` : '-';
-    qcMap['qc_ft_visual_fm'] = 'OK / Tidak Ada';
+    qcMap['qc_ft_visual_fm'] = getUniqueVal(ftRows, 'Vis/FM') || '-';
     const brix = avg(ftRows, 'Brix (°brix)');
     const ts = avg(ftRows, 'TS (%)');
     qcMap['qc_ft_brix_ts'] = ts !== '-' ? `${brix} / ${ts}` : brix;
@@ -117,7 +117,7 @@ function formatQcTrace(qcFlow, packingFlow, roastingFlow) {
   if (grindRows.length > 0) {
     qcMap['qc_grind_silo'] = getUniqueVal(grindRows, 'Silo Degassing');
     qcMap['qc_grind_rga_rgb'] = getUniqueVal(grindRows, 'RGA/RGB', ' ; ');
-    qcMap['qc_grind_visual_fm'] = 'OK / Tidak Ada';
+    qcMap['qc_grind_visual_fm'] = getUniqueVal(grindRows, 'FM') || '-';
     const grindMeshCols = [
       ['lt850', '<850', 0], ['850_1000', '850-<1000', 1],
       ['1000_2350', '1000-<2350', 1], ['2350_3350', '2350-<3350', 1],
@@ -135,7 +135,7 @@ function formatQcTrace(qcFlow, packingFlow, roastingFlow) {
   const aromaRows = qcFlow.aroma?.raw_rows || [];
   if (aromaRows.length > 0) {
     qcMap['qc_aroma_silo'] = getUniqueVal(aromaRows, 'Silo degasing');
-    qcMap['qc_aroma_visual_fm'] = 'OK / Tidak Ada';
+    qcMap['qc_aroma_visual_fm'] = getUniqueVal(aromaRows, 'Vis/FM') || '-';
     const brix = avg(aromaRows, 'Brix (°brix)');
     const ts = avg(aromaRows, 'TS (%)');
     qcMap['qc_aroma_brix_ts'] = ts !== '-' ? `${brix} / ${ts}` : brix;
@@ -150,7 +150,7 @@ function formatQcTrace(qcFlow, packingFlow, roastingFlow) {
   const hydroRows = qcFlow.hydro?.raw_rows || [];
   if (hydroRows.length > 0) {
     qcMap['qc_hydro_silo'] = getUniqueVal(hydroRows, 'Silo Degassing');
-    qcMap['qc_hydro_visual_fm'] = 'OK / Tidak Ada';
+    qcMap['qc_hydro_visual_fm'] = getUniqueVal(hydroRows, 'Vis/FM') || '-';
     const brix = avg(hydroRows, 'Brix (°brix)');
     const ts = avg(hydroRows, 'TS (%)');
     qcMap['qc_hydro_brix_ts'] = ts !== '-' ? `${brix} / ${ts}` : brix;

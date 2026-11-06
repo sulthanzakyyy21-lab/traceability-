@@ -394,6 +394,29 @@ describe('Traceability System - Automated Monitoring & Validation', () => {
     assert.ok(p2Checklist.recordedItems > 0, 'Plant 2 harus memiliki titik CIP terverifikasi');
   });
 
+  // ══════════════════════════════════════════════════════════════
+  // Test Case 19: Isolasi Ketat Penelusuran Batch (Anti-Bocor Tahun & Tower)
+  // ══════════════════════════════════════════════════════════════
+  test('TC-19: Isolasi Ketat Penelusuran Batch (Zero Cross-Year & Cross-Tower Leak)', async () => {
+    const { getPackingFlow } = require('../server/services/packingService');
+
+    // 1. Batch 340 dicari di tahun 2027 (tidak boleh bocor ke data 2025)
+    const p2027 = await getPackingFlow(340, 2027, '1');
+    assert.ok(p2027.error, 'Batch 340 tahun 2027 wajib menghasilkan error / tidak ada data');
+    assert.strictEqual(p2027.raw_rows.length, 0, 'Data tahun 2025 dilarang keras bocor ke tahun 2027');
+
+    // 2. Batch 340 dicari di tahun 2025 (harus murni data 2025)
+    const p2025 = await getPackingFlow(340, 2025, '1');
+    assert.ok(p2025.nama_produk.includes('SIC 25 BR'), 'Batch 340 tahun 2025 harus mengembalikan data 2025');
+    assert.ok(p2025.tanggal.startsWith('2025'), 'Tanggal packing 2025 harus berawal 2025');
+
+    // 3. Tower 1 vs Tower 2 batch 370 tahun 2026 harus terisolasi sempurna
+    const pT1 = await getPackingFlow(370, 2026, '1');
+    const pT2 = await getPackingFlow(370, 2026, '2');
+    assert.strictEqual(pT1.nama_produk, 'SIC 18 T', 'Batch 370 Tower 1 tahun 2026 harus SIC 18 T');
+    assert.strictEqual(pT2.nama_produk, 'SIC 18 C1', 'Batch 370 Tower 2 tahun 2026 harus SIC 18 C1');
+  });
+
 });
 
 

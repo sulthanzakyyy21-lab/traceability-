@@ -1,6 +1,27 @@
 const jwt = require('jsonwebtoken');
+const fs = require('fs');
+const path = require('path');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'sja-traceability-secret-salt-2026';
+// Fail-fast environment loading for NIST SP 800-63B / OWASP ASVS
+if (!process.env.JWT_SECRET) {
+  const envPath = path.join(__dirname, '../../.env');
+  if (fs.existsSync(envPath)) {
+    fs.readFileSync(envPath, 'utf8').split(/\r?\n/).forEach((line) => {
+      const trimmed = line.trim();
+      if (trimmed && !trimmed.startsWith('#') && trimmed.includes('=')) {
+        const idx = trimmed.indexOf('=');
+        const key = trimmed.slice(0, idx).trim();
+        const val = trimmed.slice(idx + 1).trim();
+        if (process.env[key] === undefined) process.env[key] = val;
+      }
+    });
+  }
+}
+
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  throw new Error('FATAL SECURITY ERROR (NIST SP 800-63B / OWASP ASVS): JWT_SECRET environment variable is missing.');
+}
 
 function verifyToken(req, res, next) {
   const authHeader = req.headers.authorization;

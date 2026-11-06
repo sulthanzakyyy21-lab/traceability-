@@ -1,0 +1,217 @@
+    <!-- ── MODAL: VERIFIKASI PARAMETER LAPANGAN (HUMAN-IN-THE-LOOP & ROLE-ADAPTIVE) ── -->
+    <div
+      v-if="isVerificationModalOpen"
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-cyan-700/60 backdrop-blur-xs no-print transition-all overflow-y-auto"
+      @click.self="closeVerificationModal"
+    >
+      <div class="bg-white border border-stone-200 rounded-2xl shadow-2xl max-w-xl w-full flex flex-col overflow-hidden text-stone-800 my-auto animate-scale-in">
+        <!-- Modal Header -->
+        <div class="bg-gradient-to-r from-cyan-600 to-cyan-500 text-white px-6 py-4 flex items-center justify-between shrink-0 border-b border-cyan-700/30">
+          <div>
+            <div class="flex items-center gap-2 flex-wrap">
+              <h3 class="text-sm sm:text-base font-black text-white tracking-tight">Verifikasi Parameter Lapangan</h3>
+              <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-white/20 text-white font-bold border border-white/30">
+                Human-in-the-Loop
+              </span>
+              <span v-if="isPa" class="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/30 text-emerald-200 border border-emerald-400/40 font-bold">
+                Wewenang: Analis PA
+              </span>
+              <span v-else-if="isProduksi" class="px-2 py-0.5 rounded text-[10px] font-mono bg-blue-500/30 text-blue-200 border border-blue-400/40 font-bold">
+                Wewenang: Operator Produksi
+              </span>
+              <span v-else-if="isAdmin" class="px-2 py-0.5 rounded text-[10px] font-mono bg-white/30 text-white border border-white/30 font-bold">
+                Super Admin (Akses Penuh)
+              </span>
+              <span v-else class="px-2 py-0.5 rounded text-[10px] font-mono bg-stone-700 text-stone-300 font-bold">
+                Read-Only
+              </span>
+            </div>
+            <p class="text-[11px] text-stone-300 mt-0.5">Lengkapi data verifikasi fisik sebelum penelusuran batch dinyatakan 100% selesai.</p>
+          </div>
+          <button
+            type="button"
+            @click="closeVerificationModal"
+            class="p-1.5 rounded-lg text-stone-300 hover:text-white bg-white/10 hover:bg-white/20 transition-colors cursor-pointer"
+            title="Tutup (Esc)"
+          >
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+
+        <!-- Modal Body Form -->
+        <form @submit.prevent="submitVerification" class="p-5 sm:p-6 space-y-4 text-xs overflow-y-auto max-h-[75vh]">
+          <!-- Live Stopwatch Bar -->
+          <div class="p-3 bg-cyan-50 border border-cyan-200/90 rounded-xl flex items-center justify-between flex-wrap gap-2">
+            <div class="flex items-center gap-2 text-cyan-900 font-semibold">
+              <span class="relative flex h-2.5 w-2.5">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-cyan-600"></span>
+              </span>
+              <span>Stopwatch Berjalan:</span>
+              <span class="font-mono text-sm font-black text-cyan-950 bg-white px-2.5 py-0.5 rounded-lg border border-cyan-300 shadow-2xs">
+                {{ formatStopwatch(auditTimer.elapsedSeconds) }}
+              </span>
+            </div>
+            <div class="flex items-center gap-2 text-[10.5px] font-mono">
+              <span class="px-2 py-0.5 rounded border" :class="auditVerification?.konsentrasi_lye ? 'bg-emerald-100 border-emerald-300 text-emerald-800' : 'bg-cyan-100/70 border-cyan-300 text-cyan-800'">
+                PA CIP: <strong>{{ auditVerification?.konsentrasi_lye ? 'Terisi ✓' : 'Menunggu' }}</strong>
+              </span>
+              <span class="px-2 py-0.5 rounded border" :class="auditVerification?.helper_packing ? 'bg-emerald-100 border-emerald-300 text-emerald-800' : 'bg-cyan-100/70 border-cyan-300 text-cyan-800'">
+                Helper: <strong>{{ auditVerification?.helper_packing ? 'Terisi ✓' : 'Menunggu' }}</strong>
+              </span>
+            </div>
+          </div>
+
+          <!-- SECTION 1: Konsentrasi Lye (Domain Process Assurance - PA) -->
+          <div class="p-4 rounded-xl border transition-all" :class="(isPa || isAdmin) ? 'bg-stone-50/70 border-stone-300' : 'bg-stone-100/60 border-stone-200'">
+            <div class="flex items-center justify-between mb-2">
+              <div class="flex items-center gap-2">
+                <span class="font-bold text-stone-900 text-xs">1. Konsentrasi Lye (Sanitasi CIP)</span>
+                <span class="px-2 py-0.2 rounded text-[9.5px] font-bold uppercase tracking-wider" :class="(isPa || isAdmin) ? 'bg-cyan-50 text-cyan-800 border border-cyan-200' : 'bg-stone-200 text-stone-700'">
+                  Wewenang PA
+                </span>
+              </div>
+              <span class="text-[10.5px] font-medium text-stone-500">Standar: 3%</span>
+            </div>
+
+            <!-- Multi-flow indicator -->
+            <div class="text-[10.5px] text-stone-500 mb-2.5 flex items-center gap-1.5 flex-wrap">
+              <span>Diterapkan ke 5 Titik CIP:</span>
+              <span class="px-1.5 py-0.2 bg-white rounded border border-stone-200 text-stone-700 font-mono text-[10px]">Evaporator</span>
+              <span class="px-1.5 py-0.2 bg-white rounded border border-stone-200 text-stone-700 font-mono text-[10px]">Final Tank</span>
+              <span class="px-1.5 py-0.2 bg-white rounded border border-stone-200 text-stone-700 font-mono text-[10px]">Ekstraksi</span>
+              <span class="px-1.5 py-0.2 bg-white rounded border border-stone-200 text-stone-700 font-mono text-[10px]">Spray Dryer</span>
+              <span class="px-1.5 py-0.2 bg-white rounded border border-stone-200 text-stone-700 font-mono text-[10px]">Rework</span>
+            </div>
+
+            <!-- Editable if PA or Admin -->
+            <div v-if="isPa || isAdmin" class="space-y-2">
+              <div class="relative">
+                <input
+                  v-model="verifForm.konsentrasi_lye"
+                  type="text"
+                  required
+                  placeholder="Contoh: 3%"
+                  class="w-full px-3.5 py-2 border border-stone-300 rounded-xl font-mono font-bold text-stone-900 text-xs focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none bg-white"
+                />
+                <button
+                  type="button"
+                  @click="verifForm.konsentrasi_lye = '3%'"
+                  class="absolute right-2 top-1.5 px-2 py-0.5 bg-cyan-100 hover:bg-cyan-200 rounded text-[10px] font-bold text-cyan-900 border border-cyan-300 cursor-pointer transition-colors"
+                >Set 3%</button>
+              </div>
+              <div>
+                <label class="block font-semibold text-stone-600 text-[10.5px] mb-0.5">PIC PA / Analis Lab</label>
+                <input
+                  v-model="verifForm.pic_pa"
+                  type="text"
+                  placeholder="Nama PIC Analis PA"
+                  class="w-full px-3 py-1.5 border border-stone-300 rounded-lg text-xs bg-white"
+                />
+              </div>
+            </div>
+
+            <!-- Locked view for non-PA -->
+            <div v-else>
+              <div v-if="auditVerification?.konsentrasi_lye" class="p-2.5 bg-emerald-50 border border-emerald-300 rounded-lg flex items-center justify-between text-emerald-900">
+                <div class="flex items-center gap-2">
+                  <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                  <span>Terverifikasi oleh <strong>{{ auditVerification.pic_pa || 'PIC PA' }}</strong></span>
+                </div>
+                <span class="font-mono font-black text-xs text-emerald-950 bg-white px-2 py-0.5 rounded border border-emerald-200">{{ auditVerification.konsentrasi_lye }}</span>
+              </div>
+              <div v-else class="p-2.5 bg-cyan-50/70 border border-cyan-200 rounded-lg flex items-center gap-2 text-cyan-900 text-[11px]">
+                <svg class="w-4 h-4 text-cyan-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                <span>Wewenang khusus Analis PA. Menunggu input konsentrasi lye oleh tim PA.</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- SECTION 2: Helper Packing (Domain Produksi) -->
+          <div class="p-4 rounded-xl border transition-all" :class="(isProduksi || isAdmin) ? 'bg-stone-50/70 border-stone-300' : 'bg-stone-100/60 border-stone-200'">
+            <div class="flex items-center justify-between mb-2">
+              <div class="flex items-center gap-2">
+                <span class="font-bold text-stone-900 text-xs">2. Nama Helper Packing (Flow Packing)</span>
+                <span class="px-2 py-0.2 rounded text-[9.5px] font-bold uppercase tracking-wider" :class="(isProduksi || isAdmin) ? 'bg-blue-100 text-blue-900 border border-blue-300' : 'bg-stone-200 text-stone-700'">
+                  Wewenang Produksi
+                </span>
+              </div>
+              <span class="text-[10.5px] font-medium text-stone-500">Tim Lapangan</span>
+            </div>
+
+            <p class="text-[10.5px] text-stone-500 mb-2">
+              Mendampingi Operator Packing: <strong>{{ traceResult?.packing?.operator_packing || 'Budi H &amp; Supandi &amp; Dafiq' }}</strong>
+            </p>
+
+            <!-- Editable if Produksi or Admin -->
+            <div v-if="isProduksi || isAdmin" class="space-y-2">
+              <textarea
+                v-model="verifForm.helper_packing"
+                required
+                rows="2"
+                placeholder="Contoh: Samsul, Andik, Dhani, Edi, Dayat &amp; M. Thoriq"
+                class="w-full px-3.5 py-2 border border-stone-300 rounded-xl font-sans font-medium text-stone-900 text-xs focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none resize-none bg-white"
+              ></textarea>
+              <div>
+                <label class="block font-semibold text-stone-600 text-[10.5px] mb-0.5">PIC Produksi / Supervisor</label>
+                <input
+                  v-model="verifForm.pic_produksi"
+                  type="text"
+                  placeholder="Nama PIC Produksi"
+                  class="w-full px-3 py-1.5 border border-stone-300 rounded-lg text-xs bg-white"
+                />
+              </div>
+            </div>
+
+            <!-- Locked view for non-Produksi -->
+            <div v-else>
+              <div v-if="auditVerification?.helper_packing" class="p-2.5 bg-emerald-50 border border-emerald-300 rounded-lg flex items-start justify-between gap-2 text-emerald-900">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                    <span>Terverifikasi oleh <strong>{{ auditVerification.pic_produksi || 'PIC Produksi' }}</strong></span>
+                  </div>
+                  <div class="font-medium text-xs text-emerald-950 mt-1 pl-6">{{ auditVerification.helper_packing }}</div>
+                </div>
+              </div>
+              <div v-else class="p-2.5 bg-cyan-50/70 border border-cyan-200 rounded-lg flex items-center gap-2 text-cyan-900 text-[11px]">
+                <svg class="w-4 h-4 text-cyan-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                <span>Wewenang khusus Operator Produksi. Menunggu input daftar helper oleh tim Produksi.</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Modal Footer Buttons -->
+          <div class="pt-3 border-t border-stone-200 flex items-center justify-between gap-2">
+            <button
+              type="button"
+              @click="closeVerificationModal"
+              class="px-4 py-2 bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold rounded-xl text-xs transition-colors cursor-pointer"
+            >
+              {{ (isViewer || isQc) ? 'Tutup' : 'Batal' }}
+            </button>
+
+            <div v-if="isPa || isProduksi || isAdmin" class="flex items-center gap-2">
+              <button
+                type="submit"
+                :disabled="verifSubmitting || (isPa && !verifForm.konsentrasi_lye) || (isProduksi && !verifForm.helper_packing) || (isAdmin && !verifForm.konsentrasi_lye && !verifForm.helper_packing)"
+                class="px-5 py-2 text-white font-extrabold rounded-xl text-xs shadow-md transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                :class="((isPa && auditVerification?.helper_packing) || (isProduksi && auditVerification?.konsentrasi_lye) || (isAdmin && verifForm.konsentrasi_lye && verifForm.helper_packing)) ? 'bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-500 hover:to-emerald-600' : 'bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700'"
+              >
+                <svg v-if="verifSubmitting" class="w-3.5 h-3.5 spin" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" class="opacity-25"></circle><path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" class="opacity-75"></path></svg>
+                <svg v-else class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                <span v-if="isPa">
+                  {{ auditVerification?.helper_packing ? 'Simpan Verifikasi PA & Selesaikan Audit' : 'Simpan Verifikasi PA' }}
+                </span>
+                <span v-else-if="isProduksi">
+                  {{ auditVerification?.konsentrasi_lye ? 'Simpan Verifikasi Produksi & Selesaikan Audit' : 'Simpan Verifikasi Produksi' }}
+                </span>
+                <span v-else-if="isAdmin">
+                  Simpan ke Database &amp; Stop Timer
+                </span>
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
